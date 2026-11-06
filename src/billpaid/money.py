@@ -4,11 +4,11 @@ cumulative totals, run-rates and per-second rates the dashboard presents."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 
 import polars as pl
 
-from subsidy_engine.reference import ReferenceScheme
+from billpaid.reference import ReferenceScheme
 
 SECONDS_PER_YEAR = 365.25 * 86400  # 31_557_600
 PERSPECTIVES = ["renewables", "low_carbon"]
@@ -63,27 +63,6 @@ def trailing_runrate(daily: pl.DataFrame, *, col: str = "cost_gbp",
 
 def rate_per_second(runrate_gbp_per_year: float) -> float:
     return runrate_gbp_per_year / SECONDS_PER_YEAR
-
-
-def carry_from(data_to: date) -> datetime:
-    """The instant a line's estimate starts: midnight UTC at the end of the last
-    day its published data cover (data_to is inclusive). Ported from
-    origin/model-pin 1ab8bdd4 (aios-harness#46)."""
-    d = data_to + timedelta(days=1)
-    return datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
-
-
-def estimated_since(runrate_gbp_per_year: float, data_to: date | None,
-                    at: datetime) -> float:
-    """Cost incurred since a line's published data end, carried forward at the
-    line's latest yearly rate: rate x (at - end of data) / 365.25 days (Richard,
-    15 Oct 2026, confirmed 1 Nov). Never negative: a line whose data reach past
-    `at` carries nothing. When a later build moves data_to forward, published data
-    replace the estimate for those days (the estimate starts at the new end)."""
-    if data_to is None:
-        return 0.0
-    secs = (at - carry_from(data_to)).total_seconds()
-    return runrate_gbp_per_year * max(0.0, secs) / SECONDS_PER_YEAR
 
 
 def gross_net(df: pl.DataFrame, col: str) -> tuple[float, float]:

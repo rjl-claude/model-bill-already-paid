@@ -13,10 +13,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from subsidy_engine import reference
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk import inputs
-from subsidy_engine_uk import register as R
+from billpaid import reference
+from billpaid.store import SnapshotStore
+from billpaid import inputs
+from billpaid import register as R
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -95,7 +95,7 @@ def test_years_after_the_engine_carry_its_last_year_by_cpih(model):
     d = reference.load_deflators(ROOT / "reference" / "deflators.yaml")
     idx = dict(zip(d["year"].to_list(), d["index"].to_list()))
     latest = idx[max(idx)]
-    from subsidy_engine_uk.uplift import road_series
+    from billpaid.uplift import road_series
     road = dict(zip(*road_series([2026], R.road_from_engine(ROOT)["bsuos"], d).to_dict(as_series=False).values()))
     assert road[2026] == pytest.approx(ex[2025] * idx.get(2026, latest) / idx[2025], rel=1e-9)
 
@@ -122,7 +122,7 @@ def test_a_part_year_subtracts_the_road_pro_rated_to_the_data_date(model):
     assert road[2026] == pytest.approx(full * frac, rel=1e-9)
     raw = _raw(model, "bsuos")
     tu = _annual(model, "constraint_turnup")
-    from subsidy_engine_uk.schemes import constraints as C
+    from billpaid.schemes import constraints as C
     con = {r["year"]: r["cost_gbp"] for r in C.annual_through(
         SnapshotStore(ROOT / "data"), reference.load_annual_costs(
             ROOT / "reference" / "annual_scheme_costs.yaml")["constraints_history"],

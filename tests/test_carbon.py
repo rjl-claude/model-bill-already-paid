@@ -18,9 +18,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from subsidy_engine import reference
-from subsidy_engine_uk import inputs
-from subsidy_engine_uk import register as R
+from billpaid import reference
+from billpaid import inputs
+from billpaid import register as R
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = Path("/srv/aios/projects/model-gas-counterfactual")

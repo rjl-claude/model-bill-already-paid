@@ -31,8 +31,8 @@ import polars as pl
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from subsidy_engine.store import SnapshotStore  # noqa: E402
-from subsidy_engine_uk.schemes import constraint_turnup as tu  # noqa: E402
+from billpaid.store import SnapshotStore  # noqa: E402
+from billpaid.schemes import constraint_turnup as tu  # noqa: E402
 
 OCTOPUS = "https://wastedwind.energy/api/summary/{year}"
 NESO_PACKAGE = "https://api.neso.energy/api/3/action/package_show?id=constraint-breakdown"

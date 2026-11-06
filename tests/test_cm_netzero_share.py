@@ -1,15 +1,15 @@
 """Capacity Market: only the part net zero caused is counted (change of
-13 October 2026). Pins the per-year share, the carry-forward of the last
-modelled year, that the headline is the sum of its parts, and that the
-public change-log entry for the change validates."""
+13 October 2026). Pins the per-year share and the carry-forward of the last
+modelled year. (What the site publishes from it, and the change-log entry, are
+tested in web-subsidy-clock.)"""
 from datetime import date
 from pathlib import Path
 
 import polars as pl
 import pytest
 
-from subsidy_engine import reference, sitedata
-from subsidy_engine_uk.schemes import capacity_market
+from billpaid import reference
+from billpaid.schemes import capacity_market
 
 REF = Path("reference/capacity_market_netzero_share.yaml")
 
@@ -31,7 +31,7 @@ def _share_table(rows: dict[int, tuple[float, float, float, float]], carry: int)
 
 
 def _build_cm(tmp_path, payments: dict[date, float], cm_share):
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
     store = SnapshotStore(tmp_path)
     cm = pl.DataFrame({"date": list(payments), "auction": ["T-4"] * len(payments),
                        "payment_gbp": list(payments.values())},
@@ -96,7 +96,7 @@ def test_cm_data_without_a_share_table_fails_rather_than_counting_in_full(tmp_pa
 def test_reference_file_shares_match_the_engine_and_2025_carries():
     # aios-harness#42 (decision 0168): the s32 hand copy (reference/capacity_market_netzero_share.yaml) is
     # retired; the shares are the pinned engine release's netzero_gbp over the register's CM paid
-    from subsidy_engine_uk import register as R
+    from billpaid import register as R
     root = Path(".").resolve()
     assert not (root / "reference/capacity_market_netzero_share.yaml").exists()
     cm = R.cm_share_from_engine(root, R.load_pinned(root))
@@ -117,53 +117,3 @@ def test_reference_file_rejects_an_impossible_share(tmp_path):
                  "netzero_low_gbp: 10, netzero_high_gbp: 100}\n")
     with pytest.raises(ValueError, match="shares must satisfy"):
         reference.load_cm_netzero_share(p)
-
-
-def _published():
-    import json
-    d = Path("site/data")
-    return (json.loads((d / "breakdown.json").read_text()),
-            json.loads((d / "totals.json").read_text()),
-            json.loads((d / "timeseries.json").read_text()),
-            json.loads((d / "meta.json").read_text()))
-
-
-def test_published_cm_line_is_the_netzero_share_not_the_full_levy():
-    bd, _, ts, _ = _published()
-    cm = next(s for s in bd["schemes"] if s["id"] == "capacity_market")
-    # the shares published beside the line (site/data is rebuilt only at release, so the committed
-    # build may carry an older engine's shares than the pin; the pin is tested in test_cost_register_0168)
-    shares = {r["year"]: r["share"] for r in cm["netzero_share"]}
-    raw = {r["year"]: r["cost"] for r in cm["raw_annual"]}
-    counted = {r["year"]: r["cost"] for r in ts["schemes"]["capacity_market"]["annual"]}
-    assert raw.keys() == counted.keys() == shares.keys()
-    for y, paid in raw.items():
-        assert counted[y] == pytest.approx(paid * shares[y], rel=1e-9), y
-    assert cm["cumulative"] < 0.5 * sum(raw.values())   # not the full levy
-    assert "counted in full" not in cm["attribution_note"]
-
-
-def test_headline_equals_the_sum_of_its_parts():
-    bd, totals, ts, meta = _published()
-    direct = totals["perspectives"]["renewables"]
-    ind = totals["indirect"]
-    indirect_parts = [s for s in bd["schemes"] if s["layer"] == "indirect"]
-    assert sum(s["cumulative"] for s in indirect_parts) == pytest.approx(ind["cumulative"], rel=1e-9)
-    real_parts = sum(a["cost_real"] for s in indirect_parts
-                     for a in ts["schemes"][s["id"]]["annual"])
-    assert real_parts == pytest.approx(ind["real"]["cumulative"], rel=1e-9)
-    assert meta["headline"]["combined_real"] == pytest.approx(
-        direct["real"]["cumulative"] + ind["real"]["cumulative"], rel=1e-12)
-
-
-def test_changelog_entry_for_the_cm_change_validates():
-    entries = sitedata.load_changelog("changelog.jsonl")
-    cm = [e for e in entries if e["figure"] == "capacity_market" and e["date"] == "2026-10-13"]
-    assert len(cm) == 1
-    e = cm[0]
-    assert e["kind"] == "change"          # a deliberate method change, not a correction
-    assert e["credit"] == "Richard Lyon"
-    assert len(e["cause"]) >= 3
-    text = " ".join(e["cause"]).lower()
-    for must in ("floor", "2025 share", "backup", "not yet published"):
-        assert must in text, must

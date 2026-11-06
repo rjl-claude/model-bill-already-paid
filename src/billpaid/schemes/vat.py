@@ -13,7 +13,7 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine.money import SchemeResult
+from billpaid.money import SchemeResult
 
 RATE = 0.05
 NOT_IN_BASE = ("ccl",)   # households pay no Climate Change Levy

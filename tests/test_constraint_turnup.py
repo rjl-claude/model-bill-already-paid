@@ -3,8 +3,8 @@ from datetime import date
 import httpx
 import polars as pl
 
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk.schemes import constraint_turnup as tu
+from billpaid.store import SnapshotStore
+from billpaid.schemes import constraint_turnup as tu
 
 FUEL = {"T_WIND-1": "WIND", "T_GAS-1": "CCGT", "T_GAS-2": "CCGT",
         "T_NOFUEL": None}

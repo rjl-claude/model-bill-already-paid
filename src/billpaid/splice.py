@@ -11,8 +11,8 @@ from datetime import date, timedelta
 
 import polars as pl
 
-from subsidy_engine.money import annualise_daily, merge_annual
-from subsidy_engine.reference import ReferenceScheme
+from billpaid.money import annualise_daily, merge_annual
+from billpaid.reference import ReferenceScheme
 
 # The pin live (master) publishes for each scheme. No pin may put a year at or after it
 # back on the reference history. Moving a pin is a release decision for Richard, not a

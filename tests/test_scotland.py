@@ -2,7 +2,7 @@ import polars as pl
 import pytest
 from datetime import date
 
-from subsidy_engine_uk import scotland
+from billpaid import scotland
 
 ZONES = {
     "T_SCOT-1": {"nation": "Scotland", "farm": "Glen"},

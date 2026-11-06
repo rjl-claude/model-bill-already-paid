@@ -3,8 +3,8 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine_uk import build as uk_build
-from subsidy_engine_uk.uplift import road_uplift
+from billpaid import build as uk_build
+from billpaid.uplift import road_uplift
 
 
 def deflators():
@@ -41,8 +41,8 @@ def test_road_uplift_is_signed_and_nets_subtraction():
 
 
 def test_build_integration(tmp_path):
-    from subsidy_engine.reference import ReferenceScheme
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.reference import ReferenceScheme
+    from billpaid.store import SnapshotStore
 
     store = SnapshotStore(tmp_path)
     gen = pl.DataFrame({
@@ -99,7 +99,7 @@ def test_build_integration(tmp_path):
 
 
 def _ref(scheme_id, label, annual_map, *, perspectives=(), rule="r", conf="medium"):
-    from subsidy_engine.reference import ReferenceScheme
+    from billpaid.reference import ReferenceScheme
     annual = pl.DataFrame(
         {"year": list(annual_map.keys()),
          "cost_gbp": [float(v) for v in annual_map.values()]},
@@ -110,7 +110,7 @@ def _ref(scheme_id, label, annual_map, *, perspectives=(), rule="r", conf="mediu
 
 
 def test_build_indirect_layer(tmp_path):
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
 
     store = SnapshotStore(tmp_path)
     # direct constraints: bottom-up day in 2026 + history
@@ -201,8 +201,8 @@ def test_build_indirect_layer(tmp_path):
 
 
 def test_station_detail_quarters_contracts_and_negative_quarter(tmp_path):
-    from subsidy_engine.reference import ReferenceScheme
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.reference import ReferenceScheme
+    from billpaid.store import SnapshotStore
 
     store = SnapshotStore(tmp_path)
     gen = pl.DataFrame({

@@ -1,15 +1,15 @@
 """The UK build: assembles the UK scheme results the dashboard presents.
 
 Each scheme with data of its own builds its result in its scheme module
-(subsidy_engine_uk.schemes.*, aios-harness#38); the annual reference schemes are built
-here. The generic money primitives stay in subsidy_engine.money.
+(billpaid.schemes.*, aios-harness#38); the annual reference schemes are built
+here. The generic money primitives stay in billpaid.money.
 """
 
 from __future__ import annotations
 
 import polars as pl
 
-from subsidy_engine.money import (
+from billpaid.money import (
     SchemeResult,
     add_real,
     annual_to_result,
@@ -17,11 +17,11 @@ from subsidy_engine.money import (
     layer_total,
     perspective_totals,
 )
-from subsidy_engine.reference import ReferenceScheme
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk.calendar_years import OBLIGATION_YEAR_LINES
-from subsidy_engine_uk.schemes import bsuos, capacity_market, carbon as carbon_mod, cfd, constraints, vat
-from subsidy_engine_uk.uplift import road_extras, road_uplift
+from billpaid.reference import ReferenceScheme
+from billpaid.store import SnapshotStore
+from billpaid.calendar_years import OBLIGATION_YEAR_LINES
+from billpaid.schemes import bsuos, capacity_market, carbon as carbon_mod, cfd, constraints, vat
+from billpaid.uplift import road_extras, road_uplift
 
 
 def build(store: SnapshotStore, refs: dict[str, ReferenceScheme],
@@ -39,7 +39,7 @@ def build(store: SnapshotStore, refs: dict[str, ReferenceScheme],
     contracts into one station for the recipients view; omitted in unit tests.
     ``ro_stations`` are the named RO recipients (buy-out basis) surfaced in the
     recipients table; omitted in unit tests. ``to_register``
-    (subsidy_engine_uk.register.ToRegister) makes every closed year of the daily and
+    (billpaid.register.ToRegister) makes every closed year of the daily and
     monthly lines sum to the shared cost register's figure (decision 0168); omitted in
     unit tests."""
     schemes: list[SchemeResult] = []
@@ -59,7 +59,7 @@ def build(store: SnapshotStore, refs: dict[str, ReferenceScheme],
 
     # --- Indirect layer (phase 2): CCL as stored; carbon from the engine (#44, in place of
     # the old ETS line and the CPS inside CCL); TNUoS, BSUoS above the road
-    # (``road``: subsidy_engine_uk.register.road_from_engine, the engine's GO5 and GO4)
+    # (``road``: billpaid.register.road_from_engine, the engine's GO5 and GO4)
     road = road or {}
     if "ccl" in refs:
         schemes.append(annual_to_result("ccl", refs["ccl"], layer="indirect"))

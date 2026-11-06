@@ -13,7 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from subsidy_engine import cost_register as CR
+from billpaid import cost_register as CR
 
 STATUSES = ("applied", "ruled")
 

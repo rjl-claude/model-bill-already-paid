@@ -1,5 +1,5 @@
-import subsidy_engine
+import billpaid
 
 
 def test_package_imports():
-    assert subsidy_engine is not None
+    assert billpaid is not None

@@ -2,7 +2,7 @@
 no-net-zero road (Richard's ruling C, 1 Nov 2026, re-confirming A1/A2 of 14 Oct; aios-harness#43).
 
 The road is the pinned engine release's GO5 (high-voltage grid) and GO4 (balancing) per calendar year,
-generators' share included (subsidy_engine_uk.register.road_from_engine). A year after the engine's last year
+generators' share included (billpaid.register.road_from_engine). A year after the engine's last year
 carries that year by CPIH, the rule the export states. Replaced the flat 2002-05 baselines (TNUoS GBP 0.9bn,
 BSUoS GBP 0.4bn a year, CPIH-indexed), which came from REF.
 """
@@ -12,7 +12,7 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine.money import _latest_index
+from billpaid.money import _latest_index
 
 
 def part_year_fraction(data_to: date) -> float:

@@ -15,12 +15,12 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine_uk import build as uk_build
+from billpaid import build as uk_build
 from tests.test_uk_build import _ref, deflators, road
 
 
 def _store(tmp_path):
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
 
     store = SnapshotStore(tmp_path)
     # constraints: one day inside the BSUoS window (10 Apr) and one day after its end (20 Apr), GBP 100 each

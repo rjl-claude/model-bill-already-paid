@@ -3,7 +3,7 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine.store import SnapshotStore
+from billpaid.store import SnapshotStore
 
 
 def df(rows):
@@ -109,7 +109,7 @@ def test_latest_missing_table_returns_none(tmp_path):
 
 def test_all_restatements_walks_every_scheme_table(tmp_path):
     import json as _json
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
     store = SnapshotStore(tmp_path)
     log = tmp_path / "raw" / "bsuos" / "daily"
     log.mkdir(parents=True)

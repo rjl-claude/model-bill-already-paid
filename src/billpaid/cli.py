@@ -1,25 +1,18 @@
-"""The UK command implementations behind the subsidy_engine CLI.
-
-Moved verbatim from subsidy_engine.__main__ in the Phase 1 shared-core extraction.
-The argparse parser (and ROOT) stay in subsidy_engine.__main__, which remains the
-composition root and the entrypoint: `python -m subsidy_engine ...` is unchanged.
-"""
+"""The command implementations behind the billpaid CLI (the parser and ROOT are in
+billpaid.__main__, the entry point: `python -m billpaid ...`)."""
 
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from subsidy_engine import reconcile, reference, sitedata
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk import inputs
-from subsidy_engine_uk import stations
-from subsidy_engine_uk import scotland
-from subsidy_engine_uk import elexon
-from subsidy_engine_uk.schemes import (bsuos, capacity_market, cfd, constraint_turnup,
+from billpaid import reconcile, reference, results
+from billpaid.store import SnapshotStore
+from billpaid import stations
+from billpaid import elexon
+from billpaid.schemes import (bsuos, capacity_market, cfd, constraint_turnup,
                                       constraints, remit)
 
 
@@ -85,60 +78,22 @@ def cmd_backfill_turnup(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_build_site(args: argparse.Namespace) -> int:
+def cmd_results(args: argparse.Namespace) -> int:
+    """Run the model and write its results file (billpaid.results), then print the internal checks
+    against REF (printed only, never written: REF comparisons were taken off the site, 17 Oct 2026)."""
     import polars as pl
 
-    store = make_store(args.root)
-    inp = inputs.load(args.root)
-    model, overlay = inputs.assemble_model(args.root, inp)
-    ctx, deflators = inp.ctx, inp.deflators
-    out_site = args.out or args.root / "site"
+    generated_at = datetime.now(timezone.utc).isoformat()
+    doc, run = results.assemble(args.root, generated_at=generated_at)
+    model, overlay = run["model"], run["overlay"]
     if overlay["refs_moved"]:
         print(f"[register] closed years moved by the register: {overlay['refs_moved']}")
-    freshness = {}
-    for scheme_id, table in [("cfd", "generation"), ("constraints", "daily"),
-                              ("capacity_market", "payments"), ("bsuos", "daily"),
-                              ("constraint_turnup", "daily")]:
-        f = store.freshness(scheme_id, table)
-        if f:
-            freshness[scheme_id] = {k: f.get(k) for k in
-                                    ("retrieved_at", "source_date", "source_url", "row_count")}
-    out_dir = out_site / "data"
-    generated_at = datetime.now(timezone.utc).isoformat()
-    sitedata.build(model, ctx, freshness, out_dir,
-                   generated_at=generated_at,
-                   deflator_info=inp.deflator_info,
-                   bill_annual=inp.bill, bill_info=inp.bill_info, deflators=deflators,
-                   coords=inp.coords, tiles=inp.tiles,
-                   notes=inp.notes,
-                   equivalences=inp.equivalences)
-    sitedata.write_csvs(model, out_dir, restatements=store.all_restatements(),
-                        generated=generated_at)
-    changelog = sitedata.load_changelog(args.root / "changelog.jsonl")
-    sitedata.write_changelog(changelog, out_dir, generated=generated_at)
-
-    con_daily = store.read_all_partitions("constraints", "daily")
-    if con_daily is not None and con_daily.height:
-        cons = ctx["electricity_consumption_by_nation"]
-        scot = scotland.build_payload(
-            con_daily, inp.bmu_zones,
-            scot_twh=cons["scotland_gwh"] / 1000, gb_twh=cons["gb_gwh"] / 1000,
-            consumption_source=cons["source"], consumption_url=cons["source_url"],
-            generated_at=generated_at, turnup_daily=constraint_turnup.daily_cost(store))
-        (out_dir / "scotland.json").write_text(json.dumps(scot, indent=1, allow_nan=False))
+    scot, report = run["scotland"], run["reconciliation"]
+    if scot is not None:
         print(f"[scotland] £{scot['scotland_cost'] / 1e6:,.0f}m of £{scot['gb_cost'] / 1e6:,.0f}m "
               f"({scot['scotland_share']:.1%}) to Scottish wind, {scot['window']['from']} to "
               f"{scot['window']['to']}")
-
-    totals_json = json.loads((out_dir / "totals.json").read_text())
-    sitedata.write_widget(totals_json, out_site / "embed" / "widget.html")
-
-    gen = store.latest("cfd", "generation")
-    trk = store.latest("cfd", "tracking")
-    if gen is not None and trk is not None:
-        bottom_up = gen.group_by("date").agg(pl.col("payment_gbp").sum().alias("cost_gbp"))
-        report = reconcile.cfd_monthly(bottom_up, trk)
-        (out_dir / "reconciliation.json").write_text(json.dumps(report, indent=1, allow_nan=False))
+    if report is not None:
         flag = "OK" if report["within_tolerance"] else "DIVERGENT"
         pct = report["overall"]["divergence_pct"]
         print(f"[reconciliation] {flag}: overall divergence {pct}% over "
@@ -157,7 +112,7 @@ def cmd_build_site(args: argparse.Namespace) -> int:
                 if key is None:
                     continue
                 ours[key] = ours.get(key, 0.0) + (float(row["cost_gbp"][0]) if row.height else 0.0)
-        # Internal check only: the result is printed, not written to site/data
+        # Internal check only: the result is printed, not written to the results file
         # (REF comparisons were taken off the site, 17 Oct 2026).
         cc = reconcile.indirect_crosscheck(ours, ref_cc)
         print(f"[crosscheck] {len(cc['components'])} components vs REF {cc['comparison_year']}; "
@@ -181,7 +136,7 @@ def cmd_build_site(args: argparse.Namespace) -> int:
         unmapped = set(comp) - set(ref_t["components"])
         if unmapped:
             raise SystemExit(f"[ref-reconciliation] schemes not in REF table: {sorted(unmapped)}")
-        # Internal check only: the result is printed, not written to site/data
+        # Internal check only: the result is printed, not written to the results file
         # (REF comparisons were taken off the site, 17 Oct 2026).
         recon = reconcile.ref_reconciliation(comp, real_total, ref_t)
         print(f"[ref-reconciliation] ours £{recon['ours_total']/1e9:.1f}bn vs "
@@ -189,7 +144,9 @@ def cmd_build_site(args: argparse.Namespace) -> int:
               f"stricter choices remove £{recon['stricter_gap']/1e9:.1f}bn "
               f"against the £{recon['gap']/1e9:.1f}bn gap")
 
-    print(f"[ok] site data written to {out_dir}")
+    out = args.out or args.root / "results" / results.FILE
+    fp = results.write(doc, out)
+    print(f"[ok] results written to {out} (model {doc['meta']['version']}, sha256 {fp[:12]})")
     return 0
 
 
@@ -198,39 +155,3 @@ def cmd_build_site(args: argparse.Namespace) -> int:
 # carve out of the BSUoS uplift, folds back into it for comparison.
 REF_KEY = {"cfd_renewable": "cfd", "cfd_low_carbon": "cfd",
            "constraint_turnup": "bsuos", "carbon": "ets", "vat": None}
-
-
-def cmd_build_cards(args: argparse.Namespace) -> int:
-    from subsidy_engine import sharecards
-
-    site = args.root / "site"
-    facts, asof, datestr = sharecards.load_facts(site / "data")
-    sharecards.render([f for f in facts if not f.get("chart")], asof, site / "share")
-    timeseries = json.loads((site / "data" / "timeseries.json").read_text())
-    breakdown = json.loads((site / "data" / "breakdown.json").read_text())
-    member_ids = sharecards.chart_members(breakdown)
-    for fact in facts:
-        if fact.get("chart"):
-            sharecards.render_chart_card(timeseries, member_ids, fact, asof, site / "share")
-    versions = sharecards.png_versions(site / "share")
-    n_targets = sharecards.verify_stub_targets(facts, site)
-    sharecards.write_stubs(facts, site / "s", asof, versions)
-    sharecards.write_manifest(facts, site / "share", asof, versions)
-    if versions.get("headline"):
-        sharecards.stamp_index_og(site / "index.html", versions["headline"])
-    # Every other page carrying a share image needs the same cache-buster, or
-    # the platforms keep serving whatever they cached the first time a link was
-    # shared. The explainers in particular were unstamped, so a corrected
-    # figure would never have reached anyone re-sharing them.
-    n_stamped = 0
-    for page in sorted(site.rglob("*.html")):
-        if page.name == "index.html" and page.parent == site:
-            continue          # already done, with its strict one-tag check
-        if page.parent.name == "s":
-            continue          # stubs are written with the token inline
-        n_stamped += sharecards.stamp_og_images(page, versions)
-    n_stubs = sum(1 for f in facts if f.get("stub"))
-    print(f"[ok] {len(facts)} share cards and {n_stubs} share stubs written "
-          f"({n_targets} stub targets verified, {n_stamped} og:image tags "
-          f"cache-busted, as of {asof})")
-    return 0

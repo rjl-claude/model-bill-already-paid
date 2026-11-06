@@ -15,9 +15,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from subsidy_engine_uk import inputs
-from subsidy_engine_uk import findings as F
-from subsidy_engine_uk import register as R
+from billpaid import inputs
+from billpaid import findings as F
+from billpaid import register as R
 
 ROOT = Path(__file__).resolve().parents[1]
 FILE = ROOT / "reference" / "clock_findings.yaml"

@@ -2,7 +2,7 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine import money
+from billpaid import money
 
 DAILY = pl.DataFrame({
     "date": [date(2025, 1, 1), date(2025, 12, 31), date(2026, 6, 1)],
@@ -132,8 +132,8 @@ def test_add_real_uses_latest_index_for_unknown_years():
 def test_annual_to_result_data_to_honours_year_basis():
     import polars as pl
     from datetime import date
-    from subsidy_engine import money
-    from subsidy_engine.reference import ReferenceScheme
+    from billpaid import money
+    from billpaid.reference import ReferenceScheme
 
     annual = pl.DataFrame({"year": [2023, 2024], "cost_gbp": [1.0e9, 2.0e9]},
                           schema={"year": pl.Int64, "cost_gbp": pl.Float64})

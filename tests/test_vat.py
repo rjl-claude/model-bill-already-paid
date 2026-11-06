@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from subsidy_engine_uk import inputs
+from billpaid import inputs
 
 ROOT = Path(__file__).resolve().parents[1]
 

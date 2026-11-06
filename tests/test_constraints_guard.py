@@ -2,18 +2,15 @@
 
 The guard itself (which years bottom-up replaces, and which pins are refused) is tested
 through the splice module's interface in test_splice.py. Here: that build() goes through
-it for constraints and BSUoS, and what breakdown.json publishes."""
-import json
-from dataclasses import replace
+it for constraints and BSUoS, and what the model hands the site."""
 from datetime import date, timedelta
 
 import polars as pl
 import pytest
 
-from subsidy_engine import sitedata
-from subsidy_engine.reference import ReferenceScheme
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk import build as uk_build
+from billpaid.reference import ReferenceScheme
+from billpaid.store import SnapshotStore
+from billpaid import build as uk_build
 
 REF = {2022: 227.2e6, 2023: 310.5e6, 2024: 394.3e6, 2025: 382.1e6}
 
@@ -47,13 +44,6 @@ def _refs(pin=2024):
             "ro": _annual("ro", {2024: 1.0}), "fit": _annual("fit", {2024: 1.0})}
 
 
-def _breakdown(model, tmp_path):
-    ctx = {k: {"value": v, "source": "s", "source_url": "u", "as_of": 2024} for k, v in
-           (("households", 28_400_000), ("population", 68_300_000), ("annual_demand_twh", 266))}
-    sitedata.build(model, ctx, {}, tmp_path / "site", generated_at="2026-10-17T00:00:00+00:00")
-    return json.loads((tmp_path / "site" / "breakdown.json").read_text())
-
-
 def test_the_build_refuses_a_partly_held_constraints_pin(tmp_path):
     with pytest.raises(ValueError, match=r"constraints bottom_up_from 2023 .*not every day"):
         uk_build.build(_store(tmp_path, date(2023, 8, 25)), _refs(2023), deflators=_deflators())
@@ -70,18 +60,16 @@ def test_the_build_refuses_a_bsuos_history_with_no_pin(tmp_path):
                                                             "engine_version": "test", "what": "test road"}})
 
 
-def test_the_pinned_year_and_the_held_window_are_published_in_breakdown_json(tmp_path):
+def test_the_pinned_year_and_the_held_window_are_in_the_model(tmp_path):
     # the pages say from which year Elexon replaces REF and from which day data is held
-    bd = _breakdown(uk_build.build(_store(tmp_path / "store", date(2023, 8, 25)), _refs(),
-                                   deflators=_deflators()), tmp_path)
-    assert bd["elexon_first_year"] == 2024
-    con = next(s for s in bd["schemes"] if s["id"] == "constraints")
-    assert (con["held_from"], con["held_to"]) == ("2023-08-25", "2025-01-03")
-    assert "bottom_up_from" not in con and "bottom_up_from" not in bd
+    m = uk_build.build(_store(tmp_path / "store", date(2023, 8, 25)), _refs(), deflators=_deflators())
+    assert m["elexon_first_year"] == 2024
+    con = next(s for s in m["schemes"] if s.scheme_id == "constraints")
+    assert (con.extras["held_from"], con.extras["held_to"]) == ("2023-08-25", "2025-01-03")
+    assert "bottom_up_from" not in con.extras
 
 
-def test_with_no_elexon_data_the_elexon_year_is_not_published(tmp_path):
+def test_with_no_elexon_data_the_elexon_year_is_none(tmp_path):
     # nothing from Elexon is used then, so publishing 2024 would be false
-    bd = _breakdown(uk_build.build(SnapshotStore(tmp_path / "store"), _refs(),
-                                   deflators=_deflators()), tmp_path)
-    assert "elexon_first_year" not in bd
+    m = uk_build.build(SnapshotStore(tmp_path / "store"), _refs(), deflators=_deflators())
+    assert m["elexon_first_year"] is None

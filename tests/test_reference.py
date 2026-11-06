@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from subsidy_engine import reference
+from billpaid import reference
 
 REF_DIR = Path(__file__).resolve().parents[1] / "reference"
 
@@ -61,7 +61,7 @@ def test_tnuos_neso_traced_values():
     annual = {r["year"]: r["cost_gbp"] for r in schemes["tnuos"].annual.to_dicts()}
     assert schemes["tnuos"].year_basis == "calendar"
     # the file holds the charge less the generators' share (aios-harness#45): add the register's row back
-    from subsidy_engine_uk import register as R
+    from billpaid import register as R
     gen = R.load_pinned(REF_DIR.parent)["register"].adjustments("TNUOS", "rb")["rb.TNUOS.generators_share_out"]
     whole = annual[2024] - gen[2024] * 1e6
     # NESO prints both to GBP 0.1m, so the weighted sum is known to within GBP 50k

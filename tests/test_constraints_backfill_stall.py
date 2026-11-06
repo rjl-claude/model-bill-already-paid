@@ -11,9 +11,9 @@ from pathlib import Path
 
 import polars as pl
 
-from subsidy_engine import __main__ as entry
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk import elexon
+from billpaid import __main__ as entry
+from billpaid.store import SnapshotStore
+from billpaid import elexon
 
 EARLIEST = date(2023, 8, 18)
 
@@ -83,7 +83,7 @@ def test_a_stalled_week_exits_with_the_stall_code(tmp_path, monkeypatch):
 
 
 def entry_stall_code():
-    from subsidy_engine_uk import cli
+    from billpaid import cli
     return cli.BACKFILL_STALLED
 
 

@@ -48,8 +48,8 @@ from datetime import date, datetime, timedelta, timezone
 import httpx
 import polars as pl
 
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk import elexon
+from billpaid.store import SnapshotStore
+from billpaid import elexon
 
 SCHEME = "constraint_turnup"
 TABLE = "daily"

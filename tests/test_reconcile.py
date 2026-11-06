@@ -3,7 +3,7 @@ from datetime import date
 
 import polars as pl
 
-from subsidy_engine import reconcile
+from billpaid import reconcile
 
 
 def test_matched_day_overall_divergence():

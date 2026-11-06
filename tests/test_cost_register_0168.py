@@ -15,9 +15,9 @@ from pathlib import Path
 
 import pytest
 
-from subsidy_engine import cost_register as CR
-from subsidy_engine_uk import inputs
-from subsidy_engine_uk import register as R
+from billpaid import cost_register as CR
+from billpaid import inputs
+from billpaid import register as R
 
 ROOT = Path(__file__).resolve().parents[1]
 HOME = Path("/srv/aios/projects/report-series/shared-cost-register")
@@ -105,7 +105,7 @@ def test_every_closed_year_of_every_covered_line_is_the_registers(base_model):
     }
     n = 0
     # the Clock's line is the register's line less the adjustments reference/clock_findings.yaml drops
-    from subsidy_engine_uk import findings as F
+    from billpaid import findings as F
     sel = F.load(ROOT / "reference" / "clock_findings.yaml", reg, product=prod)
     for sid, (lines, raw) in checks.items():
         vals = R.line_values(reg, prod, lines, sel)

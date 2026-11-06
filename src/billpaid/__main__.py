@@ -1,24 +1,19 @@
-"""CLI: update schemes on their own cadences (F-2), backfill history (F-3),
-and build the dashboard's JSON site data."""
+"""CLI: update schemes on their own cadences (F-2), backfill history (F-3), and write the
+model's results file (billpaid.results)."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-# The composition root: the ONE sanctioned subsidy_engine -> subsidy_engine_uk import.
-# The enforceable rule is "no module in subsidy_engine EXCEPT __main__.py may import
-# subsidy_engine_uk" — greppable in one line. It cannot cycle, because nothing imports
-# subsidy_engine.__main__: `python -m subsidy_engine` initialises the subsidy_engine
-# package first, then runs this file as "__main__".
-from subsidy_engine_uk import cli
+from billpaid import cli
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="subsidy_engine",
-                                     description="UK Subsidy Counter data engine")
+    parser = argparse.ArgumentParser(prog="billpaid",
+                                     description="The bill already paid: UK subsidies scheme by scheme")
     parser.add_argument("--root", type=Path, default=ROOT, help="repository root")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -40,13 +35,10 @@ def main(argv: list[str] | None = None) -> int:
     p_tu.add_argument("--end", required=True)
     p_tu.set_defaults(fn=cli.cmd_backfill_turnup)
 
-    p_site = sub.add_parser("build-site", help="build dashboard JSON site data")
-    p_site.add_argument("--out", type=Path, default=None,
-                        help="site folder to write into (default: <root>/site)")
-    p_site.set_defaults(fn=cli.cmd_build_site)
-
-    p_cards = sub.add_parser("build-cards", help="render OG share-card PNGs and share stubs")
-    p_cards.set_defaults(fn=cli.cmd_build_cards)
+    p_res = sub.add_parser("results", help="run the model and write its results file")
+    p_res.add_argument("--out", type=Path, default=None,
+                       help="file to write (default: <root>/results/clock.json)")
+    p_res.set_defaults(fn=cli.cmd_results)
 
     args = parser.parse_args(argv)
     return args.fn(args)

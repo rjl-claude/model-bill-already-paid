@@ -12,9 +12,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from subsidy_engine import reference  # noqa: E402
-from subsidy_engine_uk import calendar_years  # noqa: E402
-from subsidy_engine_uk.inputs import assemble_model  # noqa: E402
+from billpaid import reference  # noqa: E402
+from billpaid import calendar_years  # noqa: E402
+from billpaid.inputs import assemble_model  # noqa: E402
 
 
 def main(first: int = 2002, last: int = 2024) -> None:

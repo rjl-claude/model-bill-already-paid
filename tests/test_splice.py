@@ -9,8 +9,8 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from subsidy_engine.reference import ReferenceScheme, load_annual_costs
-from subsidy_engine_uk import splice
+from billpaid.reference import ReferenceScheme, load_annual_costs
+from billpaid import splice
 
 REF = {2022: 227.2e6, 2023: 310.5e6, 2024: 394.3e6, 2025: 382.1e6}
 REFERENCE = Path(__file__).parent.parent / "reference"

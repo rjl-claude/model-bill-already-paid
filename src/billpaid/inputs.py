@@ -1,20 +1,19 @@
-"""Every reference input a build reads, loaded once, and the model built from them
-(aios-harness#53; assemble_model moved from cli.py). The CLI, tools and tests take their
-inputs and model from here."""
+"""Every reference input the model reads, loaded once, and the model built from them
+(aios-harness#53). The CLI, tools and tests take their inputs and model from here. The
+website's own inputs (map, equivalences) are in the web-subsidy-clock repository (#140)."""
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
 import polars as pl
 import yaml
 
-from subsidy_engine import money, reference
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk import build as uk_build
-from subsidy_engine_uk import register as reg_mod
-from subsidy_engine_uk import scotland, stations
+from billpaid import money, reference
+from billpaid.store import SnapshotStore
+from billpaid import build as uk_build
+from billpaid import register as reg_mod
+from billpaid import scotland, stations
 
 
 @dataclass
@@ -29,12 +28,8 @@ class Inputs:
     ro_stations: list
     bmu_map: dict
     ctx: dict
-    equivalences: list
     bill: pl.DataFrame      # electricity bill, cash and 2024 prices
     bill_info: dict
-    coords: dict
-    notes: dict
-    tiles: dict
     bmu_zones: dict
     pinned: dict            # the pinned shared cost register (decision 0168)
 
@@ -61,25 +56,21 @@ def load(root: Path) -> Inputs:
         ro_stations=stations.load_ro_stations(ref / "ro_stations.csv"),
         bmu_map=stations.load_station_bmus(ref / "station_bmu_map.csv"),
         ctx=reference.load_context(ref / "context.yaml"),
-        equivalences=yaml.safe_load((ref / "equivalences.yaml").read_text()),
         bill=(money.add_real(bill_raw.rename({"total_bill_gbp": "cost_gbp"}), deflators)
               .rename({"cost_gbp": "total_bill_gbp", "cost_gbp_2024": "total_bill_gbp_2024"})),
         bill_info={"source": bill_yaml["source"], "source_url": bill_yaml["source_url"],
                    "verified": bill_yaml.get("verified", False)},
-        coords=stations.load_station_coords(ref / "station_coords.csv"),
-        notes=stations.load_enforcement_notes(ref / "enforcement_notes.csv"),
-        tiles=json.loads((ref / "map_tiles.json").read_text()),
         bmu_zones=scotland.load_bmu_zones(ref / "bmu_zone.csv"),
         pinned=reg_mod.load_pinned(root),
     )
 
 
 def assemble_model(root: Path, inp: Inputs | None = None) -> tuple[dict, dict]:
-    """The model the site is built from, and the register overlay report (decision 0168). Reads every covered
-    series for a closed year from the pinned shared cost register (subsidy_engine_uk.register), less the
-    register adjustments reference/clock_findings.yaml drops (subsidy_engine_uk.findings).
+    """The model, and the register overlay report (decision 0168). Reads every covered
+    series for a closed year from the pinned shared cost register (billpaid.register), less the
+    register adjustments reference/clock_findings.yaml drops (billpaid.findings).
     ``inp`` is loaded from ``root`` when not given."""
-    from subsidy_engine_uk import findings as findings_mod
+    from billpaid import findings as findings_mod
 
     inp = inp or load(root)
     pinned = inp.pinned

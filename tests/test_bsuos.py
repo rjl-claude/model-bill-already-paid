@@ -4,8 +4,8 @@ from datetime import date
 import httpx
 import pytest
 
-from subsidy_engine_uk.schemes import bsuos
-from subsidy_engine.store import SnapshotStore
+from billpaid.schemes import bsuos
+from billpaid.store import SnapshotStore
 
 # Pre-reform shape: BSUoS was an ex-post pass-through, so the published
 # half-hourly charge IS the cost, and it foots to the dataset's own daily total.
@@ -226,8 +226,8 @@ def test_update_rereads_every_year_so_resettlement_is_picked_up(tmp_path):
 
 import polars as pl  # noqa: E402
 
-from subsidy_engine.money import SchemeResult, layer_total  # noqa: E402
-from subsidy_engine_uk.schemes import constraint_turnup  # noqa: E402
+from billpaid.money import SchemeResult, layer_total  # noqa: E402
+from billpaid.schemes import constraint_turnup  # noqa: E402
 
 BASE_IDX = 71.5      # mean of the 2002-05 deflator index below
 LATEST_IDX = 136.0   # 2026 has no index of its own: latest is used
@@ -244,7 +244,7 @@ PART_2026 = 101 / 365
 
 
 def _annual_ref(scheme_id, annual_map, perspectives=()):
-    from subsidy_engine.reference import ReferenceScheme
+    from billpaid.reference import ReferenceScheme
     annual = pl.DataFrame({"year": list(annual_map), "cost_gbp": list(annual_map.values())},
                           schema={"year": pl.Int64, "cost_gbp": pl.Float64})
     return ReferenceScheme(scheme_id, scheme_id, list(perspectives), "annual", "s",

@@ -29,7 +29,7 @@ from pathlib import Path
 import polars as pl
 import yaml
 
-from subsidy_engine import cost_register as CR
+from billpaid import cost_register as CR
 
 PENNY = 0.005           # GBP: a store-register difference below this is float noise, not a restatement
 
@@ -58,7 +58,7 @@ REF_LINES = {
 def line_values(reg: CR.Register, product: str, lines: tuple[str, ...], selection=None) -> dict[int, float]:
     """GBP m by year: the product's line(s) from the register, summed. `selection` (findings.Selection) names
     the register adjustments the Clock does not take (reference/clock_findings.yaml)."""
-    from subsidy_engine_uk import findings as F
+    from billpaid import findings as F
 
     out: dict[int, float] = {}
     for ln in lines:

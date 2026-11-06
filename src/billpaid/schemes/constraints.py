@@ -24,11 +24,11 @@ from datetime import date, datetime, timedelta, timezone
 import httpx
 import polars as pl
 
-from subsidy_engine_uk import elexon
-from subsidy_engine.money import PERSPECTIVES, SchemeResult, trailing_runrate
-from subsidy_engine.reference import ReferenceScheme
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk.splice import splice
+from billpaid import elexon
+from billpaid.money import PERSPECTIVES, SchemeResult, trailing_runrate
+from billpaid.reference import ReferenceScheme
+from billpaid.store import SnapshotStore
+from billpaid.splice import splice
 
 SOURCE_URL = elexon.API_BASE + "/balancing/settlement/stack/all/bid"
 
@@ -157,7 +157,7 @@ def result(store: SnapshotStore, history: ReferenceScheme,
            to_register=None) -> list[SchemeResult]:
     """The constraints line: bottom-up daily spliced with ``history`` (REF), or the
     history alone with no Elexon data (``held_from`` then None). ``to_register``
-    (subsidy_engine_uk.register.ToRegister) makes each closed Elexon year from the pin
+    (billpaid.register.ToRegister) makes each closed Elexon year from the pin
     the shared cost register's (0168); omitted in unit tests."""
     con_daily = store.read_all_partitions("constraints", "daily")
     if con_daily is not None and con_daily.height:

@@ -3,8 +3,8 @@ from datetime import date
 import httpx
 import polars as pl
 
-from subsidy_engine_uk.elexon import wind_bmu_map
-from subsidy_engine_uk.schemes import constraints
+from billpaid.elexon import wind_bmu_map
+from billpaid.schemes import constraints
 
 WIND = {"T_ABRBO-1": "Aberdeen Offshore Wind Farm"}
 
@@ -102,13 +102,13 @@ def test_cost_applies_transmission_loss_multiplier():
 
 def test_write_day_labels_only_the_first_reread_as_ours(tmp_path):
     import json
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
     store = SnapshotStore(tmp_path)
     day = lambda c: pl.DataFrame({"date": [date(2026, 6, 1)], "bmu": ["T_ABRBO-1"],
                                   "lead_party": ["x"], "volume_mwh": [-10.0], "cost_gbp": [c]})
     store.write("constraints", "daily", day(600.0), source_url="u",
                 partition="2026-06-01", source_date="2026-06-01")
-    import subsidy_engine_uk.schemes.constraints as c
+    import billpaid.schemes.constraints as c
     old = c.BASIS_CHANGE_VERSION
     c.BASIS_CHANGE_VERSION = "99999999T"          # the stored version predates the change
     c.write_day(store, "2026-06-01", day(576.0))
@@ -131,7 +131,7 @@ def _elexon(stack_rows):
 def test_a_day_elexon_answers_with_nothing_is_not_stored_so_it_never_counts_as_held(tmp_path):
     # fix 5 guard: the coverage check counts stored days; a day Elexon left empty in every
     # settlement period is unknown, not a nil day, so it is left for the next run to fetch
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
     store = SnapshotStore(tmp_path)
     constraints.backfill(store, date(2024, 6, 1), date(2024, 6, 1), client=_elexon([]))
     assert store.partitions("constraints", "daily") == []
@@ -139,7 +139,7 @@ def test_a_day_elexon_answers_with_nothing_is_not_stored_so_it_never_counts_as_h
 
 def test_a_day_with_bids_but_no_wind_turn_down_is_stored_as_a_nil_day(tmp_path):
     # the 126 zero-row days in master's store are of this kind (refetched 17 Oct 2026)
-    from subsidy_engine.store import SnapshotStore
+    from billpaid.store import SnapshotStore
     store = SnapshotStore(tmp_path)
     battery_only = [dict(STACK_ROWS[1], settlementDate="2024-06-01")]
     constraints.backfill(store, date(2024, 6, 1), date(2024, 6, 1), client=_elexon(battery_only))

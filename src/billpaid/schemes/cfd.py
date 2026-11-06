@@ -6,11 +6,11 @@ from __future__ import annotations
 import httpx
 import polars as pl
 
-from subsidy_engine.ckan import dataset_resources, fetch_all_records
-from subsidy_engine.money import (PERSPECTIVES, SchemeResult, annualise_daily, cumulative,
+from billpaid.ckan import dataset_resources, fetch_all_records
+from billpaid.money import (PERSPECTIVES, SchemeResult, annualise_daily, cumulative,
                                   gross_net, trailing_runrate)
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk.stations import group_by_station
+from billpaid.store import SnapshotStore
+from billpaid.stations import group_by_station
 
 GENERATION_RESOURCE = "37d1bef4-55d7-4b8e-8a47-1d24b123a20e"
 # In-period Tracking is read through its dataset, not a fixed resource id:
@@ -242,7 +242,7 @@ def _attach_outages(station_detail: list, bmu_map: dict,
 
     Stations absent from ``bmu_map`` are left untouched — the panel renders
     the pinned unavailable wording (unknown, never zero)."""
-    from subsidy_engine_uk.schemes.remit import COVERAGE_FROM
+    from billpaid.schemes.remit import COVERAGE_FROM
     df = (outages
           .with_columns(
               pl.col("event_start").str.to_datetime("%Y-%m-%dT%H:%M:%S%#z",
@@ -279,7 +279,7 @@ def result(store: SnapshotStore, *, station_map: dict | None = None,
     """The CfD lines: renewables, and nuclear once it pays out. ``station_map``
     (cfd_id -> physical-station short name) collapses phased contracts into one station
     for the recipients view; ``bmu_map`` attaches REMIT outages to station detail.
-    ``to_register`` (subsidy_engine_uk.register.ToRegister) makes each closed year of
+    ``to_register`` (billpaid.register.ToRegister) makes each closed year of
     the renewables line the shared cost register's (0168); omitted in unit tests."""
     out: list[SchemeResult] = []
     # --- CfD: bottom-up, split renewable / non-renewable by technology (M-7).

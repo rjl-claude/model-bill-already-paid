@@ -20,8 +20,8 @@ from datetime import date, timedelta
 import httpx
 import polars as pl
 
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk.elexon import API_BASE
+from billpaid.store import SnapshotStore
+from billpaid.elexon import API_BASE
 
 # Platform history depth, verified 2026-07-29 (2014-15 hold single-figure
 # stragglers; usable coverage starts 2016). Stamped into every asset's outage

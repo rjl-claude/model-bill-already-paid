@@ -3,9 +3,9 @@ from datetime import date
 import polars as pl
 import pytest
 
-from subsidy_engine_uk.schemes import remit
-from subsidy_engine_uk.stations import load_station_bmus
-from subsidy_engine_uk.schemes import cfd
+from billpaid.schemes import remit
+from billpaid.stations import load_station_bmus
+from billpaid.schemes import cfd
 
 
 def _msg(mrid, rev, bmu="T_TEST-1", start="2021-06-08T08:00:00Z",

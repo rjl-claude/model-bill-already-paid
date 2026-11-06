@@ -1,6 +1,6 @@
 import httpx
 
-from subsidy_engine.ckan import fetch_all_records
+from billpaid.ckan import fetch_all_records
 
 
 def make_client(pages: dict[int, list[dict]], total: int) -> httpx.Client:
@@ -57,6 +57,6 @@ def test_dataset_resources():
                            "format": "CSV"}]}})
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    from subsidy_engine.ckan import dataset_resources
+    from billpaid.ckan import dataset_resources
     res = dataset_resources("some-dataset", client=client)
     assert res == [{"id": "abc", "name": "Daily Balancing Costs 2026-2027", "format": "CSV"}]

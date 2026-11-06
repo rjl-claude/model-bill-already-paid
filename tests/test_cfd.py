@@ -1,6 +1,6 @@
 from datetime import date
 
-from subsidy_engine_uk.schemes import cfd
+from billpaid.schemes import cfd
 
 GENERATION_RECORDS = [
     {
@@ -141,7 +141,7 @@ def test_blank_payment_rows_dropped():
 
 
 def test_parse_portfolio_maps_id_to_status():
-    from subsidy_engine_uk.schemes.cfd import parse_portfolio
+    from billpaid.schemes.cfd import parse_portfolio
     df = parse_portfolio([
         {"CFD_ID": "AAA-ACH-183", "Status": "Live (Post-FIC)", "Extra": "x"},
         {"CFD_ID": "AR2-DRK-414", "Status": "Terminated", "Extra": "y"},

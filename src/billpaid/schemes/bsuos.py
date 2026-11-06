@@ -47,14 +47,14 @@ from datetime import date
 import httpx
 import polars as pl
 
-from subsidy_engine import ckan
-from subsidy_engine.money import SchemeResult, annualise_daily, trailing_runrate
-from subsidy_engine.reference import ReferenceScheme
-from subsidy_engine.store import SnapshotStore
-from subsidy_engine_uk.schemes import constraint_turnup
-from subsidy_engine_uk.schemes import constraints as constraints_mod
-from subsidy_engine_uk.splice import splice
-from subsidy_engine_uk.uplift import road_extras, road_runrate, road_uplift
+from billpaid import ckan
+from billpaid.money import SchemeResult, annualise_daily, trailing_runrate
+from billpaid.reference import ReferenceScheme
+from billpaid.store import SnapshotStore
+from billpaid.schemes import constraint_turnup
+from billpaid.schemes import constraints as constraints_mod
+from billpaid.splice import splice
+from billpaid.uplift import road_extras, road_runrate, road_uplift
 
 DATASET = "current-balancing-services-use-of-system-bsuos-data"
 DATASET_URL = ("https://www.neso.energy/data-portal/"
@@ -244,9 +244,9 @@ def result(store: SnapshotStore, hist: ReferenceScheme, road: dict,
            constraints_history: ReferenceScheme | None = None) -> list[SchemeResult]:
     """The BSUoS uplift line, preceded by the constraint turn-up line when turn-up is
     measured. ``hist`` is the pre-2017 history (carrying the pin); ``road`` the engine's
-    GO4 balancing road (subsidy_engine_uk.uplift); ``constraints`` the constraints result,
+    GO4 balancing road (billpaid.uplift); ``constraints`` the constraints result,
     whose payments the uplift
-    is counted net of. ``to_register`` (subsidy_engine_uk.register.ToRegister) makes
+    is counted net of. ``to_register`` (billpaid.register.ToRegister) makes
     each closed year of the NESO and turn-up feeds the shared cost register's (0168);
     omitted in unit tests. ``constraints_history`` (the constraints REF history) lets the
     netting take only the constraint days the BSUoS data covers in its last year."""

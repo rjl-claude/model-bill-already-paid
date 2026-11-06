@@ -8,9 +8,9 @@ from datetime import date, timedelta
 import httpx
 import polars as pl
 
-from subsidy_engine.ckan import fetch_all_records
-from subsidy_engine.money import SchemeResult, add_real, annualise_daily, cumulative
-from subsidy_engine.store import SnapshotStore
+from billpaid.ckan import fetch_all_records
+from billpaid.money import SchemeResult, add_real, annualise_daily, cumulative
+from billpaid.store import SnapshotStore
 
 RESOURCE = "2ed26d4f-ceb0-4a96-895e-4a3cc38c788c"
 DATASET_URL = "https://dp.lowcarboncontracts.uk/dataset/capacity-obligation-by-auction"
@@ -92,7 +92,7 @@ def _month_end(d: date) -> date:
 def result(store: SnapshotStore, cm_share: dict | None,
            deflators: pl.DataFrame, to_register=None) -> list[SchemeResult]:
     """The Capacity Market line, or none without data. ``to_register``
-    (subsidy_engine_uk.register.ToRegister) makes each closed year of CM paid the shared
+    (billpaid.register.ToRegister) makes each closed year of CM paid the shared
     cost register's (0168); omitted in unit tests."""
     # --- Capacity Market: bottom-up monthly, net-zero share only (change of
     # 13 Oct 2026). Any power system needs backup, so the levy is NOT counted
@@ -100,7 +100,7 @@ def result(store: SnapshotStore, cm_share: dict | None,
     # what "Reliable Britain", the actual system with net-zero policy removed,
     # would have paid for its own backup) / CM paid, from the pinned engine
     # release (reference/model_pin.yaml; gas-counterfactual engine, spec 5.4)
-    # over the register's CM paid (subsidy_engine_uk.register). The same rule as TNUoS/BSUoS: count only what net zero added.
+    # over the register's CM paid (billpaid.register). The same rule as TNUoS/BSUoS: count only what net zero added.
     # Years after the engine's last year carry its last share forward.
     # Rejected: pasting in the engine's pounds per year. Scaling the measured
     # months keeps the line on LCCC's live data, so a restated month moves it

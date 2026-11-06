@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import polars as pl
 
-from subsidy_engine.money import add_real
+from billpaid.money import add_real
 
 # Lines whose year key is an April-March obligation (scheme) year: RO and FiT (D-13)
 OBLIGATION_YEAR_LINES = ("ro", "fit")
