@@ -68,7 +68,7 @@ Attribution rules and their confidence levels are quoted in full on the [methodo
 
 ## Automation
 
-A GitHub Action (`.github/workflows/update.yml`) runs daily at 05:30 UTC, after LCCC and Elexon publish: it updates all schemes (a failing scheme does not block the others), extends the constraints backfill by one week, writes the results file and commits. The website's own Action takes the file an hour later.
+A GitHub Action (`.github/workflows/update.yml`) runs daily at 05:30 UTC, after LCCC and Elexon publish: it updates all schemes (a failing scheme does not block the others), extends the constraints backfill by one week, writes the results file and commits. The website's own Action waits for that day's file, then builds from it.
 
 ## Licence
 

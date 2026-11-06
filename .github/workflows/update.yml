@@ -2,7 +2,7 @@ name: Update data and results
 
 # The model's morning run (aios-harness#140): fetch the latest data, extend the constraints
 # history backwards, and write results/clock.json with its fingerprint. The Subsidy Clock's
-# own robot (richardjlyon/subsidy-clock, update.yml) takes that file later the same morning.
+# own robot (richardjlyon/subsidy-clock, update.yml) waits for that file, then builds from it.
 
 on:
   schedule:
