@@ -1,0 +1,48 @@
+name: Update data and results
+
+# The model's morning run (aios-harness#140): fetch the latest data, extend the constraints
+# history backwards, and write results/clock.json with its fingerprint. The Subsidy Clock's
+# own robot (richardjlyon/subsidy-clock, update.yml) takes that file later the same morning.
+
+on:
+  schedule:
+    - cron: "30 5 * * *"   # daily 05:30 UTC - after Elexon/LCCC publish
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - name: Update all schemes (a failing scheme does not block the others)
+        run: uv run python -m billpaid update all || echo "::warning::one or more schemes failed - stale data will be flagged on the site"
+      - name: Extend constraints history backwards (one week per run)
+        run: |
+          EARLIEST=$(ls data/raw/constraints/daily | sort | head -1)
+          START=$(date -u -d "$EARLIEST - 7 days" +%Y-%m-%d)
+          END=$(date -u -d "$EARLIEST - 1 day" +%Y-%m-%d)
+          # exit 3 = a week with no bids (0176, option C): carry on, turn the run red at the end
+          rc=0; uv run python -m billpaid backfill-constraints --start "$START" --end "$END" || rc=$?
+          if [ "$rc" -eq 3 ]; then echo "BACKFILL_STALLED=$START to $END" >> "$GITHUB_ENV"; elif [ "$rc" -ne 0 ]; then exit "$rc"; fi
+      - run: uv run python -m billpaid results
+      - name: Commit updated data and results
+        run: |
+          git config user.name "subsidy-counter-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data results
+          git diff --cached --quiet || git commit -m "data: scheduled update $(date -u +%F)"
+          git push
+      - name: Alert on a stalled constraints backfill (0176, option C)
+        if: env.BACKFILL_STALLED != ''
+        run: |
+          echo "::error::Constraints backfill stalled: Elexon returned no bids for $BACKFILL_STALLED. The results were written; the backward backfill did not move."
+          exit 1

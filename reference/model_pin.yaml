@@ -1,4 +1,4 @@
-# The engine release the Clock takes its one counterfactual figure from (decision 0168 point 4: each product
+# The engine release the Clock's sums (this model, model-bill-already-paid, since aios-harness#140) take their one counterfactual figure from (decision 0168 point 4: each product
 # depends on the register and the one current engine release; aios-harness#42).
 #
 # The Clock reads three things from the engine (the third, carbon, below): the Capacity Market's net-zero part (netzero_gbp, low and high,

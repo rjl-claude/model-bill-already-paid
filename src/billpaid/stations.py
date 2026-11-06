@@ -42,11 +42,6 @@ def load_station_bmus(path):
     return bmus
 
 
-# Enforcement notes may only cite official documents. Editorial prose about a
-# named company's regulatory conduct is the highest-risk text on the site.
-NOTE_DOMAIN_ALLOWLIST = ("ofgem.gov.uk", "gov.uk", "lowcarboncontracts.uk")
-
-
 def load_ro_stations(path):
     """Load named RO recipients from the reference CSV, valued at buy-out.
 
