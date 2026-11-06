@@ -13,3 +13,6 @@ __pycache__/
 
 .mcp.json
 
+
+# private record: its own private Gitea repo, never on GitHub (aios-harness#88)
+private/
