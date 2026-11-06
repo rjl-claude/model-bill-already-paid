@@ -1,0 +1,10 @@
+{
+  "scheme": "constraint_turnup",
+  "table": "daily",
+  "partition": "2026-11-05",
+  "source_url": "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/offer",
+  "source_date": "2026-11-05",
+  "retrieved_at": "2026-11-06T07:11:49.521058+00:00",
+  "row_count": 14,
+  "sha256": "8f7a6a7e7618676ad8522f97f83c5f909185b7ae875154e7fa2ff6b3552f493a"
+}
