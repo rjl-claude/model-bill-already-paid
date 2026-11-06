@@ -12,7 +12,7 @@ Issues and specs for this repo live as GitHub issues on **`richardjlyon/aios-har
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
 
-**Do not infer the repo from `git remote -v`.** This clone's remote is Gitea, and this model's GitHub repo (`richardjlyon/model-bill-already-paid`) is public, as is the Clock's (`richardjlyon/subsidy-clock`), which deploys the live site. Add `-R richardjlyon/aios-harness` to every `gh issue` and `gh api` call above and below, and `--label subsidy-clock` to every issue you create. Never open issues or comments on either public repo.
+**Do not infer the repo from `git remote -v`.** This clone's remote is Gitea, and this model's GitHub repo (`rjl-claude/model-bill-already-paid`) is public, as is the Clock's (`richardjlyon/subsidy-clock`), which deploys the live site. Add `-R richardjlyon/aios-harness` to every `gh issue` and `gh api` call above and below, and `--label subsidy-clock` to every issue you create. Never open issues or comments on either public repo.
 
 ## Pull requests as a triage surface
 

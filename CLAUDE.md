@@ -14,7 +14,7 @@ The Subsidy Clock's sums: what UK subsidies and their indirect costs have cost, 
 
 - A change that moves a figure gets a new version in `pyproject.toml`. The site and the reports move their pins only on Richard's say-so.
 - `data/` and `results/` are written by the daily robot; a hand-made commit carries source only.
-- Public repository on GitHub (`richardjlyon/model-bill-already-paid`); Gitea `rjl/model-bill-already-paid` is the working copy.
+- Public repository on GitHub (`rjl-claude/model-bill-already-paid`); Gitea `rjl/model-bill-already-paid` is the working copy.
 
 ## Commands
 
