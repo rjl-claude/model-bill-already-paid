@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: update
-  cancel-in-progress: false
+  cancel-in-progress: false   # a second run waits for the first
 
 jobs:
   update:
