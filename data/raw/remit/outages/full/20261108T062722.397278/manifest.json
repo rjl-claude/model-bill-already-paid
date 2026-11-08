@@ -1,0 +1,10 @@
+{
+  "scheme": "remit",
+  "table": "outages",
+  "partition": "full",
+  "source_url": "https://bmrs.elexon.co.uk/remit",
+  "source_date": null,
+  "retrieved_at": "2026-11-08T06:27:22.397278+00:00",
+  "row_count": 30176,
+  "sha256": "467300e82f95d6f5f5c6f49f14d5ca1dceacc5b2a8ed42ffdea1bce20701b11c"
+}

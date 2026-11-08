@@ -1,0 +1,10 @@
+{
+  "scheme": "constraints",
+  "table": "daily",
+  "partition": "2015-11-18",
+  "source_url": "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid",
+  "source_date": "2015-11-18",
+  "retrieved_at": "2026-11-08T06:27:59.811356+00:00",
+  "row_count": 14,
+  "sha256": "e1360c30c9aeb54dd657572fb5b975b18cd05d705a5ae5b11a5ebbe2b4300d74"
+}
