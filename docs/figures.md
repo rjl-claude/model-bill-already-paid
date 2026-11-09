@@ -92,5 +92,6 @@ The spec proposed names and left them to this ticket; the freeze (#226) checks t
 ## Not yet
 
 - The version in `pyproject.toml` stays 1.0.0 until the freeze (#226): the live Clock refuses a results file of any other version, so the number moves only with Richard's ruling on how 1.1.0 reaches GitHub.
+- The work is on branch `v1.1.0`, on Gitea only; `master` (and so the live Clock) is untouched until the freeze.
 - `results/` is the robot's: the figures file is not committed until the freeze writes and pins it.
 - Still to come in 1.1.0: the bridge with Report No. 1 (#223), 2025 (#224), the ranges (#225).

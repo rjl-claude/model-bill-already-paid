@@ -30,6 +30,7 @@ The Subsidy Clock's sums: what UK subsidies and their indirect costs have cost, 
 
 - GitHub `master` (remote `github`) is the live copy. Its robot (`.github/workflows/update.yml`, 05:30 UTC daily) fetches the data, writes `data/` and `results/`, and commits there. Gitea (`origin`) follows: fetch `github` before any commit, and keep the two the same.
 - `data/` and `results/` are the robot's; a hand-made commit carries source only.
+- Version 1.1.0 (Report No. 2's plan steps 6-10, map #206) is built on branch `v1.1.0`, on Gitea only, until its freeze (#226); `master` stays the same on both remotes.
 - The figures taken from the gas model (the Capacity Market's net-zero part, grid and balancing costs without net zero, carbon) are pinned in `reference/model_pin.yaml` (engine v4-s43). A new engine release is never applied by itself.
 
 ## Misleading places
