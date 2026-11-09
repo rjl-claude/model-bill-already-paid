@@ -150,6 +150,17 @@ def cmd_results(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_figures(args: argparse.Namespace) -> int:
+    """Write the paper's figures file (billpaid.figures) from the frozen results file."""
+    from billpaid import figures
+    doc = figures.document(figures.frozen_results(args.root))
+    out = args.out or args.root / "results" / "figures.json"
+    fp = results.write(doc, out)
+    print(f"[ok] {len(doc['figures'])} figures written to {out} (from {figures.FROZEN_PATH} at "
+          f"{figures.FROZEN_REF}; model {doc['meta']['version']}, sha256 {fp[:12]})")
+    return 0
+
+
 # How our schemes map onto REF's components for the like-for-like checks.
 # REF's BSUoS is the whole balancing charge, so constraint turn-up, which we
 # carve out of the BSUoS uplift, folds back into it for comparison.

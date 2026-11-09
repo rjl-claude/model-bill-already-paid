@@ -40,6 +40,11 @@ def main(argv: list[str] | None = None) -> int:
                        help="file to write (default: <root>/results/clock.json)")
     p_res.set_defaults(fn=cli.cmd_results)
 
+    p_fig = sub.add_parser("figures", help="write the paper's figures file from the frozen results file")
+    p_fig.add_argument("--out", type=Path, default=None,
+                       help="file to write (default: <root>/results/figures.json)")
+    p_fig.set_defaults(fn=cli.cmd_figures)
+
     args = parser.parse_args(argv)
     return args.fn(args)
 

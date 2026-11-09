@@ -1,6 +1,7 @@
 """The whole model run on the repository's own data, written to a temporary folder
 (aios-harness#53; the results file since #140)."""
 import hashlib
+import math
 import json
 
 import polars as pl
@@ -45,3 +46,31 @@ def test_the_loader_reads_every_reference_input_the_model_needs():
                  "ro_stations", "bmu_map", "ctx", "bill", "bill_info", "bmu_zones", "pinned"):
         assert getattr(i, name) is not None, name
     assert "total_bill_gbp_2024" in i.bill.columns
+
+
+def _same(a, b, path=""):
+    """Equal, numbers to rounding (polars sums in no fixed order, so a rerun can differ in the last digit)."""
+    assert type(a) is type(b), path
+    if isinstance(a, dict):
+        assert sorted(a) == sorted(b), path
+        for k in a:
+            _same(a[k], b[k], f"{path}.{k}")
+    elif isinstance(a, list):
+        assert len(a) == len(b), path
+        for i, (x, y) in enumerate(zip(a, b)):
+            _same(x, y, f"{path}[{i}]")
+    elif isinstance(a, float):
+        assert math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-6), (path, a, b)
+    else:
+        assert a == b, path
+
+
+def test_the_model_still_writes_the_committed_results_file(tmp_path):
+    """1.1.0 adds a figures file and changes nothing in results/clock.json (aios-harness#222): run on the
+    repository's data, the model writes the committed file again, its stamp (meta) apart."""
+    committed = json.loads((ROOT / "results" / results.FILE).read_text())
+    doc, _ = results.assemble(ROOT, generated_at=committed["meta"]["generated_at"])
+    doc = json.loads(json.dumps(doc, allow_nan=False))
+    assert doc["meta"]["model"] == committed["meta"]["model"]
+    assert doc["meta"]["format"] == committed["meta"]["format"]
+    _same({k: v for k, v in doc.items() if k != "meta"}, {k: v for k, v in committed.items() if k != "meta"})

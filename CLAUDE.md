@@ -24,6 +24,7 @@ The Subsidy Clock's sums: what UK subsidies and their indirect costs have cost, 
 - All tests: `tools/test.sh` (every test must pass). One file: `tools/test.sh tests/<file>.py`
 - Run Python here: `uv run --frozen python`
 - The results file: `uv run --frozen python -m billpaid results`
+- The paper's figures file (1.1.0, from the frozen 9 Nov results file): `uv run --frozen python -m billpaid figures` (keys: `docs/figures.md`)
 
 ## How it runs
 
