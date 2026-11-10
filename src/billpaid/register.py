@@ -104,7 +104,7 @@ def rescale_closed_years(df: pl.DataFrame, values: dict[int, float], closed: int
     yr = pl.col("date").dt.year()
     sums = dict(df.group_by(yr.alias("y")).agg(pl.col(value_col).sum()).iter_rows())
     factors = {}
-    for y, s in sums.items():
+    for y, s in sorted(sums.items()):  # year order, whatever order group_by returns (aios-harness#142)
         if y > closed or y < first_year or y not in values:
             continue
         target = values[y] * 1e6
