@@ -15,6 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
+from billpaid import bridge
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
@@ -64,6 +65,7 @@ PLACEHOLDERS = {
     "end": "central|low|high", "bound": "low|high", "technology": "[a-z0-9_]+", "tm": "cash|mwh|share",
     "rec": r"divergence_pct|bottom_up\.cash|official\.cash|tolerance_pct|matched_days",
     "cc": "estimate|accepted_offers|accepted_offers_wind", "when": "from|to", "d": "cpih|to_2024",
+    "step": "|".join([bridge.START, *(name for name, _, _ in bridge.STEPS), bridge.END]),
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
 KEYS = {
@@ -103,6 +105,14 @@ KEYS = {
     "per_household.headline": "all lines 2002-2024, 2024 prices, over today's households",
     "per_household.<year>": "all lines that year, 2024 prices, over today's households",
     "deflator.<year>.<d>": "CPIH (2015 = 100), and the factor to 2024 prices",
+    "bridge.<step>.<year>.<m>": ("the bridge with Report No. 1: each step of the walk from No. 2's money paid "
+                                 "(no2_money_paid) to No. 1's extra cost (no1_extra_cost); the steps add up"),
+    "bridge.<step>.headline.<m>": "the same, 2002-2024",
+    "bridge.<step>.label": "the step's row label in the bridge table",
+    "bridge.<step>.kind": "total (the two ends), same, counted_differently or no1_only",
+    "bridge.steps": "the steps' names in the walk's order, comma-separated",
+    "bridge.no1.version": "the Report No. 1 release the bridge reads (the gas model's version)",
+    "bridge.no1.sha256": "that release's run file's fingerprint",
 }
 
 
@@ -213,7 +223,8 @@ PARTS = {"carbon": _carbon, "capacity_market": _capacity_market, "vat": _vat, "c
          "constraint_turnup": _turnup, "tnuos": _road, "bsuos": _road}
 
 
-def build(doc: dict) -> dict[str, float | str]:
+def build(doc: dict, no1: bridge.No1Release) -> dict[str, float | str]:
+    """Every figure: `doc` is the frozen results file, `no1` Report No. 1's pinned run file (the bridge)."""
     out: dict[str, float | str] = {}
     for s in doc["model"]["schemes"]:
         line, layer = s["scheme_id"], s["layer"]
@@ -237,6 +248,7 @@ def build(doc: dict) -> dict[str, float | str]:
         if line in PARTS:
             PARTS[line](out, doc, s)
     _context(out, doc)
+    bridge.build(out, doc, no1)
     return out
 
 
@@ -261,10 +273,11 @@ def _context(out: dict, doc: dict) -> None:
             out[f"deflator.{y}.to_2024"] = cpih[REAL_BASE_YEAR] / v
 
 
-def document(doc: dict) -> dict:
+def document(doc: dict, no1: bridge.No1Release) -> dict:
     """The figures file: the keys, and where they come from."""
-    return {"figures": build(doc),
+    return {"figures": build(doc, no1),
             "meta": {"model": MODEL, "version": model_version(),
                      "built_from": {"file": FROZEN_PATH, "ref": FROZEN_REF, "sha256": FROZEN_SHA256,
                                     "version": doc["meta"]["version"], "generated_at": doc["meta"]["generated_at"]},
+                     "no1": no1.meta(),
                      "headline_years": [2002, LAST_CLOSED_YEAR], "keys": KEYS, "placeholders": PLACEHOLDERS}}

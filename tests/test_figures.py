@@ -9,7 +9,7 @@ import re
 
 import pytest
 
-from billpaid import figures
+from billpaid import bridge, figures
 from billpaid import results
 from billpaid.__main__ import ROOT, main
 
@@ -25,7 +25,7 @@ def frozen():
 
 @pytest.fixture(scope="module")
 def figs(frozen):
-    return figures.build(frozen)
+    return figures.build(frozen, bridge.no1_release(ROOT))
 
 
 def _close(a, b):

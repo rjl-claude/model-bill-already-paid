@@ -152,8 +152,8 @@ def cmd_results(args: argparse.Namespace) -> int:
 
 def cmd_figures(args: argparse.Namespace) -> int:
     """Write the paper's figures file (billpaid.figures) from the frozen results file."""
-    from billpaid import figures
-    doc = figures.document(figures.frozen_results(args.root))
+    from billpaid import bridge, figures
+    doc = figures.document(figures.frozen_results(args.root), bridge.no1_release(args.root))
     out = args.out or args.root / "results" / "figures.json"
     fp = results.write(doc, out)
     print(f"[ok] {len(doc['figures'])} figures written to {out} (from {figures.FROZEN_PATH} at "
