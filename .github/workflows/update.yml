@@ -20,8 +20,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
       - run: uv sync --frozen
       - name: Update all schemes (a failing scheme does not block the others)
         run: uv run python -m billpaid update all || echo "::warning::one or more schemes failed - stale data will be flagged on the site"
