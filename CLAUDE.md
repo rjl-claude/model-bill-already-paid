@@ -26,6 +26,7 @@ The Subsidy Clock's sums: what UK subsidies and their indirect costs have cost, 
 - The results file: `uv run --frozen python -m billpaid results`
 - The paper's figures file (1.1.0, from the frozen 9 Nov results file): `uv run --frozen python -m billpaid figures` (keys: `docs/figures.md`)
 - The bridge with Report No. 1 (money paid to extra cost, step by step) is in that file under `bridge.*`, read from the pinned gas model run file; never work it out by hand (`docs/figures.md`, "The bridge with Report No. 1").
+- 2025, the provisional year (every line's 2025 figure, Sizewell C's levy, the total's parts) is in the same file, kept out of the headline; its extra sources are saved in `reference/sources/`, pinned in `reference/provisional_2025.yaml` (`docs/figures.md`, "2025, the provisional year").
 
 ## How it runs
 

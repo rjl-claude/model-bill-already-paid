@@ -15,14 +15,14 @@ from pathlib import Path
 
 import polars as pl
 
-from billpaid import bridge
+from billpaid import bridge, provisional
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
 FROZEN_REF = "2a63b034"
 FROZEN_PATH = "results/clock.json"
 FROZEN_SHA256 = "738ac005d5fca69015139cbf6857fa1cf87320c6e16a8a234fcdf1557f2f059b"
-LAST_CLOSED_YEAR = 2024          # the headline runs 2002-2024; 2025 is the provisional year (#224)
+LAST_CLOSED_YEAR = 2024          # the headline runs 2002-2024; 2025, the provisional year: billpaid.provisional
 
 
 def frozen_bytes(root: Path) -> bytes:
@@ -54,6 +54,7 @@ BASIS = {
     "bsuos": "modelled",              # the same, net of the constraint lines
     "vat": "modelled",                # 5% on households' share, the share from the gas model
     "constraint_turnup": "estimated",  # 1.0.0: "Estimated cost of paying other stations..."
+    "sizewell_c": "measured",         # 2025 only (part 3): suppliers' levy payments to LCCC, from 1 Dec 2025
 }
 NO_CONFIDENCE = "high"   # 1.0.0 gives no confidence for the direct lines: counted in full, as paid
 
@@ -66,17 +67,21 @@ PLACEHOLDERS = {
     "rec": r"divergence_pct|bottom_up\.cash|official\.cash|tolerance_pct|matched_days",
     "cc": "estimate|accepted_offers|accepted_offers_wind", "when": "from|to", "d": "cpih|to_2024",
     "step": "|".join([bridge.START, *(name for name, _, _ in bridge.STEPS), bridge.END]),
+    "basis": "measured|modelled|estimated",
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
 KEYS = {
-    "<line>.<year>.<m>": f"each line, each year, 2002-2024 where 1.0.0 has the year ({MONEY})",
+    "<line>.<year>.<m>": (f"each line, each year, 2002-2024 where 1.0.0 has the year, and 2025, the provisional "
+                          f"year, for every line ({MONEY})"),
+    "<line>.2025.source": "where the line's 2025 figure comes from, and why it is provisional",
+    "all.2025.<basis>.<m>": "the 2025 total's measured, modelled and estimated parts (each line's basis); they add up",
     "<line>.headline.<m>": "each line, 2002-2024",
-    "<total>.<year>.<m>": "the direct lines, the indirect lines, or all together, each year",
+    "<total>.<year>.<m>": "the direct lines, the indirect lines, or all together, each year (2025 provisional)",
     "<total>.headline.<m>": "the same, 2002-2024",
     "<line>.basis": "measured, modelled or estimated",
     "<line>.confidence": "1.0.0's confidence (high, medium or low); high for the direct lines, which it leaves blank",
     "<line>.layer": "direct or indirect",
-    "carbon.<year>.basis": "the carbon line's basis that year (2005-2012 estimated)",
+    "carbon.<year>.basis": "the carbon line's basis that year (2005-2012 estimated; 2025 modelled, provisional)",
     "carbon.<part>.<year>.<m>": "carbon split: the tax collected by the Treasury, and the rest of the carbon in the price",
     "carbon.<part>.headline.<m>": "the same, 2002-2024",
     "<grid>.<side>.<year>.<m>": "grid (TNUoS) or balancing (BSUoS): the whole charge (raw) and the gas-led alternative's",
@@ -249,6 +254,7 @@ def build(doc: dict, no1: bridge.No1Release) -> dict[str, float | str]:
             PARTS[line](out, doc, s)
     _context(out, doc)
     bridge.build(out, doc, no1)
+    provisional.build(out, doc, no1.run)
     return out
 
 
@@ -280,4 +286,5 @@ def document(doc: dict, no1: bridge.No1Release) -> dict:
                      "built_from": {"file": FROZEN_PATH, "ref": FROZEN_REF, "sha256": FROZEN_SHA256,
                                     "version": doc["meta"]["version"], "generated_at": doc["meta"]["generated_at"]},
                      "no1": no1.meta(),
+                     "provisional_2025": provisional.sources(),
                      "headline_years": [2002, LAST_CLOSED_YEAR], "keys": KEYS, "placeholders": PLACEHOLDERS}}

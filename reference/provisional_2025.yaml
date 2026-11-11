@@ -1,0 +1,35 @@
+# The sources 2025, the provisional year, reads beyond the frozen results file, the shared cost register and
+# the engine release (version 1.1.0, part 3, aios-harness#224; ADR 0226). Each file is saved here as fetched
+# and refused if its sha256 differs. The figures are read from the files by billpaid.provisional; none is
+# typed here. Method: docs/figures.md, "2025, the provisional year".
+#
+# A newer edition of any of these (a later reconciliation run, Ofgem's late-payment fund) is never picked up by
+# itself: save the new file beside the old, change file and sha256 here, rebuild, and measure what moves.
+sources:
+  ofgem-ro-2025-26:
+    what: >-
+      Ofgem, "Renewables Obligation Certificates presented and Redistribution of Buy-Out Funds 2025 to 2026",
+      transparency document published 2 Nov 2026: ROCs presented by suppliers, the buy-out price and the
+      buy-out fund redistributed, for England and Wales, Scotland and Northern Ireland (the UK total row).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-certificates-presented-and-redistribution-buy-out-funds-2025-2026
+    file: reference/sources/ofgem-ro-rocs-presented-buy-out-2025-26.html
+    retrieved: "2026-11-11"
+    sha256: 5f5c64da0dbca59e4bad6574b8aa6afbb9faa1e1c9c7a7f80022356f9faf9bf5
+  ofgem-ro-2024-25:
+    what: >-
+      The same document for 2024 to 2025 (published 12 Nov 2025), kept to test the reading against Ofgem's
+      stated scheme value for that year, which 1.0.0 counts.
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-certificates-presented-and-redistribution-buy-out-fund-2024-2025
+    file: reference/sources/ofgem-ro-rocs-presented-buy-out-2024-25.html
+    retrieved: "2026-11-11"
+    sha256: 24e6011e42716ca265f234529cbfe67036cf8d52b7c0327f71f9206e33c7cfa4
+  lccc-nuclear-rab-actual:
+    what: >-
+      LCCC data portal, "Actual Nuclear RAB ILR/TRA" (resource 5ff11ab9-35b9-4217-b280-186e3e3e33e4, updated
+      13 Oct 2026), as its datastore API returns it: by month from December 2025, suppliers' actual payments of
+      the Sizewell C levy, the payments to Sizewell C, eligible demand and the interim levy rate.
+    url: https://dp.lowcarboncontracts.uk/api/3/action/datastore_search?resource_id=5ff11ab9-35b9-4217-b280-186e3e3e33e4&limit=1000
+    page: https://dp.lowcarboncontracts.uk/dataset/actual-nuclear-rab-ilr-tra
+    file: reference/sources/lccc-actual-nuclear-rab-ilr-tra.json
+    retrieved: "2026-11-11"
+    sha256: 022b6598b11dad66c5441aee9a4646bd936fe2226733fa9f0c5bc36e70a1ba82

@@ -1,27 +1,27 @@
 # The paper's figures file
 
-Version 1.1.0, parts 1 and 2 (aios-harness#222 and #223, Report No. 2's plan steps 6 and 7, map #206). Report No. 2, *The Price of the Climate Bill*, prints every bill-already-paid figure by key from this file, as it does the bill still to come's from that model's `results/figures.json` (spec: `report-series/price-of-the-climate-bill/spec.md`, "The bill already paid moves to version 1.1.0"; ADR 0222).
+Version 1.1.0, parts 1 to 3 (aios-harness#222, #223 and #224, Report No. 2's plan steps 6 to 8, map #206). Report No. 2, *The Price of the Climate Bill*, prints every bill-already-paid figure by key from this file, as it does the bill still to come's from that model's `results/figures.json` (spec: `report-series/price-of-the-climate-bill/spec.md`, "The bill already paid moves to version 1.1.0"; ADR 0222).
 
 ## What it is
 
 - One flat JSON file, `{"figures": {key: value}, "meta": {...}}`, keyed like model-bill-still-to-come's.
-- Built by `uv run --frozen python -m billpaid figures` (default output `results/figures.json`, with its fingerprint beside it in `figures.json.sha256`). Code: `src/billpaid/figures.py` and, for the bridge, `src/billpaid/bridge.py`. Tests: `tests/test_figures.py`, `tests/test_bridge.py`.
+- Built by `uv run --frozen python -m billpaid figures` (default output `results/figures.json`, with its fingerprint beside it in `figures.json.sha256`). Code: `src/billpaid/figures.py`, for the bridge `src/billpaid/bridge.py`, and for 2025 `src/billpaid/provisional.py`. Tests: `tests/test_figures.py`, `tests/test_bridge.py`, `tests/test_provisional.py`.
 - Built from the frozen results file the paper pins, not from a new run: `results/clock.json` as committed at `2a63b034` (the robot's file of 9 Nov 2026, model 1.0.0, sha256 `738ac005…`, pinned in `report-series/model-register.yaml`). The command refuses that file if its fingerprint differs.
-- Each key is a 1.0.0 value, or a sum, ratio or product of them by 1.0.0's own rules (CPIH pricing, the Capacity Market range); no new method. The tests check every key against the 1.0.0 table it comes from, so no 1.0.0 value moves, and check that the model still writes `results/clock.json` exactly as before.
+- Each key for 2002-2024 is a 1.0.0 value, or a sum, ratio or product of them by 1.0.0's own rules (CPIH pricing, the Capacity Market range); no new method. 2025 has one new method (below, "2025, the provisional year"). The tests check every key against the 1.0.0 table it comes from, so no 1.0.0 value moves, and check that the model still writes `results/clock.json` exactly as before.
 - `meta` names the model and version, the file it was built from (path, commit, sha256, version, date), the headline years, and every key template with its meaning.
 
 ## The years
 
 - Each year and the headline run 2002 to 2024, the closed years. The headline is the sum of those years.
-- 2025, the provisional year, comes in part 3 (#224): every line's 2025 figure, the missing lines filled, Sizewell C, the total's measured and estimated parts.
+- 2025, the provisional year (part 3, #224): every line's 2025 figure, Sizewell C's levy on its own line, and the 2025 total with its measured, modelled and estimated parts. It is never in the headline (ADR 0035, 0226). Method below.
 - 2026 (the year to date) is not in the paper and has no key.
-- A line has a key for a year only where 1.0.0 has a row for it (CfD from 2016, constraints from 2010, and so on).
+- A line has a key for a year 2002-2024 only where 1.0.0 has a row for it (CfD from 2016, constraints from 2010, and so on). Every line has a 2025 key.
 
 ## The keys
 
 A `<name>` stands for any of its values:
 
-- `<line>`: `cfd_renewable`, `constraints`, `ro`, `fit` (direct); `ccl`, `capacity_market`, `carbon`, `tnuos`, `bsuos`, `constraint_turnup`, `vat` (indirect)
+- `<line>`: `cfd_renewable`, `constraints`, `ro`, `fit`, `sizewell_c` (direct; Sizewell C has 2025 keys only); `ccl`, `capacity_market`, `carbon`, `tnuos`, `bsuos`, `constraint_turnup`, `vat` (indirect)
 - `<total>`: `direct`, `indirect`, `all`
 - `<year>`: a calendar year (RO and FiT: the obligation year starting April of that year, as 1.0.0 keys them)
 - `<m>`: `real` (£ in 2024 prices, CPIH) or `cash` (£ as paid)
@@ -32,18 +32,21 @@ A `<name>` stands for any of its values:
 - `<rec>`: `divergence_pct`, `bottom_up.cash`, `official.cash`, `tolerance_pct`, `matched_days`
 - `<cc>`: `estimate`, `accepted_offers`, `accepted_offers_wind`; `<when>`: `from`, `to`
 - `<d>`: `cpih`, `to_2024`
+- `<basis>`: `measured`, `modelled`, `estimated`
 - `<step>`: the bridge's steps, in the walk's order (below): `no2_money_paid`, `cfd_renewable`, `capacity_market`, `carbon`, `tnuos`, `balancing`, `ro`, `fit`, `ccl`, `vat`, `energy_saving_schemes`, `power_before_carbon`, `no1_extra_cost`
 
 Every key in the file matches exactly one of these templates (tested):
 
-- `<line>.<year>.<m>`: each line, each year, as 1.0.0 holds it.
+- `<line>.<year>.<m>`: each line, each year, as 1.0.0 holds it; and 2025, the provisional year, for every line (below).
+- `<line>.2025.source`: where the line's 2025 figure comes from, and why it is provisional.
+- `all.2025.<basis>.<m>`: the 2025 total's measured, modelled and estimated parts, each line counted by its basis. The three add up to `all.2025.<m>`.
 - `<line>.headline.<m>`: each line, 2002-2024.
-- `<total>.<year>.<m>`: the direct lines, the indirect lines, or all together, each year (equal to 1.0.0's own totals).
+- `<total>.<year>.<m>`: the direct lines, the indirect lines, or all together, each year (2002-2024 equal to 1.0.0's own totals; 2025 the provisional lines, Sizewell C among the direct ones).
 - `<total>.headline.<m>`: the same, 2002-2024.
 - `<line>.basis`: measured, modelled or estimated (below).
 - `<line>.confidence`: 1.0.0's confidence (high, medium or low); high for the four direct lines, which 1.0.0 leaves blank.
 - `<line>.layer`: direct or indirect.
-- `carbon.<year>.basis`: the carbon line's basis that year, as 1.0.0 gives it (2005-2012 estimated, the rest modelled).
+- `carbon.<year>.basis`: the carbon line's basis that year, as 1.0.0 gives it (2005-2012 estimated, the rest modelled; 2025 modelled).
 - `carbon.<part>.<year>.<m>`: carbon split into the tax collected by the Treasury and the rest of the carbon in the price. The two add up to the carbon line.
 - `carbon.<part>.headline.<m>`: the same, 2002-2024.
 - `<grid>.<side>.<year>.<m>`: grid (TNUoS) and balancing (BSUoS): the whole charge as paid (`raw`) and what the gas-led alternative would have paid (`alternative`). TNUoS counts raw minus alternative; for BSUoS, raw minus alternative is the BSUoS line plus constraint turn-up plus wind constraint payments (both tested every year).
@@ -84,6 +87,7 @@ Every key in the file matches exactly one of these templates (tested):
 - measured (payments or receipts as recorded): CfD (LCCC settlement), constraints (Elexon; REF's history before 6 Nov 2015), RO and FiT (Ofgem), the Climate Change Levy (HMRC receipts, electricity's published share);
 - modelled (a share or alternative from the pinned gas model): Capacity Market, carbon, TNUoS, BSUoS, VAT (households' share from the gas model);
 - estimated: constraint turn-up (1.0.0: "Estimated cost of paying other stations…").
+- Sizewell C (part 3, 2025 only): measured (suppliers' levy payments to LCCC as recorded).
 
 Part 4 (#225) gives a range to each estimated line that has none in 1.0.0 (constraint turn-up, carbon's estimated years).
 
@@ -126,7 +130,34 @@ The headline walk, 2002-2024, from the 9 Nov frozen file and v4-s43 (£bn; run `
 | `power_before_carbon` | −79.4 | −92.2 |
 | `no1_extra_cost` | 110.5 | 140.3 |
 
-Not in the bridge: 2025. No. 1's release has a provisional 2025; the walk stops at 2024 with the headline until part 3 (#224) gives No. 2 its 2025 lines (`bridge.YEARS` is the one place to widen it).
+Not in the bridge: 2025. No. 1's release has a provisional 2025 and No. 2 now has its 2025 lines (part 3), but the walk still stops at 2024 with the headline: widening it is not part 3's work (`bridge.YEARS` is the one place to widen it). Its RO step would carry the difference between No. 1's 2025-26 estimate (obligation x buy-out price, £8,007.8m) and Ofgem's outturn used here (£7,946.2m).
+
+## 2025, the provisional year
+
+Part 3 (aios-harness#224; ADR 0226). The paper gives a provisional 2025 total with its parts beside it, kept out of the 2002-2024 headline. Code: `src/billpaid/provisional.py`; tests: `tests/test_provisional.py`.
+
+**The rule (new method).** Each line's 2025 figure is, in this order:
+
+1. 1.0.0's own 2025 figure, where 1.0.0 holds the whole of 2025 (its data run into 2026): CfD, constraints, Capacity Market, BSUoS, constraint turn-up.
+2. Otherwise the published 2025 figure, read the way 1.0.0 reads that line's closed years (each reading is tested to give 1.0.0's figure in every year 2002-2024), from the shared cost register and Report No. 1's release that 1.0.0 already pins, or from a primary source saved for this part.
+3. Otherwise the latest yearly figure carried forward, labelled estimated. As at the cut-off (9 Nov 2026) no line needs this: each of the five lines 1.0.0 stops before 2025 has a published 2025 figure.
+
+VAT is recomputed by 1.0.0's rule (5% of households' share, the engine's 2025 share, of every counted line but the Climate Change Levy), now over every line, Sizewell C included: 1.0.0's own 2025 VAT covers only the lines it had a 2025 figure for. Prices: 2024 prices by 1.0.0's rule (CPIH from the frozen file; RO and FiT, April-March years, three quarters at 2025's index and one at 2026's).
+
+**The five lines, and Sizewell C** (cash, as paid; 2024 prices in the file):
+
+| Line | 2025 figure | Source | Basis |
+|---|---|---|---|
+| `ro` | £7,946.2m | Ofgem, "ROCs presented and Redistribution of Buy-Out Funds 2025 to 2026" (2 Nov 2026), UK total: 109,924,800 ROCs presented x £67.06 buy-out price + £574,621,217 redistributed, Ofgem's scheme value (ROCs presented x worth of a ROC). Provisional: the late-payment fund is not yet paid out (2024-25: £7.4m). The same reading of the 2024-25 page gives £7,695.9m against Ofgem's £7,706.3m (0.14% low). No mutualisation: the shortfalls were below the thresholds. | measured |
+| `fit` | £1,877.6m | Ofgem FiT quarterly reports 61-64, the four levelisations of 2025-26, as the shared cost register (v4-s43) holds them. Provisional: before Ofgem's annual reconciliation (the register labels it estimated for that reason). | measured |
+| `ccl` | £796.2m | HMRC Environmental Taxes Bulletin, 31 Mar 2026 (the latest edition), Table 1b, electricity, calendar 2025, as the register holds it. Provisional in HMRC's table. | measured |
+| `carbon` | £6,860.6m | Report No. 1's release v4-s43 (its run file), carbon in the wholesale price 2025, of which £1,328.0m tax collected on power (`carbon.tax_collected.2025`). Provisional there: CPS about £428m (No. 1 decision 0054) and UK ETS auctions from ICE report 278 (0079), to be replaced by HMRC's and DESNZ's figures. | modelled |
+| `tnuos` | £1,872.0m | The register's TNUoS 2025 (NESO final TNUoS reports 2024-25 and 2025-26, calendarised) less the generators' share, £3,750.9m (`tnuos.raw.2025`), above the gas-led alternative's £1,878.8m (`tnuos.alternative.2025`, No. 1's GO5 2025, generators' share removed). | modelled |
+| `sizewell_c` | £85.4m | LCCC data portal, Actual Nuclear RAB ILR/TRA, December 2025: what suppliers paid of the levy, which began on 1 Dec 2025 (interim levy rate £3.494/MWh on 24.4 TWh of eligible demand). Provisional: settlement runs continue. Direct layer: a levy paid to one generator, like the RO. | measured |
+
+**The total.** `all.2025.measured` counts the measured lines (CfD, constraints, RO, FiT, CCL, Sizewell C), `all.2025.modelled` the modelled ones (Capacity Market, carbon, TNUoS, BSUoS, VAT), `all.2025.estimated` constraint turn-up, the one line 1.0.0 itself calls an estimate. From the 11 Nov 2026 build (2024 prices): all £23.96bn = measured £13.16bn + modelled £9.76bn + estimated £1.04bn (2024: £21.70bn). Every 2025 figure is provisional; the paper says so wherever 2025 appears (spec, story 18).
+
+**Saved sources.** The Ofgem pages (2025-26, and 2024-25 for the test of the reading) and the LCCC file are in `reference/sources/`, each pinned by sha256 in `reference/provisional_2025.yaml`, and refused if the bytes differ. The figures are read from the saved files, never typed. A newer edition (a later settlement run, Ofgem's late-payment fund, HMRC's next bulletin, DESNZ's ETS figure) is never picked up by itself.
 
 ## Against the spec's proposed names
 
@@ -138,10 +169,12 @@ The spec proposed names and left them to this ticket; the freeze (#226) checks t
 - `constraint_turnup.cross_check` is three figures and its window;
 - `deflator.<year>` is `.cpih` and `.to_2024`;
 - `bridge.<step>.<year>` and `bridge.<step>.headline` end in `.real` or `.cash` like every money key, and each step also has `.label` and `.kind`.
+- the 2025 total's parts `all.2025.measured` and `all.2025.estimated` are `all.2025.measured.real|cash` and `all.2025.estimated.real|cash`, with a third part, `all.2025.modelled.real|cash`, so that the parts add up to the total (the modelled lines are neither measured nor estimated);
+- each line's 2025 basis is its line's `<line>.basis` (no line is carried forward); `<line>.2025.source` says where each 2025 figure comes from.
 
 ## Not yet
 
 - The version in `pyproject.toml` stays 1.0.0 until the freeze (#226): the live Clock refuses a results file of any other version, so the number moves only with Richard's ruling on how 1.1.0 reaches GitHub.
 - The work is on branch `v1.1.0`, on Gitea only; `master` (and so the live Clock) is untouched until the freeze.
 - `results/` is the robot's: the figures file is not committed until the freeze writes and pins it.
-- Still to come in 1.1.0: 2025 (#224), the ranges (#225).
+- Still to come in 1.1.0: the ranges (#225).
