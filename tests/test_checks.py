@@ -26,16 +26,25 @@ def test_the_climate_change_levy_against_hmrcs_receipts(figs):
     assert figs["check.hmrc.ccl.years"] == "2002-2024"
 
 
-def test_the_levies_against_the_obrs_outturn(figs):
-    """OBR's public finances databank (October 2026 EFO), receipts, "Environmental levies (Renewables Obligation
-    and Contracts for Difference)", which also holds the Warm Home Discount and the green gas levy: 2002-03 to
-    2024-25, read by hand, £95.478bn. The model's side is the RO and CfD lines on the same April-March years."""
+def test_the_levies_against_the_obrs_outturn_like_for_like(figs):
+    """OBR's public finances databank (October 2026 EFO), "Environmental levies", 2002-03 to 2024-25, read by hand:
+    £95.478bn. ONS's own series of its parts (public sector finances, EDP dataset, 21 Sep 2026) add up to it every
+    year: ROCs (EP89), CfDs (CW5G), the Warm Home Discount (JNJF) and the CRC Energy Efficiency Scheme (L8UA,
+    2012-13 to 2019-20). Not in it: the Capacity Market (the OBR's own note: ONS has yet to include it), FiT and the
+    green gas levy (nil to 2024-25). So the reference is the OBR's figure less the two schemes the model does not
+    count (WHD £5.025bn, CRC £3.881bn, by hand), and what is left is the RO and CfD, ONS's against the model's."""
     model, ref, gap, ratio = _check(figs, "obr.levies")
-    assert abs(ref / 1e9 - 95.478) < 1e-6
-    assert figs["check.obr.levies.years"] == "2002-03 to 2024-25"
-    ro = sum(figs[f"ro.{y}.cash"] for y in range(2002, 2025))
-    assert ro < model < ro + 1.2 * figs["cfd_renewable.headline.cash"]
-    assert abs(gap - (model - ref)) < 1e-3 and 0.8 < ratio < 1.0
+    k = "check.obr.levies"
+    assert abs(figs[f"{k}.reference_whole"] / 1e9 - 95.478) < 1e-6
+    assert abs(figs[f"{k}.not_counted.whd"] / 1e9 - 5.025) < 0.001
+    assert abs(figs[f"{k}.not_counted.crc"] / 1e9 - 3.881) < 0.001
+    assert abs(ref - (figs[f"{k}.reference_whole"] - figs[f"{k}.not_counted.whd"] - figs[f"{k}.not_counted.crc"])) < 1
+    # ONS's parts add up to the OBR's figure: nothing in the reference is unaccounted for
+    assert abs(figs[f"{k}.ons_parts_less_obr"]) < 1e7
+    # the gap is the RO and CfD, each the model's less ONS's, named
+    assert abs(gap - (figs[f"{k}.gap.ro"] + figs[f"{k}.gap.cfd"]) - figs[f"{k}.ons_parts_less_obr"]) < 1
+    assert abs(ratio - 1) < 0.03
+    assert figs[f"{k}.years"] == "2002-03 to 2024-25"
 
 
 def test_the_renewables_obligation_against_ofgems_scheme_value(figs):
@@ -67,3 +76,24 @@ def test_the_direct_lines_against_refs_published_series(figs):
     assert abs(ref / 1e9 - 91.8) < 1e-9
     assert figs["check.ref.direct.years"] == "2002-03 to 2023-24"
     assert abs(gap - (model - ref)) < 1e-3 and 0.95 < ratio < 1.1
+
+
+def test_the_ro_and_fit_against_ofgems_price_cap_policy_costs(figs):
+    """ADR 0241: 2019-20 to 2025-26, only the schemes both Ofgem's policy-cost allowance and the model count (the RO
+    and FiT), per typical household, at Ofgem's typical consumption (3.1 MWh, single-rate, April 2018 to December
+    2025). Ofgem's side, read by hand from its Annex 4 v1.25 (tab 1a, single-rate, £/MWh supplied; summer and winter
+    weighted 0.4324 / 0.5676 as its tab 3a): 2019-20 RO 23.645 / 23.610, FiT 5.884 / 6.113, so £91.88. The model's
+    side: its RO and FiT lines over the volume they are charged on, from Ofgem's total obligation notices (2019-20:
+    130,183,968 ROCs obligated, 128,722,805 of them in Great Britain at 0.484 per MWh)."""
+    k = "check.ofgem.price_cap_policy_costs"
+    assert abs(figs[f"{k}.2019.reference"] - 3.1 * (0.4324 * (23.645 + 5.884) + 0.5676 * (23.61 + 6.113))) < 0.01
+    ro_mwh = figs["ro.2019.cash"] / 130_183_968 * 0.484
+    fit_mwh = figs["fit.2019.cash"] / ((116_940_506 + 11_782_299) / 0.484)
+    assert abs(figs[f"{k}.2019.model"] - 3.1 * (ro_mwh + fit_mwh)) < 0.01
+    model, ref, gap, ratio = _check(figs, "ofgem.price_cap_policy_costs")
+    assert abs(model - sum(figs[f"{k}.{y}.model"] for y in range(2019, 2026))) < 1e-6
+    assert abs(ref - sum(figs[f"{k}.{y}.reference"] for y in range(2019, 2026))) < 1e-6
+    assert figs[f"{k}.years"] == "2019-20 to 2025-26"
+    assert figs[f"{k}.schemes"] == "ro,fit"
+    assert figs[f"{k}.typical_consumption_mwh"] == 3.1
+    assert 0.8 < ratio < 1.2

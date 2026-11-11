@@ -189,3 +189,185 @@ sources:
     file: reference/sources/ref-2025-uk-renewable-electricity-subsidy-totals.html
     retrieved: "2026-11-11"
     sha256: 23dffd6e07709243ed59bf3fed83a47a1865699681708f16c45bde77a4deef3b
+  ons-households-gb-2015-2025:
+    what: >-
+      ONS, "Households by household size, regions of England and GB constituent countries" 2025 (Labour Force Survey,
+      April-June), sheets England, Wales and Scotland, row "All households" (thousands), 2015-2025: Great Britain's
+      households (Richard, 11 Nov 2026, report-series ADR 0242). The same bytes as Report No. 1's saved copy.
+    url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/families/datasets/householdsbyhouseholdsizeregionsofenglandandgbconstituentcountries/2025/householdsizebyregionscountries2025.xlsx
+    file: reference/sources/ons-households-by-size-gb-countries-2025.xlsx
+    retrieved: "2026-11-11"
+    sha256: a9db3df47cd05072a1d51c5f222da4e9c5cfa19af88f22b903a6032e72b80720
+  ons-households-gb-1996-2017:
+    what: >-
+      ONS ad hoc 005374, "Households in the UK by region, 1996 to 2017" (Labour Force Survey, to the nearest hundred),
+      rows "England (Total)", "Wales", "Scotland": Great Britain's households 2002-2014 (Report No. 1's source for
+      the same years, the same bytes).
+    url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/005374totalnumberofhouseholdsbyregionandcountryoftheuk1996to2015/totalnumberofhouseholdsbyregionandcountryoftheuk1996to2017final.xls
+    page: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/adhocs/005374totalnumberofhouseholdsbyregionandcountryoftheuk1996to2015
+    file: reference/sources/ons-adhoc-005374-households-by-region-1996-2017.xls
+    retrieved: "2026-11-11"
+    sha256: 15938668f72f56d69e6799a1fba663950d0017bfed329e72622c64b4bbe28e94
+  ons-psf-ep89:
+    what: >-
+      ONS, public sector finances (EDP dataset, released 21 Sep 2026), series EP89: central government,
+      Renewable Obligation Certificates (ROCs), £m by quarter, as the ONS time-series API returns it: one of the parts of the OBR's "environmental
+      levies" column, for the like-for-like check.
+    url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicspending/timeseries/ep89/edp/data
+    page: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicspending/timeseries/ep89/edp
+    file: reference/sources/ons-psf-ep89.json
+    retrieved: "2026-11-11"
+    sha256: eeee97a2a4fad6d0c454542661365196f24c7a01180f5186c7e7ef4f9e6a4c55
+  ons-psf-cw5g:
+    what: >-
+      ONS, public sector finances (EDP dataset, released 21 Sep 2026), series CW5G: central government,
+      Contracts for Difference, £m by quarter, as the ONS time-series API returns it: one of the parts of the OBR's "environmental
+      levies" column, for the like-for-like check.
+    url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/cw5g/edp/data
+    page: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/cw5g/edp
+    file: reference/sources/ons-psf-cw5g.json
+    retrieved: "2026-11-11"
+    sha256: e63f4791dff9c5af8bb526aa63743c78c516160624ed1419c9937d9789537f4e
+  ons-psf-jnjf:
+    what: >-
+      ONS, public sector finances (EDP dataset, released 21 Sep 2026), series JNJF: central government,
+      Warm Home Discount, £m by quarter, as the ONS time-series API returns it: one of the parts of the OBR's "environmental
+      levies" column, for the like-for-like check.
+    url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/jnjf/edp/data
+    page: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/jnjf/edp
+    file: reference/sources/ons-psf-jnjf.json
+    retrieved: "2026-11-11"
+    sha256: 023d1632a5a31334caf44694afc586bde480b62e5142532d68984f68ffe3214f
+  ons-psf-l8ua:
+    what: >-
+      ONS, public sector finances (EDP dataset, released 21 Sep 2026), series L8UA: central government,
+      receipts related to Carbon Reduction Commitment (CRC) payments, £m by quarter, as the ONS time-series API returns it: one of the parts of the OBR's "environmental
+      levies" column, for the like-for-like check.
+    url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicspending/timeseries/l8ua/edp/data
+    page: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicspending/timeseries/l8ua/edp
+    file: reference/sources/ons-psf-l8ua.json
+    retrieved: "2026-11-11"
+    sha256: 93c9524e4421b9cbeaffcd921880efb6f9a4db5ba293b53ae19c84435f958542
+  elexon-stack-bid-2012-02-01-p36:
+    what: >-
+      Elexon Insights API (BMRS), the settlement stack of accepted bids, 1 Feb 2012, period 36: empty: kept to show that Elexon's own record of wind switch-off payments begins on
+      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+    url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid/2012-02-01/36"
+    file: reference/sources/elexon-stack-bid-2012-02-01-p36.json
+    retrieved: "2026-11-11"
+    sha256: c150ff66600e11a37b0abc176cc33104dc9a116c1f8ea19c79867948c4a99409
+  elexon-stack-bid-2015-11-05-p48:
+    what: >-
+      Elexon Insights API (BMRS), the same, 5 Nov 2015, period 48 (the last of the day): empty: kept to show that Elexon's own record of wind switch-off payments begins on
+      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+    url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid/2015-11-05/48"
+    file: reference/sources/elexon-stack-bid-2015-11-05-p48.json
+    retrieved: "2026-11-11"
+    sha256: c150ff66600e11a37b0abc176cc33104dc9a116c1f8ea19c79867948c4a99409
+  elexon-stack-bid-2015-11-06-p48:
+    what: >-
+      Elexon Insights API (BMRS), the same, 6 Nov 2015, period 48: accepted bids, the record's first day: kept to show that Elexon's own record of wind switch-off payments begins on
+      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+    url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid/2015-11-06/48"
+    file: reference/sources/elexon-stack-bid-2015-11-06-p48.json
+    retrieved: "2026-11-11"
+    sha256: c5572e08ccba6b70fec5f8010485ba00542ec5a02815152d48f9d280d01fad84
+  elexon-boalf-2014-06-01:
+    what: >-
+      Elexon Insights API (BMRS), bid-offer acceptance levels (BOALF), the whole of 1 Jun 2014: empty: kept to show that Elexon's own record of wind switch-off payments begins on
+      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+    url: "https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from=2014-06-01T00:00Z&to=2014-06-02T00:00Z&format=json"
+    file: reference/sources/elexon-boalf-2014-06-01.json
+    retrieved: "2026-11-11"
+    sha256: 8fe32e407a1038ee38753b70e5374b3a46d6ae9d5f16cd5b73c53abaca8f5ed0
+  elexon-bod-2014-06-01-1000:
+    what: >-
+      Elexon Insights API (BMRS), bid-offer data (BOD), 1 Jun 2014 10:00-10:30: empty: kept to show that Elexon's own record of wind switch-off payments begins on
+      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+    url: "https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from=2014-06-01T10:00Z&to=2014-06-01T10:30Z&format=json"
+    file: reference/sources/elexon-bod-2014-06-01-1000.json
+    retrieved: "2026-11-11"
+    sha256: 8fe32e407a1038ee38753b70e5374b3a46d6ae9d5f16cd5b73c53abaca8f5ed0
+  elexon-cashflow-bid-2015-06-01:
+    what: >-
+      Elexon Insights API (BMRS), indicative bid cashflows (EBOCF), 1 Jun 2015: empty: kept to show that Elexon's own record of wind switch-off payments begins on
+      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+    url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/indicative/cashflows/all/bid/2015-06-01"
+    file: reference/sources/elexon-cashflow-bid-2015-06-01.json
+    retrieved: "2026-11-11"
+    sha256: 16315fb0a007c90c4ad825b1009f9dd0d4e0f9fb556161983190c9430ef26c04
+  ofgem-cap-annex-4:
+    what: >-
+      Ofgem, energy price cap, "Annex 4 - Policy cost allowance methodology" v1.25 (August 2026): tab 1a, the policy
+      cost allowance scheme by scheme (£/MWh supplied, single-rate electricity, every cap period from January 2019),
+      tab 3a, the typical consumption and its effective dates and the summer and winter weights, tab 3b, the RO
+      obligation level: the price-cap check (report-series ADR 0241). The same bytes as Report No. 1's saved copy
+      (its data/raw/SHA256SUMS, ofgem/Annex-4-policy-cost-allowance-methodology-v1.25.xlsx).
+    url: https://www.ofgem.gov.uk/sites/default/files/2026-08/Annex-4-policy-cost-allowance-methodology-v1.25.xlsx
+    page: https://www.ofgem.gov.uk/energy-policy-and-regulation/policy-and-regulatory-programmes/energy-price-cap-default-tariff-policy/energy-price-cap-default-tariff-levels
+    file: reference/sources/ofgem-cap-annex-4-policy-cost-allowance-v1.25.xlsx
+    retrieved: "2026-11-11"
+    sha256: 1f75eb46e93e54b486542025de142abd2d036255d8c9c1effa34b4a624ff06e5
+  ofgem-ro-obligation-2019:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2019-20 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-total-obligation-2019-2020
+    file: reference/sources/ofgem-ro-total-obligation-2019-20.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 0ba3970a9238b944399979ec486bab5a4b2e5e08d9007c1b2d81b1d220b1eea6
+  ofgem-ro-obligation-2020:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2020-21 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-total-obligation-2020-2021
+    file: reference/sources/ofgem-ro-total-obligation-2020-21.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: fa7f235b71b314c5207f07bfe3fe33076cc3868641a813c2bd00e138c777beee
+  ofgem-ro-obligation-2021:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2021-22 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-total-obligation-2021-2022
+    file: reference/sources/ofgem-ro-total-obligation-2021-22.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 631e84998f21d7a03141eeea77b49ce19bd1aa2e945d7ded41b8c21584c763b5
+  ofgem-ro-obligation-2022:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2022-23 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-total-obligation-2022-2023
+    file: reference/sources/ofgem-ro-total-obligation-2022-23.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: ce6d56c3f85f8a40b61fe3c5b61b054dd7a5770ac71b8b66ee0ab98b9797199b
+  ofgem-ro-obligation-2023:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2023-24 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-total-obligation-2023-2024
+    file: reference/sources/ofgem-ro-total-obligation-2023-24.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 2f389e0118555cb5246c462f1059b75316ab2168d4183b0cf3423c8630c5a8bf
+  ofgem-ro-obligation-2024:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2024-25 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligation-total-obligation-2024-2025
+    file: reference/sources/ofgem-ro-total-obligation-2024-25.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 8e7a9a2651e7d396b99cd3ba429011ec63499d6c2a5edb1d5db2620644312779
+  ofgem-ro-obligation-2025:
+    what: >-
+      Ofgem, "Renewables Obligation: total obligation" 2025-26 (transparency document): the ROCs obligated in England
+      and Wales, Scotland and Northern Ireland, from the electricity supplied: the volume the RO is charged on, for the
+      price-cap check. Report No. 1's saved copy (its data/raw/SHA256SUMS).
+    url: https://www.ofgem.gov.uk/transparency-document/renewables-obligations-total-obligation-april-2025-march-2026
+    file: reference/sources/ofgem-ro-total-obligation-2025-26.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 4b91a35024e35577db4299691b823c312aa27433dabbef6d289c9db864dbbd8c

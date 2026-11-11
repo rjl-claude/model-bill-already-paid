@@ -1,6 +1,6 @@
 [project]
 name = "model-bill-already-paid"
-version = "1.2.0"
+version = "1.3.0"
 description = "The bill already paid: UK renewable and low-carbon subsidies and their indirect costs, 2002 to date, scheme by scheme"
 requires-python = ">=3.12"
 dependencies = [

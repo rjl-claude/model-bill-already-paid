@@ -104,3 +104,15 @@ def test_no_other_1_1_0_value_moves(figs):
         old[k], figs[k], rel_tol=1e-14, abs_tol=1e-3 if k.startswith("bridge.balancing.") else 0.0))}
     assert moved <= allowed, sorted(moved - allowed)
     assert all(math.isclose(old[k], figs[k], rel_tol=1e-13) for k in ("all.headline.real", "all.headline.cash"))
+
+
+def test_elexons_saved_answers_show_its_record_starts_on_6_november_2015():
+    """The API answers saved and pinned (reference/outline_sources.yaml): nothing for 2012, 2014, mid-2015 or the
+    last period of 5 Nov 2015, in the settlement stacks, acceptances, bid-offer data or cashflows; accepted bids on
+    6 Nov 2015."""
+    from billpaid import outline_sources as src
+    for name in ("stack-bid-2012-02-01-p36", "stack-bid-2015-11-05-p48", "boalf-2014-06-01",
+                 "bod-2014-06-01-1000", "cashflow-bid-2015-06-01"):
+        assert json.loads(src.source(ROOT, f"elexon-{name}"))["data"] == [], name
+    first = json.loads(src.source(ROOT, "elexon-stack-bid-2015-11-06-p48"))["data"]
+    assert first and all(r["settlementDate"] == "2015-11-06" for r in first)

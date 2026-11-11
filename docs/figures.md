@@ -69,9 +69,9 @@ Every key in the file matches exactly one of these templates (tested):
 - `bill.headline.<m>`: the same, 2002-2024.
 - `share_of_bill.<year>`: all lines over the whole bill, both in 2024 prices (0 to 1).
 - `share_of_bill.headline`: the same, 2002-2024.
-- `households`: UK households (ONS, 29 million, as of 2025).
-- `per_household.headline`: all lines 2002-2024, 2024 prices, over today's households.
-- `per_household.<year>`: all lines that year (2024 only), 2024 prices, over today's households.
+- `households`: UK households, 29 million, a round figure as of 2025 (ONS): 1.1.0's single divisor, kept for the Clock's comparisons. **Not the paper's divisor**: the paper divides by `households.<year>` (Great Britain, year by year), below, "Version 1.3.0".
+- `per_household.headline`: all lines 2002-2024, 2024 prices, over today's 29 million UK households. 1.1.0's figure, kept unchanged. **The outline no longer uses it**: print `per_household.year_by_year.headline.real` instead.
+- `per_household.<year>` (no `.real` at the end; 2024 only): all lines that year, 2024 prices, over today's 29 million UK households. 1.1.0's figure, kept unchanged. **The outline no longer uses it**: print `per_household.<year>.real` instead, which divides each line by its own area's households that year. Read the last part of the key: `per_household.2024` is the old one, `per_household.2024.real` the paper's.
 - `deflator.<year>.<d>`: CPIH (2015 = 100) and the factor to 2024 prices.
 - `bridge.<step>.<year>.<m>`: the bridge with Report No. 1 (below): each step of the walk, each year 2002-2024, £ cash and £ in 2024 prices. A step has a key every year, zero where neither report has the line yet.
 - `bridge.<step>.headline.<m>`: the same, 2002-2024.
@@ -259,7 +259,7 @@ Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-se
 
 - 1.1.0 took 2010-2023 from REF's database (`reference/annual_scheme_costs.yaml`, `constraints_history`) and Elexon's settlement stacks from 2024 (the history's pin, `bottom_up_from`).
 - Elexon's settlement stacks start on 6 Nov 2015. 1.0.0's store holds every day since. Each calendar year before the pin that the store holds whole now comes from Elexon: 2016-2023. The store is read as it stood when the frozen results file was written (each day's latest version retrieved at or before its `generated_at`).
-- 2010-2015 stay on REF. Elexon's API returns no settlement stack, acceptance (BOALF) or bid-offer (BOD) data before November 2015 (checked 11 Nov 2026), and 2015 has only its last 55 days. `constraints.ref_years` names them.
+- 2010-2015 stay on REF. Elexon's API returns no settlement stack, acceptance (BOALF) or bid-offer (BOD) data before November 2015, and 2015 has only its last 55 days. `constraints.ref_years` names them. The evidence is saved (1.3.0): Elexon's own answers of 11 Nov 2026, each pinned by sha256 in `reference/outline_sources.yaml` (`elexon-*`): empty for the settlement stack of 1 Feb 2012 and of the last period of 5 Nov 2015, for acceptances (BOALF) and bid-offer data (BOD) on 1 Jun 2014 and for indicative bid cashflows on 1 Jun 2015; accepted bids for the last period of 6 Nov 2015 (`tests/test_elexon_constraints.py`).
 - The three balancing lines are one measured total split three ways. 1.0.0's own split rule is applied again with the new figure: the uplift is that total less constraint payments; turn-up is its measured figure, never more than the uplift nor below zero; BSUoS takes the rest. So `all`, the bridge and VAT do not move. Money moves between the direct layer (constraints, up £34.8m cash over 2016-2023) and the indirect (BSUoS, and in 2018, when turn-up is capped and BSUoS is nil, turn-up).
 - `results/clock.json`, the Clock's file, is unchanged: the Clock moves to Elexon for those years only if the history's pin moves, a release decision.
 
@@ -268,8 +268,8 @@ Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-se
 - `all.headline.<basis>.<m>`: M1 (ADR 0007). The 2002-2024 headline's measured, modelled and estimated parts, each line counted by its basis year by year (`<line>.basis`, carbon's `carbon.<year>.basis`: 2005-2012 estimated). They add up to the headline.
 - `range.<bound>.headline.<m>`: M2 (ADR 0234, choice 2). The headline with one of the three estimated lines at its low or high and the other two central: carbon (`carbon.range.*`), turn-up (`constraint_turnup.range.*`) and the Capacity Market (low share to central: `capacity_market.range.low`; its `range.high` key is the whole levy, a counting option, never a range end). Each end is the one line that moves the headline furthest that way. No VAT is moved with a line's range, as in 1.1.0's line ranges.
 - `range.<bound>.headline.line`: the line that sets that end.
-- `households.<year>`: M3. UK households, 2002-2025, ONS *Families and households in the UK: 2025*, Table 5, "All households" (ADR 0027 year-matched; ADR 0232 each scheme over its own area, as the Clock, so UK households, as the whole bill is the UK's).
-- `per_household.<year>.real`: each year's money paid (all lines, 2024 prices) over that year's households; 2025 provisional.
+- `households.<year>`: M3. In 1.2.0 UK households (from 1.3.0 Great Britain's: below, "Version 1.3.0"), 2002-2025, ONS *Families and households in the UK: 2025*, Table 5, "All households" (ADR 0027 year-matched; ADR 0232 each scheme over its own area, as the Clock, so UK households, as the whole bill is the UK's).
+- `per_household.<year>.real`: each year's money paid (all lines, 2024 prices) per household; 2025 provisional. In 1.2.0 over that year's UK households; from 1.3.0 each line over its own area's households (below).
 - `per_household.year_by_year.headline.real`: the per-household figures of 2002-2024 added up (ADR 0025, 0027). 1.1.0's `per_household.headline` (over today's 29 million) stays beside it, unchanged.
 - `own_bills.per_household.<year>.real`: M4 (ADR 0025). On a household's own bills: households' share of every line but the CCL (the share 1.0.0's VAT line uses, `vat.domestic_share.<year>`), plus the VAT line, over that year's households, 2002-2025.
 - `own_bills.per_household.headline.real`: the same, 2002-2024 added up.
@@ -284,7 +284,7 @@ Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-se
   - `energy_saving_schemes`: the headline with suppliers' energy-saving schemes counted, plus 5% VAT on the whole of them (households pay them all) (§6.5, §15.1).
 - `energy_saving_schemes.<year>.<m>`: M6f (ADR 0233: left out, size shown). Suppliers' energy-saving schemes (EEC, CERT, CESP, ECO, GBIS), their cost on electricity bills, Great Britain, as Report No. 1's pinned release v4-s43 holds it: its NZ10, the lower end of each scheme's range, gross of the 2001 scheme (EESoP) that No. 1 nets off at its 2001 level (the release's `on_the_road` block gives it year by year). Not counted in any headline. Priced by CPIH.
 - `energy_saving_schemes.headline.<m>`: the same, 2002-2024.
-- `energy_saving_schemes.basis`: estimated, as No. 1 labels the line. No. 1's upper ends are in its notes only, rounded to £1m, so this file gives no range.
+- `energy_saving_schemes.basis`: estimated, as No. 1 labels the line. From 1.3.0 it has its range (ADR 0007): `energy_saving_schemes.range.*`, below.
 - `cfd_renewable.by_technology.<technology>.headline.<m>`: M8. CfD by technology, 2002-2024 (payments from 2016), LCCC's contract-by-contract payments from the store snapshot the frozen file was built from, by calendar year, priced by CPIH; `all` is every technology and equals the CfD line to under £10.
 - `check.<check>.headline.<cs>`: M7, a check against a published total, £ cash as paid, over the years both cover: `model`, `reference`, `gap` (model less reference), `ratio` (model over reference). `<check>`: `hmrc.ccl`, `ofgem.ro`, `ofgem.fit`, `obr.levies`, `ref.direct` (below). `<cs>`: `model`, `reference`, `gap`, `ratio`.
 - `check.<check>.years`: the years the check covers.
@@ -301,4 +301,44 @@ Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-se
 | `obr.levies` | RO line plus CfD by financial year, 2002-03 to 2024-25 | OBR public finances databank (October 2026), "Environmental levies" | the model is £10.3bn (11%) lower. The OBR's series also holds the Warm Home Discount and the green gas levy, which the model does not count; the rest of the gap is not explained here |
 | `ref.direct` | RO, FiT, CfD (financial years), constraints (calendar years), to 2023-24 | REF April 2025, Table 1 totals, £bn to one decimal, REGO left out | the model is £0.14bn (0.15%) higher |
 
-Not built: `check.ofgem.price_cap_policy_costs`. Ofgem's price cap began in January 2019 and its policy-cost allowance is a forward allowance per typical customer, not an outturn. A matched comparison needs each cap period's Annex 4 workbook from January 2019 to December 2024 (about 20 files, none saved yet) and a ruling on the matching basis (Ofgem's typical consumption against the model's average household; which schemes). Its keys are absent until then.
+`check.ofgem.price_cap_policy_costs` was not built in 1.2.0; 1.3.0 builds it (ADR 0241, below). The `obr.levies` row above is 1.2.0's; 1.3.0 makes it like for like (below).
+
+## Version 1.3.0: the checker's points and the households divisor
+
+Report No. 2's plan step 19 (aios-harness#235), after the separate checker's pass over 1.2.0, and Richard's two rulings of 11 Nov 2026: the price-cap check (report-series ADR 0241) and the households divisor (ADR 0242). Every value that moves from 1.2.0 and every key added: `docs/1.3.0-against-1.2.0.md`. New publishers' files: `reference/sources/`, pinned in `reference/outline_sources.yaml`.
+
+### Households: each line over its own area (ADR 0242)
+
+Richard's ruling: each scheme's money is divided by the households of its own area, then added up: what a household in Great Britain paid. The RO and the CCL run across the UK (ADR 0232), so they go over UK households; every other line, Sizewell C's levy included, over Great Britain's. VAT follows its line: 1.0.0 charges 5% on households' share of every line but the CCL, so the VAT on the RO (5% x households' share x the RO) goes over UK households and the rest of the VAT line over Great Britain's.
+
+- `households.<area>.<year>`: households that year, 2002-2025. `uk`: ONS, *Families and households in the UK: 2025*, Table 5, "All households". `gb`: ONS Labour Force Survey (April-June), England + Wales + Scotland: 2015-2025 from "Households by household size, regions of England and GB constituent countries" 2025, 2002-2014 from ONS ad hoc 005374 (to the nearest hundred). The same two files and the same reading as Report No. 1's GB households.
+- `households.<year>`: **Great Britain's** households that year, the same as `households.gb.<year>` (in 1.2.0 it was the UK's). The paper's divisor is not one number: write "households in Great Britain" and name the two UK-wide lines once.
+- `per_household.<year>.real`: money paid per household that year, 2024 prices: the Great Britain lines and their VAT over Great Britain's households, plus the RO, the CCL and the RO's VAT over the UK's. 2025 provisional.
+- `per_household.year_by_year.headline.real`: the same, 2002-2024 added up.
+- `own_bills.per_household.<year>.real`: on a household's own bills that year: households' share of every line but the CCL, plus its VAT, each over its own area's households, 2024 prices (ADR 0025). The CCL is business only and stays out.
+- `own_bills.per_household.headline.real`: the same, 2002-2024 added up.
+- Which key to print: `per_household.<year>.real` and `per_household.year_by_year.headline.real` are the paper's. `per_household.<year>` and `per_household.headline` (no `.real`, over the round 29 million UK) are 1.1.0's and are not used by the outline.
+
+### The energy-saving schemes' range (ADR 0007)
+
+- `energy_saving_schemes.range.<bound>.<year>.<m>`: the schemes' line at Report No. 1's lower or upper end of each scheme, as the pinned shared cost register holds them (row ENERGY_SAVING, `low_gbp_m` and `high_gbp_m`; the build checks the register's sha256 and that its central is the line). The line is the lower end, so `low` equals it.
+- `energy_saving_schemes.range.<bound>.headline.<m>`: the same, 2002-2024.
+- The range comes from the published ranges No. 1 read: EEC2's £5 to £9 per customer per fuel, the electricity share of CERT and CESP (50% to 55.6%), and ECO1/ECO2's two readings. From 2016 the schemes have a single published figure (the cap's ECO attribution), so low equals high.
+
+### The OBR check, like for like
+
+- The OBR's "environmental levies" outturn (public finances databank, October 2026) is ONS's. ONS's own series of its parts, saved here (public sector finances, EDP dataset, 21 Sep 2026), add up to it to the £1m in every year 2002-03 to 2024-25: ROCs (EP89), CfDs (CW5G), the Warm Home Discount (JNJF) and the CRC Energy Efficiency Scheme (L8UA, 2012-13 to 2019-20 only).
+- It holds no Capacity Market: the OBR's own note to its receipts table 4.20 says ONS has yet to include Capacity Market auctions and the Sizewell C RAB charge in its outturn; the databank's footnote names the Capacity Market among what the column covers, but no ONS series of it is in the column (ONS's parts add up without one). No FiT (ONS has only lately added it, from 2025-26) and no green gas levy before 2025-26. So nothing is added to the model's side.
+- The reference is the OBR's figure less the two schemes the model does not count, WHD and CRC (`check.obr.levies.not_counted.whd`, `.crc`). The OBR's figure as published is `check.obr.levies.reference_whole`.
+- What is left is the RO and CfD on both sides. The gap splits into `check.obr.levies.gap.ro` (the RO line less ONS's ROC series) and `check.obr.levies.gap.cfd` (LCCC's payments by financial year less ONS's CfD series), and `check.obr.levies.ons_parts_less_obr` (nil). The RO part is most of it: ONS's ROC receipts run above Ofgem's scheme value plus mutualisation in most years from 2012-13. ONS's series does not say how it values the RO, so this part is named and sized, not reconciled further.
+- The keys: `check.obr.levies.reference_whole`; `check.obr.levies.not_counted.<nc>`; `check.obr.levies.ons_parts_less_obr`; `check.obr.levies.gap.<gl>`. In full: `check.obr.levies.not_counted.<nc>` (`<nc>`: `whd`, `crc`); `check.obr.levies.ons_parts_less_obr`; `check.obr.levies.gap.<gl>` (`<gl>`: `ro`, `cfd`).
+
+### The price-cap check (ADR 0241)
+
+- What it compares: the RO and FiT, the only schemes both Ofgem's price-cap policy-cost allowance and the model count, £ per typical household (single-rate electricity), 2019-20 to 2025-26 (`check.ofgem.price_cap_policy_costs.years`, `.schemes`).
+- Ofgem's side: its allowance for each scheme, £ per MWh supplied, each cap period (Ofgem, Annex 4 v1.25, tab 1a; the latest update of each half year), weighted summer and winter as Ofgem weights them (tab 3a: 0.4324, 0.5676), times Ofgem's typical consumption, 3.1 MWh a year, the value in force from April 2018 to December 2025 (`check.ofgem.price_cap_policy_costs.typical_consumption_mwh`; Ofgem uses 2.7 MWh from January 2026; both sides use the same figure, so the ratio does not depend on it). **Ofgem's figure is a forward allowance**, set before each period from forecasts (the RO at the obligation level times the buy-out price; FiT from the OBR's forecast), not money paid.
+- The model's side: the RO line (UK, obligation years) over the ROCs obligated in the UK, times Great Britain's obligation level (Annex 4 tab 3b), which gives £ per MWh supplied; the FiT line (Great Britain) over Great Britain's supply (the ROCs obligated in England, Wales and Scotland over that level, from Ofgem's total obligation notices); each times the same 3.1 MWh. 2025-26 is provisional on the model's side.
+- **What Ofgem's policy costs leave out**: Contracts for Difference, which Ofgem counts under wholesale costs, not policy costs, and carbon (the carbon price in the wholesale price). Neither is in this check. Ofgem's policy costs also hold schemes the model does not count (ECO, the Warm Home Discount, AAHEDC, the network charging compensation scheme), and from late 2025 the Sizewell C levy (nRAB), which is left out here because the model's Sizewell C line covers December 2025 only.
+- `check.ofgem.price_cap_policy_costs.<year>.<cs>`: each financial year from its April; `.headline.<cs>` the seven years added up.
+- `check.ofgem.price_cap_policy_costs.schemes`: the schemes matched (`ro,fit`).
+- `check.ofgem.price_cap_policy_costs.typical_consumption_mwh`: the typical consumption both sides use (3.1).

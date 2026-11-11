@@ -67,23 +67,39 @@ def headline_range(out: dict) -> None:
                 out[f"range.{end}.headline.line"] = line
 
 
+UK_WIDE = ("ro", "ccl")   # ADR 0232: these two run across the UK; every other line in Great Britain
+
+
+def _areas(out: dict, y: int) -> dict[str, tuple[float, float]]:
+    """{area: (money paid on its lines, of which on households' own bills)}, £ in 2024 prices, year y: each line
+    in its own area, VAT split with the line it is charged on (5% on households' share; none on the CCL)."""
+    d, rate = out[f"vat.domestic_share.{y}"], out["vat.rate"]
+    paid = {"gb": 0.0, "uk": 0.0}
+    for line in _lines(out):
+        v = out.get(f"{line}.{y}.real")
+        if v is None or line == "vat":
+            continue
+        paid["uk" if line in UK_WIDE else "gb"] += v
+    vat_uk = rate * d * out[f"ro.{y}.real"]
+    vat = {"uk": vat_uk, "gb": out[f"vat.{y}.real"] - vat_uk}
+    ccl = out.get(f"ccl.{y}.real", 0.0)
+    own = {"gb": d * paid["gb"] + vat["gb"], "uk": d * (paid["uk"] - ccl) + vat["uk"]}
+    return {a: (paid[a] + vat[a], own[a]) for a in ("gb", "uk")}
+
+
 def per_household(out: dict, root: Path) -> None:
-    """M3 (ADR 0025, 0027, 0232): each year's money paid over that year's UK households (ONS), 2002-2025, and the
-    headline as the sum of the years 2002-2024."""
-    hh = outline_sources.households(root)
+    """M3 (ADR 0025, 0027, 0232, 0242): each year's money paid per household, each line over the households of
+    its own area (Great Britain or, for the RO and the CCL, the UK), its VAT with it, then added up: what a
+    household in Great Britain paid. 2002-2025; the headline is the sum of the years 2002-2024.
+    M4 (ADR 0025): the same for what a household paid on its own bills (households' share, the CCL left out)."""
+    hh = {"uk": outline_sources.households(root), "gb": outline_sources.households_gb(root)}
     for y in range(2002, LAST_CLOSED_YEAR + 2):
-        out[f"households.{y}"] = hh[y]
-        out[f"per_household.{y}.real"] = out[f"all.{y}.real"] / hh[y]
+        out[f"households.gb.{y}"], out[f"households.uk.{y}"] = hh["gb"][y], hh["uk"][y]
+        out[f"households.{y}"] = hh["gb"][y]
+        parts = _areas(out, y)
+        out[f"per_household.{y}.real"] = sum(parts[a][0] / hh[a][y] for a in parts)
+        out[f"own_bills.per_household.{y}.real"] = sum(parts[a][1] / hh[a][y] for a in parts)
     out["per_household.year_by_year.headline.real"] = sum(out[f"per_household.{y}.real"] for y in YEARS)
-
-
-def own_bills(out: dict) -> None:
-    """M4 (ADR 0025): what an average household paid on its own bills: households' share of every line but the CCL
-    (the share 1.0.0's VAT line uses, from the gas model), plus the VAT line, over that year's households."""
-    for y in range(2002, LAST_CLOSED_YEAR + 2):
-        d = out[f"vat.domestic_share.{y}"]
-        base = out[f"all.{y}.real"] - out.get(f"ccl.{y}.real", 0.0) - out[f"vat.{y}.real"]
-        out[f"own_bills.per_household.{y}.real"] = (d * base + out[f"vat.{y}.real"]) / out[f"households.{y}"]
     out["own_bills.per_household.headline.real"] = sum(out[f"own_bills.per_household.{y}.real"] for y in YEARS)
 
 
@@ -117,6 +133,33 @@ def energy_saving_schemes(out: dict, run: dict) -> None:
     out["energy_saving_schemes.basis"] = "estimated"
 
 
+def energy_saving_range(out: dict, root: Path) -> None:
+    """ADR 0007: the schemes' line is an estimate, so it carries a range: Report No. 1's lower and upper ends of each
+    scheme, as the pinned shared cost register holds them (ENERGY_SAVING, `low_gbp_m`, `high_gbp_m`; its central,
+    the lower end, is the line). The build refuses a register whose central is not the line."""
+    import csv
+    import yaml
+    pin = yaml.safe_load((root / "reference/register_pin.yaml").read_text())
+    import hashlib
+    import io
+    data = (root / pin["file"]).read_bytes()
+    if hashlib.sha256(data).hexdigest() != pin["sha256"]:
+        raise ValueError(f"{pin['file']} is not the pinned register")
+    rows = {int(r["year"]): r for r in csv.DictReader(io.StringIO(data.decode("utf-8")))
+            if r["line_id"] == "ENERGY_SAVING" and r["row_type"] == "series"}
+    for y in YEARS:
+        r = rows[y]
+        if abs(float(r["cash_gbp_m"]) * 1e6 - out[f"energy_saving_schemes.{y}.cash"]) > 1.0:
+            raise ValueError(f"register ENERGY_SAVING {y} is not the schemes' line")
+        for bound, col in (("low", "low_gbp_m"), ("high", "high_gbp_m")):
+            cash = float(r[col]) * 1e6
+            out[f"energy_saving_schemes.range.{bound}.{y}.cash"] = cash
+            out[f"energy_saving_schemes.range.{bound}.{y}.real"] = cash * out[f"deflator.{y}.to_2024"]
+            for m in ("real", "cash"):
+                add(out, f"energy_saving_schemes.range.{bound}.headline.{m}",
+                    out[f"energy_saving_schemes.range.{bound}.{y}.{m}"])
+
+
 def options(out: dict, root: Path, run: dict) -> None:
     """M6: the headline under each other counting option the paper argues (outline §6.2, §6.3, §6.5, §8.3-§8.5).
     A line taken out or added takes its VAT with it, by 1.0.0's rule; the CCL carries none."""
@@ -136,6 +179,7 @@ def options(out: dict, root: Path, run: dict) -> None:
     _option(out, "cm_whole_levy", lambda y, m: v(y, _g(out, f"capacity_market.raw.{y}.{m}")
                                                  - _g(out, f"capacity_market.{y}.{m}")))
     energy_saving_schemes(out, run)
+    energy_saving_range(out, root)
     # households pay the schemes' whole cost (obligations on domestic supply), so VAT is on the whole
     _option(out, "energy_saving_schemes",
             lambda y, m: out[f"energy_saving_schemes.{y}.{m}"] * (1 + out["vat.rate"]))
@@ -175,6 +219,5 @@ def build(out: dict, root: Path, run: dict, doc: dict) -> None:
     headline_parts(out)
     headline_range(out)
     per_household(out, root)
-    own_bills(out)
     options(out, root, run)
     cfd_by_technology(out, doc, root)

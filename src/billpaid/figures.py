@@ -71,6 +71,9 @@ PLACEHOLDERS = {
     "ranged": "carbon|constraint_turnup",
     "check": r"hmrc\.ccl|ofgem\.ro|ofgem\.fit|obr\.levies|ofgem\.price_cap_policy_costs|ref\.direct",
     "cs": "model|reference|gap|ratio",
+    "area": "gb|uk",
+    "nc": "whd|crc",
+    "gl": "ro|cfd",
     "option": "carbon_tax_only|no_carbon|ccl_above_2001|no_ccl|grid_whole|cm_whole_levy|energy_saving_schemes",
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
@@ -133,11 +136,13 @@ KEYS = {
     "range.<bound>.headline.<m>": ("the headline's range (ADR 0234): the headline with the one estimated line, of "
                                    "carbon, turn-up and the Capacity Market, that moves it furthest, at that end"),
     "range.<bound>.headline.line": "the line that sets that end of the headline's range",
-    "households.<year>": "UK households that year (ONS, Families and households, Table 5), 2002-2025",
-    "per_household.<year>.real": "all lines that year, 2024 prices, over that year's households (2025 provisional)",
+    "households.<year>": "Great Britain's households that year (the same as households.gb.<year>), 2002-2025",
+    "households.<area>.<year>": "households that year, Great Britain (gb) or the UK (uk), ONS, 2002-2025",
+    "per_household.<year>.real": ("money paid per household that year, 2024 prices: each line over its own area's "
+                                  "households that year, VAT with its line, added up (ADR 0242); 2025 provisional"),
     "per_household.year_by_year.headline.real": "the per-household figures of 2002-2024 added up",
     "own_bills.per_household.<year>.real": ("on a household's own bills that year: households' share of every line "
-                                            "but the CCL, plus VAT, over that year's households, 2024 prices"),
+                                            "but the CCL, plus VAT, each over its own area's households, 2024 prices"),
     "own_bills.per_household.headline.real": "the same, 2002-2024 added up",
     "option.<option>.headline.<m>": ("the headline under another counting option (outline §6, §8): its lines "
                                      "changed, with the VAT on them; never the paper's figure"),
@@ -145,11 +150,23 @@ KEYS = {
                                          "Report No. 1's figure gross of the 2001 scheme; not counted (ADR 0233)"),
     "energy_saving_schemes.headline.<m>": "the same, 2002-2024",
     "energy_saving_schemes.basis": "estimated (the lower end of each scheme's range, as Report No. 1 holds it)",
+    "energy_saving_schemes.range.<bound>.<year>.<m>": ("the schemes' line at Report No. 1's lower or upper end of "
+                                                       "each scheme (the shared cost register's low and high)"),
+    "energy_saving_schemes.range.<bound>.headline.<m>": "the same, 2002-2024",
     "cfd_renewable.by_technology.<technology>.headline.<m>": ("CfD by technology, 2002-2024 (payments from 2016), "
                                                               "LCCC's payments by calendar year (all: every one)"),
     "check.<check>.headline.<cs>": ("a check against a published total, £ cash, over the years both cover: the "
                                       "model, the reference, gap (model less reference), ratio (model over it)"),
     "check.<check>.years": "the years the check covers",
+    "check.ofgem.price_cap_policy_costs.<year>.<cs>": ("the price-cap check each financial year from its April, £ "
+                                                       "per typical household (ADR 0241)"),
+    "check.ofgem.price_cap_policy_costs.schemes": "the schemes the price-cap check matches, comma-separated",
+    "check.ofgem.price_cap_policy_costs.typical_consumption_mwh": "the typical consumption both sides use, MWh a year",
+    "check.obr.levies.reference_whole": "the OBR's environmental levies outturn as published, the years of the check",
+    "check.obr.levies.not_counted.<nc>": ("a scheme in the OBR's figure the model does not count, ONS's series "
+                                          "(whd: Warm Home Discount; crc: CRC Energy Efficiency Scheme), taken off"),
+    "check.obr.levies.ons_parts_less_obr": "ONS's series of the OBR figure's parts added up, less the OBR's figure",
+    "check.obr.levies.gap.<gl>": "the model's line less ONS's series of it (ro: the RO; cfd: CfDs), the gap's parts",
     "check.<check>.basis": "what each side of the check holds, in words",
     "constraints.ref_years": ("the years of wind constraint payments still on REF's database, comma-separated: "
                               "every other year is Elexon's own record (1.2.0)"),

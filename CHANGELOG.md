@@ -2,6 +2,16 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.3.0 (11 Nov 2026), the checker's points and the households divisor
+
+For Report No. 2's plan step 19 (aios-harness#235), after the separate checker's pass over 1.2.0 and Richard's rulings of 11 Nov 2026 on the price-cap check (report-series ADR 0241) and the households divisor (ADR 0242). Frozen on Gitea only, tag `v1.3.0` on branch `release-1.3.0` (named apart from its tag), as 1.1.0 and 1.2.0 (ADR 0228): **GitHub `master` and the live Clock stay on 1.0.0**. `results/figures.json`: 2,451 keys, sha256 `9aab3817...` (in `results/figures.json.sha256`). Key by key against 1.2.0: `docs/1.3.0-against-1.2.0.md`. Method: `docs/figures.md`, "Version 1.3.0".
+
+**Moved (minor version): the households divisor, and the OBR check's reference.** No line, total, range or headline of money paid moves.
+- `households.<year>` is now Great Britain's households (2024: 28.61m UK to 27.87m GB); both series are keys (`households.gb.*`, `households.uk.*`). Each line is divided by its own area's households, the RO and the CCL by the UK's, every other line by Great Britain's, VAT with its line (ADR 0242). Money paid per household, 2002-2024 added up: £9,216 to £9,358 (2024 prices); on a household's own bills: £3,281 to £3,335; 2024 alone: £758.62 to £770.84, and £275.27 to £279.88.
+- `check.obr.levies`: like for like. ONS's own series of the OBR figure's parts (ROCs, CfDs, the Warm Home Discount, the CRC scheme), saved here, add up to it every year; the reference is now the OBR's figure less WHD (£5.03bn) and CRC (£3.88bn), which the model does not count; the OBR's outturn holds no Capacity Market (its own note). The gap: -£10.27bn (ratio 0.892) to -£1.36bn (0.984), of which the RO -£1.53bn (ONS's ROC receipts above Ofgem's value) and CfD +£0.17bn, named in keys.
+
+Added (186 keys): the price-cap check (ADR 0241), the RO and FiT per typical household, 2019-20 to 2025-26, £730.05 against Ofgem's £734.92 (ratio 0.993), from Ofgem's Annex 4 v1.25 and its RO total obligation notices; the energy-saving schemes' range (ADR 0007), £10.21bn to £11.47bn over 2002-2024 (2024 prices), Report No. 1's lower and upper ends from the pinned register; the two household series; the OBR check's parts. Saved and pinned: Elexon's empty answers before 6 Nov 2015 (the evidence for `constraints.ref_years`). The docs now say which per-household key is the paper's: `per_household.<year>.real`, not 1.1.0's `per_household.<year>` over the round 29 million.
+
 ## 1.2.0 (11 Nov 2026), the outline's figures; Elexon in place of REF
 
 For Report No. 2's approved outline (plan step 19, aios-harness#235; report-series ADR 0240). Frozen on Gitea only, branch and tag `v1.2.0`, as 1.1.0 (ADR 0228): **GitHub `master` and the live Clock stay on 1.0.0** until the paper's release. `results/figures.json`: 2,265 keys, sha256 `7d9a4d35...` (in `results/figures.json.sha256`). Every key and its meaning: `docs/figures.md`, "Version 1.2.0". Every value that moves and every key added, key by key: `docs/1.2.0-against-1.1.0.md`.

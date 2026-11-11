@@ -4,6 +4,7 @@ already paid (outline-beats.md, "Missing figures", M1 to M9 but M11), in the pap
 Expected values come from 1.1.0's own keys and the outline's rulings (ADR 0007, 0025, 0027, 0232, 0233, 0234), or
 from the publishers' files read here by hand, never from the keys' code."""
 import math
+import re
 
 import pytest
 
@@ -57,32 +58,67 @@ def test_m2_the_headline_range_from_the_three_estimated_lines_each_changed_on_it
 # ONS, Families and households in the UK: 2025 (published 17 Apr 2026), Table 5, "All households" (thousands),
 # read by hand from the saved workbook, 11 Nov 2026
 ONS_HOUSEHOLDS_K = {2002: 24792, 2010: 26240, 2015: 27046, 2020: 27893, 2024: 28609, 2025: 29003}
+# Great Britain, ONS Labour Force Survey (April-June), England + Wales + Scotland, read by hand: 2015 on from
+# "Households by household size, regions of England and GB constituent countries" 2025; before 2015 from ONS ad hoc
+# 005374 (to the nearest hundred)
+GB_HOUSEHOLDS = {2005: 21_036_500 + 1_234_300 + 2_271_100, 2015: (22587 + 1326 + 2376) * 1000,
+                 2024: (23957 + 1342 + 2568) * 1000, 2025: (24329 + 1404 + 2520) * 1000}
+UK_WIDE = ("ro", "ccl")    # ADR 0232: the RO and the CCL run across the UK; every other line in Great Britain
 
 
-def test_m3_households_each_year_and_money_paid_per_household_year_by_year(figs):
-    """ADR 0027 (year-matched, ONS) with ADR 0232 (each scheme over its own area, as the Clock: UK households)."""
+def test_m3_households_each_year_in_both_areas(figs):
+    """ADR 0027 (year-matched, ONS) and Richard's ruling of 11 Nov 2026 (report-series ADR 0242): both series as
+    keys; `households.<year>` is Great Britain's."""
     for y, k in ONS_HOUSEHOLDS_K.items():
-        assert figs[f"households.{y}"] == k * 1000
-    assert all(f"households.{y}" in figs for y in range(2002, 2026))
-    for y in range(2002, 2026):
-        assert _close(figs[f"per_household.{y}.real"], figs[f"all.{y}.real"] / figs[f"households.{y}"])
+        assert figs[f"households.uk.{y}"] == k * 1000
+    for y, v in GB_HOUSEHOLDS.items():
+        assert figs[f"households.gb.{y}"] == v
+        assert figs[f"households.{y}"] == v
+    assert all(f"households.gb.{y}" in figs and f"households.uk.{y}" in figs for y in range(2002, 2026))
+    assert all(0.96 < figs[f"households.gb.{y}"] / figs[f"households.uk.{y}"] < 0.985 for y in range(2002, 2026))
+
+
+def _vat_on(figs, y, v):
+    return 0.05 * figs[f"vat.domestic_share.{y}"] * v
+
+
+def test_m3_money_paid_per_household_each_line_over_its_own_area(figs):
+    """ADR 0242: each line over the households of its own area, its VAT with it, then added up: what a household
+    in Great Britain paid."""
+    for y in (2005, 2016, 2024, 2025):
+        lines = [k.split(".")[0] for k in figs if re.fullmatch(rf"[a-z_]+\.{y}\.real", k)
+                 and k.split(".")[0] in LINES]
+        gb = sum(figs[f"{l}.{y}.real"] for l in lines if l not in UK_WIDE + ("vat",))
+        uk = sum(figs.get(f"{l}.{y}.real", 0.0) for l in UK_WIDE)
+        vat_uk = _vat_on(figs, y, figs[f"ro.{y}.real"])
+        vat_gb = figs[f"vat.{y}.real"] - vat_uk
+        expect = (gb + vat_gb) / figs[f"households.gb.{y}"] + (uk + vat_uk) / figs[f"households.uk.{y}"]
+        assert _close(figs[f"per_household.{y}.real"], expect, rel=1e-9), y
+        # it sits between the whole over UK households and the whole over GB households
+        assert figs[f"all.{y}.real"] / figs[f"households.uk.{y}"] < figs[f"per_household.{y}.real"] \
+            < figs[f"all.{y}.real"] / figs[f"households.gb.{y}"]
     assert _close(figs["per_household.year_by_year.headline.real"],
                   sum(figs[f"per_household.{y}.real"] for y in YEARS))
-    # 1.1.0's figure over today's households stays as it was, beside it
+    # 1.1.0's figure over today's UK households (29 million) stays as it was, beside it
     assert figs["per_household.headline"] == figs["all.headline.real"] / 29_000_000
 
 
 def test_m4_what_an_average_household_paid_on_its_own_bills(figs):
-    """ADR 0025: households' share of each line, the CCL left out (businesses only), plus 5% VAT on that part, over
-    that year's households. VAT is itself 5% of households' share of those lines, so the own-bills figure is 21
-    times the VAT line (1 + 1/0.05) each year in cash: an independent check on the sum. In 2024 prices it differs by
-    under 0.5%, because the RO and FiT lines are priced by obligation year and the VAT line by calendar year."""
+    """ADR 0025 with ADR 0242: households' share of every line but the CCL, plus the VAT on it, each over its own
+    area's households. In cash, VAT is 5% of households' share, so each area's part is 21 times its VAT (1 + 1/0.05);
+    in 2024 prices the two differ by under 0.5% (the RO and FiT are priced by obligation year)."""
     for y in (2010, 2024, 2025):
-        assert _close(figs[f"own_bills.per_household.{y}.real"],
-                      21 * figs[f"vat.{y}.real"] / figs[f"households.{y}"], rel=5e-3), y
+        vat_uk = _vat_on(figs, y, figs[f"ro.{y}.real"])
+        approx = 21 * ((figs[f"vat.{y}.real"] - vat_uk) / figs[f"households.gb.{y}"]
+                       + vat_uk / figs[f"households.uk.{y}"])
+        assert _close(figs[f"own_bills.per_household.{y}.real"], approx, rel=5e-3), y
     assert _close(figs["own_bills.per_household.headline.real"],
                   sum(figs[f"own_bills.per_household.{y}.real"] for y in YEARS))
     assert figs["own_bills.per_household.headline.real"] < figs["per_household.year_by_year.headline.real"] / 2
+
+
+LINES = ("cfd_renewable", "constraints", "ro", "fit", "capacity_market", "carbon", "ccl", "tnuos", "bsuos",
+         "constraint_turnup", "vat", "sizewell_c")
 
 
 def test_m5_the_whole_2025_bill_and_the_share_of_it(figs):
@@ -158,3 +194,33 @@ def test_m8_cfd_by_technology_2016_to_2024_in_2024_prices(figs):
         assert _close(figs[f"cfd_renewable.by_technology.all.headline.{m}"], techs)
     share = figs["cfd_renewable.by_technology.offshore_wind.headline.real"] / figs["cfd_renewable.headline.real"]
     assert 0.6 < share < 0.9
+
+
+def test_m6f_the_energy_saving_schemes_line_has_its_range(figs):
+    """ADR 0007: an estimate carries its range. Report No. 1's lower and upper ends of each scheme, as the pinned
+    shared cost register holds them (ENERGY_SAVING, low_gbp_m and high_gbp_m; the central is the lower end): 2002
+    £42.5m to £70.5m and 2024 £761.6m both ends (read by hand from the register)."""
+    k = "energy_saving_schemes.range"
+    assert abs(figs[f"{k}.low.2002.cash"] / 1e6 - 42.544) < 0.001
+    assert abs(figs[f"{k}.high.2002.cash"] / 1e6 - 70.491) < 0.001
+    assert abs(figs[f"{k}.high.2024.cash"] / 1e6 - 761.646) < 0.001
+    for y in YEARS:
+        assert figs[f"{k}.low.{y}.cash"] == pytest.approx(figs[f"energy_saving_schemes.{y}.cash"], rel=1e-12)
+        assert figs[f"{k}.low.{y}.cash"] <= figs[f"{k}.high.{y}.cash"]
+    for m in ("real", "cash"):
+        assert _close(figs[f"{k}.high.headline.{m}"], sum(figs[f"{k}.high.{y}.{m}"] for y in YEARS))
+        assert figs[f"{k}.low.headline.{m}"] < figs[f"{k}.high.headline.{m}"]
+
+
+def test_only_the_ruled_values_move_from_1_2_0(figs):
+    """1.3.0 moves only what ADR 0242 (households) and the like-for-like OBR check change; every 1.2.0 key is kept."""
+    import json
+    import subprocess
+    old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.2.0:results/figures.json"],
+                                    capture_output=True, check=True).stdout)["figures"]
+    assert set(old) <= set(figs)
+    ruled = re.compile(r"households\.\d{4}|(own_bills\.)?per_household\.(\d{4}\.real|year_by_year\.headline\.real|"
+                       r"headline\.real)|check\.obr\.levies\..*")
+    moved = [k for k in old if old[k] != figs[k] and not (isinstance(old[k], float)
+                                                           and math.isclose(old[k], figs[k], rel_tol=1e-13))]
+    assert moved and all(ruled.fullmatch(k) for k in moved), [k for k in moved if not ruled.fullmatch(k)]

@@ -2,6 +2,8 @@
 every key added or dropped. Writes a Markdown table.
 
     uv run --frozen python tools/compare_figures.py refs/tags/v1.1.0 results/figures.json docs/1.2.0-against-1.1.0.md
+    uv run --frozen python tools/compare_figures.py refs/tags/v1.2.0 results/figures.json docs/1.3.0-against-1.2.0.md \
+        "$(cat docs/why-1.3.0.txt)"
 """
 from __future__ import annotations
 
@@ -22,7 +24,17 @@ def _fmt(v) -> str:
     return f"{v:,.6f}" if isinstance(v, float) else str(v)
 
 
-def main(old_ref: str, new_path: str, out_path: str) -> int:
+WHY_1_2_0 = ("Each is a wind constraint payment year moved from REF's database to Elexon's record (2016-2023), or a "
+             "figure made from those years by the model's own rules: the split of the balancing total into "
+             "constraints, turn-up and BSUoS, the line and layer totals, turn-up's range where its cap binds, and "
+             "the turn-up estimate over its whole window. The headline (`all.*`) does not move.")
+
+
+def _change(a, b) -> str:
+    return _fmt(b - a) if isinstance(a, (int, float)) and isinstance(b, (int, float)) else "(text)"
+
+
+def main(old_ref: str, new_path: str, out_path: str, why: str = WHY_1_2_0) -> int:
     old_doc = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", f"{old_ref}:results/figures.json"],
                                         capture_output=True, check=True).stdout)
     new_doc = json.loads((ROOT / new_path).read_text())
@@ -47,13 +59,10 @@ def main(old_ref: str, new_path: str, out_path: str) -> int:
              f"fourteenth significant figure, float rounding, listed last).",
              f"- Keys added: {len(added):,}.", "",
              "## Every value that moves", "",
-             "Each is a wind constraint payment year moved from REF's database to Elexon's record (2016-2023), or a "
-             "figure made from those years by the model's own rules: the split of the balancing total into "
-             "constraints, turn-up and BSUoS, the line and layer totals, turn-up's range where its cap binds, and "
-             "the turn-up estimate over its whole window. The headline (`all.*`) does not move.", "",
+             why, "",
              f"| Key | {v_old} | {v_new} | Change |", "|---|---:|---:|---:|"]
     for k in sorted(set(moved) - set(exact)):
-        lines.append(f"| `{k}` | {_fmt(old[k])} | {_fmt(new[k])} | {_fmt(new[k] - old[k])} |")
+        lines.append(f"| `{k}` | {_fmt(old[k])} | {_fmt(new[k])} | {_change(old[k], new[k])} |")
     if exact:
         lines += ["", "Float rounding only (the same total summed with two of its parts changed: the last binary digit of a float, never a penny):", ""]
         lines += [f"- `{k}`: {old[k]!r} to {new[k]!r}" for k in sorted(exact)]
@@ -67,4 +76,4 @@ def main(old_ref: str, new_path: str, out_path: str) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(*sys.argv[1:4]))
+    raise SystemExit(main(*sys.argv[1:5]))
