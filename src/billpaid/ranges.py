@@ -20,6 +20,7 @@ from billpaid.schemes import constraint_turnup as tu
 ROOT = Path(__file__).resolve().parents[2]
 MEASURES = ("real", "cash")
 LAST_CLOSED_YEAR = 2024
+PHASE_I_LAST_YEAR = 2007          # Phase I of the EU ETS: 2005-2007
 
 
 def _walk(stack: list[dict], target: float) -> tuple[float, float]:
@@ -105,11 +106,26 @@ def dmo_clearing_prices(root: Path = ROOT) -> dict[int, list[float]]:
     return out
 
 
+def bluenext_closes(root: Path = ROOT) -> dict[int, list[float]]:
+    """EUR/t: each trading day's closing price of the Phase I spot allowance on BlueNext (Powernext Carbon),
+    2005-2007, by calendar year (the file runs on to April 2008, after Phase I's last compliance year)."""
+    out: dict[int, list[float]] = {}
+    for r in csv.DictReader(io.StringIO(source(root, "bluenext-phase1-spot").decode("utf-8"))):
+        y = datetime.strptime(r["Date"], "%d/%m/%Y").year
+        if r["Product"] != "BNS EUA 05-07":
+            raise ValueError(f"BlueNext file: unexpected product {r['Product']!r}")
+        if y <= PHASE_I_LAST_YEAR:
+            out.setdefault(y, []).append(float(r["Daily Closing Price"].replace(",", ".")))
+    return out
+
+
 def carbon_prices(root: Path = ROOT) -> dict[int, dict[str, float]]:
-    """{year: {central, low, high}}, EUR/t, for the carbon line's estimated years with a UK auction record: the
-    range spans the EEA's price (central) and every clearing price of that year's UK auctions."""
-    eea, dmo = eea_eua_price(root), dmo_clearing_prices(root)
-    return {y: {"central": eea[y], "low": min(*p, eea[y]), "high": max(*p, eea[y])} for y, p in sorted(dmo.items())}
+    """{year: {central, low, high}}, EUR/t, for the carbon line's estimated years: the range spans the EEA's price
+    (central) and every price in that year's record, the Phase I spot exchange's daily closes for 2005-2007, the
+    UK auctions' clearing prices for 2008-2012."""
+    eea = eea_eua_price(root)
+    record = {**bluenext_closes(root), **dmo_clearing_prices(root)}
+    return {y: {"central": eea[y], "low": min(*p, eea[y]), "high": max(*p, eea[y])} for y, p in sorted(record.items())}
 
 
 METHOD = {
@@ -117,9 +133,10 @@ METHOD = {
                           "cheapest first (low) and dearest first (high) instead of 1.0.0's order, from a re-walk of "
                           "Elexon's settlement stacks held to 1.0.0's measured figure, never above 1.0.0's cap at the "
                           "BSUoS uplift; before Nov 2015 no stack data, so no turn-up line and no range"),
-    "carbon": ("2008-2012: the line at the lowest and highest of the EEA's yearly allowance price and every "
-               "clearing price of that year's UK Government auctions (DMO), the engine's merit order held as it "
-               "is; 2005-2007 have no UK auction record and no range yet"),
+    "carbon": ("2005-2012: the line at the lowest and highest of the EEA's yearly allowance price and every "
+               "price in that year's record: the Phase I spot exchange's daily closes (BlueNext, from 24 Jun 2005) "
+               "for 2005-2007, the UK Government's auction clearing prices (DMO) for 2008-2012; the engine's merit "
+               "order held as it is"),
 }
 
 

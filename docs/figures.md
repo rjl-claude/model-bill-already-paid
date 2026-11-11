@@ -80,7 +80,7 @@ Every key in the file matches exactly one of these templates (tested):
 - `bridge.steps`: the steps' names in the walk's order, comma-separated.
 - `bridge.no1.version`: the Report No. 1 release the bridge reads (`v4-s43`).
 - `bridge.no1.sha256`: that release's run file's fingerprint (the one pinned in `report-series/model-register.yaml`).
-- `<ranged>.range.<bound>.<year>.<m>`: an estimated line at its low or high, each year it has a range (below, "The ranges"): turn-up 2015-2025, carbon 2008-2012.
+- `<ranged>.range.<bound>.<year>.<m>`: an estimated line at its low or high, each year it has a range (below, "The ranges"): turn-up 2015-2025, carbon 2005-2012.
 - `<ranged>.range.<bound>.headline.<m>`: 2002-2024, each year with a range at its low or high, the other years central.
 - `<ranged>.range.years`: the years the line has a range for, comma-separated.
 - `<ranged>.range.method`: how the range is made, in one line.
@@ -174,7 +174,7 @@ Part 4 (aios-harness#225; spec: "a range for each line labelled estimated"; the 
 | Line | Years labelled estimated | Range in 1.0.0 | Range in 1.1.0 |
 |---|---|---|---|
 | `constraint_turnup` | every year (the whole line) | none | 2015-2025, every year with a figure. 2002-2014 are zero: Elexon's settlement stacks start in November 2015, so 1.0.0 has no turn-up figure before then and any turn-up in those years sits inside the BSUoS line. There is nothing to range. |
-| `carbon` | 2005-2012 (the engine's allowance price for those years is the EEA's yearly figure, whose origin the EEA does not state) | none | 2008-2012. 2005-2007 have none yet (below). |
+| `carbon` | 2005-2012 (the engine's allowance price for those years is the EEA's yearly figure, whose origin the EEA does not state) | none | 2005-2012, every estimated year. |
 
 No other line or year is labelled estimated. The one range 1.0.0 holds, the Capacity Market's, is on a modelled line (`capacity_market.range.*`). Some of the shared cost register's own rows are labelled estimated (for example BSUoS 2006-07, CPS 2013, FiT 2025), but those are the register's labels for inputs to measured or modelled lines, not this model's labels.
 
@@ -201,23 +201,33 @@ The CADL offers stay out, as in 1.0.0. The re-walk is a new fetch of Elexon Insi
 
 The range is lopsided. 1.0.0's order, unflagged offers first, is already close to the cheapest: before the cap, the cheapest walk is 0.4-3.2% below 1.0.0's walk each year, and the dearest 10-36% above. Over 2002-2024, in 2024 prices, the line is £3.28bn, range £3.24bn to £3.64bn (`constraint_turnup.range.<bound>.headline.real`).
 
-**Carbon, 2005-2012 (new method).** In these years the engine prices carbon at the EEA's yearly EUA price (EUR/t) at each month's Bank of England exchange rate. There is no Carbon Price Support before April 2013, so the line is that price times the engine's carbon intensity at the margin times the volume. The range moves only the price, the input that makes these years estimated. For each year the low and high are the lowest and highest of two things: the EEA's price, and every clearing price of that year's UK Government auctions of EU allowances. The DMO ran the auctions for DECC, 30 in all from 19 Nov 2008 to 25 Oct 2012, and each price is checked against the DMO's own result notice. The line at that price is the line times that price over the EEA's. This holds the engine's merit order as it is. A lower carbon price would put more coal at the margin, and a higher price less, so the true line moves a little less than in proportion. The range is therefore, if anything, wider than a full rerun would give. In 2009-2012 the EEA's price lies inside the auctions' own spread. 2008 had one UK auction, on 19 Nov after the price had fallen, so its high is the EEA's price itself.
+**Carbon, 2005-2012 (new method).** In these years the engine prices carbon at the EEA's yearly EUA price (EUR/t) at each month's Bank of England exchange rate. There is no Carbon Price Support before April 2013, so the line is that price times the engine's carbon intensity at the margin times the volume. The range moves only the price, the input that makes these years estimated. For each year the low and high are the lowest and highest of two things: the EEA's price, and every price in that year's primary record of what allowances actually changed hands at. The line at that price is the line times that price over the EEA's.
+
+The record differs by phase:
+
+- **2005-2007 (Phase I): traded prices.** These are the daily closing prices of the Phase I spot allowance on BlueNext, called Powernext Carbon until December 2007 and the leading Phase I spot exchange. The source is the exchange's own file, `2005-2007_BNS_STATS.csv`, captured from data.bluenext.fr by the Internet Archive on 8 Nov 2011. It agrees with Powernext's own annual reports (2005 average EUR 22.51, high 28.93 on 11 Jul; 2006 average 17.37; 2007 high 5.48 on 2 Jan) and with the NAO's Phase I peak (EUR 29.75, April 2006), all tested. Two differences from 2008-2012: these are traded closes, not auction clearing prices; and the record starts when the exchange opened on 24 Jun 2005, so 2005's range covers its second half only. The first half of 2005 has no exchange record here.
+- **2008-2012 (Phase II): UK auction prices.** These are the clearing prices of the UK Government's auctions of EU allowances. The DMO ran them for DECC, 30 in all from 19 Nov 2008 to 25 Oct 2012, and each price is checked against the DMO's own result notice. In 2009-2012 the EEA's price lies inside the auctions' own spread. 2008 had one UK auction, on 19 Nov after the price had fallen, so its high is the EEA's price itself.
+
+Through 2008 the engine prices carbon with gas at the margin, so the line moves exactly in proportion to the price. From January 2009 it uses its merit order (coal or gas at the margin, decision 0167), and the range holds that merit order as it is. A lower carbon price would put more coal at the margin, and a higher price less, so the true line moves a little less than in proportion. For 2009-2012 the range is therefore, if anything, wider than a full rerun would give.
+
+2007 is very wide, and is left so. The Phase I price collapsed from EUR 5.48 on 2 Jan to EUR 0.02 by 28 Dec, because Phase I allowances could not be carried into Phase II. The high is over eight times central and the low a thirtieth of it. That is the year's own record, not smoothed.
 
 | Year | EUR/t: low / EEA / high | £m, 2024 prices: low / central / high |
 |---|---|---|
+| 2005 (from 24 Jun) | 18.85 / 21.82 / 28.93 | 2,888.2 / 3,344.0 / 4,432.7 |
+| 2006 | 6.40 / 17.27 / 29.75 | 972.0 / 2,622.7 / 4,518.2 |
+| 2007 | 0.02 / 0.65 / 5.48 | 2.8 / 93.0 / 779.4 |
 | 2008 | 16.15 / 20.02 / 20.02 | 2,563.0 / 3,176.9 / 3,176.9 |
 | 2009 | 10.98 / 13.16 / 15.05 | 3,102.1 / 3,717.2 / 4,252.0 |
 | 2010 | 12.15 / 14.34 / 15.60 | 2,939.5 / 3,469.0 / 3,774.2 |
 | 2011 | 9.72 / 12.94 / 16.34 | 1,916.4 / 2,551.9 / 3,221.6 |
 | 2012 | 6.67 / 7.37 / 8.55 | 1,263.3 / 1,395.9 / 1,619.4 |
 
-Over 2002-2024, in 2024 prices, the carbon line is £82.86bn, range £80.33bn to £84.59bn. Only 2008-2012 move.
-
-**Not yet: carbon 2005-2007.** These years have no UK auction, so no UK record of the price, and no range. The one exchange source found for Phase I prices, EEX's own annual reports for 2005-2007, could not be fetched: the machine's safety check refused the download. The NAO's 2009 review gives only Phase I's peak (EUR 29.75, April 2006) and says the price then "fell to nearly zero". That bounds the phase as a whole, not each year. Until a primary record of each year's price is saved, these three years carry no range, and the paper says so (chapter 13: "say plainly which lines have no range and why"). In 2024 prices the three years are 2005 £3,344.0m, 2006 £2,622.7m and 2007 £93.0m.
+Over 2002-2024, in 2024 prices, the carbon line is £82.86bn, range £78.14bn to £88.26bn. Only 2005-2012 move.
 
 **The headline at the range.** `<ranged>.range.<bound>.headline.<m>` is the line's 2002-2024 total with each year that has a range at its low or high, and the other years at central. It is never added to the main headline.
 
-**Saved sources.** `reference/ranges.yaml` pins each file by sha256, and the build refuses any file whose bytes differ: the re-walk of Elexon's stacks; the EEA data package, byte for byte the file Report No. 1's release v4-s43 read (its run file's input checksum, tested); and the DMO auction table, byte for byte the table that release reads (its `ets_auctions` checksum, tested). A newer edition of any of these is never picked up by itself.
+**Saved sources.** `reference/ranges.yaml` pins each file by sha256, and the build refuses any file whose bytes differ: the re-walk of Elexon's stacks; the EEA data package, byte for byte the file Report No. 1's release v4-s43 read (its run file's input checksum, tested); the DMO auction table, byte for byte the table that release reads (its `ets_auctions` checksum, tested); and BlueNext's Phase I spot file, as the Internet Archive captured it. A newer edition of any of these is never picked up by itself.
 
 ## Against the spec's proposed names
 

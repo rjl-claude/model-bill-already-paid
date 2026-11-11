@@ -40,18 +40,22 @@ def figs():
 # (EUR / t CO2-eq)": the price 1.0.0's carbon line rests on in 2005-2012 (the engine's estimated years)
 EEA = {2008: 20.018285714285724, 2009: 13.157204724409443, 2010: 14.338503937007872,
        2011: 12.943263598326368, 2012: 7.369725490196074}
+EEA.update({2005: 21.824473684210524, 2006: 17.26894117647059, 2007: 0.6535294117647066})
+# BlueNext (formerly Powernext Carbon), daily closing price of the Phase I spot EUA (BNS EUA 05-07), 24 Jun 2005
+# to 25 Apr 2008: the lowest and highest close each year, EUR/t (2005 from the exchange's opening, 24 Jun)
+BLUENEXT = {2005: (18.85, 28.93), 2006: (6.40, 29.75), 2007: (0.02, 5.48)}
 # UK Debt Management Office, Phase II auction result notices, 30 auctions 19 Nov 2008 to 25 Oct 2012: the
 # lowest and highest clearing price each year, EUR/t (2008: one auction, 19 Nov, EUR 16.15)
 DMO = {2008: (16.15, 16.15), 2009: (10.98, 15.05), 2010: (12.15, 15.6), 2011: (9.72, 16.34), 2012: (6.67, 8.55)}
 
 
-def test_carbon_in_its_estimated_years_ranges_with_the_allowance_price_the_uk_auctions_cleared_at(figs):
+def test_carbon_in_its_estimated_years_ranges_with_the_prices_allowances_traded_or_cleared_at(figs):
     # the line at another allowance price is the line times that price over the EEA's, the engine's merit order
     # held as it is (no Carbon Price Support before April 2013). The range spans the EEA's price and every
     # clearing price of the year's UK auctions: in 2009-2012 the EEA's price lies inside the auctions' own
     # spread; 2008 had one auction, on 19 Nov after the price fell, so its high is the EEA's price itself
-    expected = {**DMO, 2008: (16.15, EEA[2008])}
-    for y in (2008, 2009, 2010, 2011, 2012):
+    expected = {**BLUENEXT, **DMO, 2008: (16.15, EEA[2008])}
+    for y in range(2005, 2013):
         lo, hi = expected[y]
         for m in ("real", "cash"):
             c = figs[f"carbon.{y}.{m}"]
@@ -70,7 +74,7 @@ def test_the_ranged_headline_moves_only_the_years_with_a_range(figs):
                 assert math.isclose(figs[f"{line}.range.{bound}.headline.{m}"], figs[f"{line}.headline.{m}"] + moved,
                                     rel_tol=1e-12)
         assert figs[f"{line}.range.method"]
-    assert figs["carbon.range.years"] == "2008,2009,2010,2011,2012"
+    assert figs["carbon.range.years"] == "2005,2006,2007,2008,2009,2010,2011,2012"
     lo, mid, hi = (figs[k] for k in ("carbon.range.low.headline.real", "carbon.headline.real",
                                      "carbon.range.high.headline.real"))
     assert lo < mid < hi
@@ -145,3 +149,14 @@ def test_the_eea_price_is_the_file_report_no_1s_release_read():
     assert hashlib.sha256(data).hexdigest() == pinned
     assert run["ets_auctions"]["files"]["s36/ets/uk-ets-phase2-auctions.csv"] == hashlib.sha256(
         (ROOT / "reference" / "sources" / "dmo-uk-ets-phase2-auctions.csv").read_bytes()).hexdigest()
+
+
+def test_the_phase_i_spot_record_agrees_with_what_the_exchange_and_the_nao_published():
+    # Powernext's annual activity reports: average spot price EUR 22.51 in 2005 (from 24 Jun) and 17.37 in
+    # 2006; 2005 high 28.93 on 11 Jul; 2007 high 5.48 on 2 Jan. NAO 2009 review: Phase I peak EUR 29.75, Apr 2006
+    from billpaid import ranges
+    closes = ranges.bluenext_closes(ROOT)
+    assert abs(sum(closes[2005]) / len(closes[2005]) - 22.51) < 0.01
+    assert abs(sum(closes[2006]) / len(closes[2006]) - 17.37) < 0.05
+    assert max(closes[2005]) == 28.93 and max(closes[2006]) == 29.75 and max(closes[2007]) == 5.48
+    assert sorted(closes) == [2005, 2006, 2007]

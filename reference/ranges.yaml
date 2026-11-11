@@ -41,3 +41,16 @@ sources:
     file: reference/sources/turnup-range-daily.csv
     retrieved: "2026-11-11"
     sha256: 3698876800d44e66dbe59a67348b320932e068f21eb042227b5e4dc51b3f842f
+  bluenext-phase1-spot:
+    what: >-
+      BlueNext (Powernext Carbon until December 2007, the leading Phase I spot exchange), "2005-2007_BNS_STATS":
+      the daily closing price, change and volumes of the Phase I spot EU allowance (BNS EUA 05-07) on every
+      trading day from the exchange's opening, 24 Jun 2005, to 25 Apr 2008. The exchange's own file, as the
+      Internet Archive captured it from data.bluenext.fr on 8 Nov 2011. Checked
+      against Powernext's own annual activity reports: 2005 high EUR 28.93 on 11 Jul and average 22.51; 2006
+      average 17.37; 2007 high 5.48 on 2 Jan; and the NAO 2009 review's Phase I peak, EUR 29.75 in April 2006.
+    url: http://data.bluenext.fr/downloads/2005-2007_BNS_STATS.csv
+    fetched_from: https://web.archive.org/web/20111108035501id_/http://data.bluenext.fr:80/downloads/2005-2007_BNS_STATS.csv
+    file: reference/sources/bluenext-bns-eua-05-07-daily.csv
+    retrieved: "2026-11-11"
+    sha256: b5d98d5f01650a9691f24c803f116b0a2c2c158390f5cb8af9d188dee0d084db
