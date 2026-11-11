@@ -1,12 +1,14 @@
 [project]
 name = "model-bill-already-paid"
-version = "1.1.0"
+version = "1.2.0"
 description = "The bill already paid: UK renewable and low-carbon subsidies and their indirect costs, 2002 to date, scheme by scheme"
 requires-python = ">=3.12"
 dependencies = [
     "polars>=1.0",
     "httpx>=0.27",
     "pyyaml>=6.0",
+    "fastexcel>=0.21.0",
+    "pypdf>=7.0.1",
 ]
 
 [dependency-groups]

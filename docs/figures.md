@@ -1,6 +1,6 @@
 # The paper's figures file
 
-Version 1.1.0, parts 1 to 4 (aios-harness#222, #223, #224 and #225, Report No. 2's plan steps 6 to 9, map #206). Report No. 2, *The Price of the Climate Bill*, prints every bill-already-paid figure by key from this file, as it does the bill still to come's from that model's `results/figures.json` (spec: `report-series/price-of-the-climate-bill/spec.md`, "The bill already paid moves to version 1.1.0"; ADR 0222).
+Version 1.1.0, parts 1 to 4 (aios-harness#222, #223, #224 and #225, Report No. 2's plan steps 6 to 9, map #206), and version 1.2.0, the figures the approved outline asks for (aios-harness#235, plan step 19; below, "Version 1.2.0"). Report No. 2, *The Price of the Climate Bill*, prints every bill-already-paid figure by key from this file, as it does the bill still to come's from that model's `results/figures.json` (spec: `report-series/price-of-the-climate-bill/spec.md`, "The bill already paid moves to version 1.1.0"; ADR 0222).
 
 ## What it is
 
@@ -90,7 +90,7 @@ Every key in the file matches exactly one of these templates (tested):
 
 1.0.0 labels some years and parts but gives no basis for a whole line. Part 1 reads it from 1.0.0's own account of each line:
 
-- measured (payments or receipts as recorded): CfD (LCCC settlement), constraints (Elexon; REF's history before 6 Nov 2015), RO and FiT (Ofgem), the Climate Change Levy (HMRC receipts, electricity's published share);
+- measured (payments or receipts as recorded): CfD (LCCC settlement), constraints (from 1.2.0: Elexon's record 2016-2025, REF's database 2010-2015; 1.1.0 took REF's through 2023), RO and FiT (Ofgem), the Climate Change Levy (HMRC receipts, electricity's published share);
 - modelled (a share or alternative from the pinned gas model): Capacity Market, carbon, TNUoS, BSUoS, VAT (households' share from the gas model);
 - estimated: constraint turn-up (1.0.0: "Estimated cost of paying other stations…").
 - Sizewell C (part 3, 2025 only): measured (suppliers' levy payments to LCCC as recorded).
@@ -135,6 +135,8 @@ The headline walk, 2002-2024, from the 9 Nov frozen file and v4-s43 (£bn; run `
 | `energy_saving_schemes` | 7.1 | 9.2 |
 | `power_before_carbon` | −79.4 | −92.2 |
 | `no1_extra_cost` | 110.5 | 140.3 |
+
+Where the generators' share that No. 1 counts sits: inside No. 1's power-price step (`power_before_carbon`). No. 1 removes the generators' share from its grid and balancing lines on both roads, and counts the part the policies added through each road's market price (No. 1 §10.3). That is why the grid and balancing steps are zero (added 1.2.0, as the outline's Table B.1 beat asks).
 
 Not in the bridge: 2025. No. 1's release has a provisional 2025 and No. 2 now has its 2025 lines (part 3), but the walk still stops at 2024 with the headline: widening it is not part 3's work (`bridge.YEARS` is the one place to widen it). Its RO step would carry the difference between No. 1's 2025-26 estimate (obligation x buy-out price, £8,007.8m) and Ofgem's outturn used here (£7,946.2m).
 
@@ -225,6 +227,8 @@ Through 2008 the engine prices carbon with gas at the margin, so the line moves 
 
 Over 2002-2024, in 2024 prices, the carbon line is £82.86bn, range £78.14bn to £88.26bn. Only 2005-2012 move.
 
+The figures in the two tables above are 1.1.0's. From 1.2.0 the turn-up cap moves with Elexon's constraint figure in 2018 and 2022 (the high only): `docs/1.2.0-against-1.1.0.md`.
+
 **The headline at the range.** `<ranged>.range.<bound>.headline.<m>` is the line's 2002-2024 total with each year that has a range at its low or high, and the other years at central. It is never added to the main headline.
 
 **Saved sources.** `reference/ranges.yaml` pins each file by sha256, and the build refuses any file whose bytes differ: the re-walk of Elexon's stacks; the EEA data package, byte for byte the file Report No. 1's release v4-s43 read (its run file's input checksum, tested); the DMO auction table, byte for byte the table that release reads (its `ets_auctions` checksum, tested); and BlueNext's Phase I spot file, as the Internet Archive captured it. A newer edition of any of these is never picked up by itself.
@@ -246,3 +250,55 @@ The spec proposed names and left them to this ticket; the freeze (#226) checks t
 
 - Frozen 11 Nov 2026 (#226) as version 1.1.0, tag `v1.1.0`, with `results/figures.json` and its `figures.json.sha256` committed at the tag: the file the paper pins in `report-series/model-register.yaml`. A fresh build from the tag is byte for byte that file (`tests/test_version_1_1_0.py`). What changed: `CHANGELOG.md`.
 - On Gitea only (report-series ADR 0228). GitHub `master`, and so the live Clock, stay on 1.0.0 until the paper's release: the Clock refuses a results file of any other version, so 1.1.0 goes to GitHub only on Richard's "deploy", in the same step as the Clock's pin moves.
+
+## Version 1.2.0: the outline's figures
+
+Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-series/price-of-the-climate-bill/outline-beats.md`, "Missing figures", ADR 0240) asks the bill already paid for figures 1.1.0 does not hold, M1 to M9. 1.2.0 adds them, and replaces REF with Elexon's own record for wind constraint payments wherever Elexon holds the whole year. Code: `src/billpaid/elexon_record.py`, `outline.py`, `checks.py`, `outline_sources.py`. Tests: `tests/test_elexon_constraints.py`, `test_outline_figures.py`, `test_checks.py`. The publishers' files are saved in `reference/sources/` and pinned by sha256 in `reference/outline_sources.yaml`; the build refuses any whose bytes differ. Every value that moves from 1.1.0, and every key added, is listed in `docs/1.2.0-against-1.1.0.md`.
+
+### Wind constraint payments: Elexon in place of REF (M9)
+
+- 1.1.0 took 2010-2023 from REF's database (`reference/annual_scheme_costs.yaml`, `constraints_history`) and Elexon's settlement stacks from 2024 (the history's pin, `bottom_up_from`).
+- Elexon's settlement stacks start on 6 Nov 2015. 1.0.0's store holds every day since. Each calendar year before the pin that the store holds whole now comes from Elexon: 2016-2023. The store is read as it stood when the frozen results file was written (each day's latest version retrieved at or before its `generated_at`).
+- 2010-2015 stay on REF. Elexon's API returns no settlement stack, acceptance (BOALF) or bid-offer (BOD) data before November 2015 (checked 11 Nov 2026), and 2015 has only its last 55 days. `constraints.ref_years` names them.
+- The three balancing lines are one measured total split three ways. 1.0.0's own split rule is applied again with the new figure: the uplift is that total less constraint payments; turn-up is its measured figure, never more than the uplift nor below zero; BSUoS takes the rest. So `all`, the bridge and VAT do not move. Money moves between the direct layer (constraints, up £34.8m cash over 2016-2023) and the indirect (BSUoS, and in 2018, when turn-up is capped and BSUoS is nil, turn-up).
+- `results/clock.json`, the Clock's file, is unchanged: the Clock moves to Elexon for those years only if the history's pin moves, a release decision.
+
+### The keys
+
+- `all.headline.<basis>.<m>`: M1 (ADR 0007). The 2002-2024 headline's measured, modelled and estimated parts, each line counted by its basis year by year (`<line>.basis`, carbon's `carbon.<year>.basis`: 2005-2012 estimated). They add up to the headline.
+- `range.<bound>.headline.<m>`: M2 (ADR 0234, choice 2). The headline with one of the three estimated lines at its low or high and the other two central: carbon (`carbon.range.*`), turn-up (`constraint_turnup.range.*`) and the Capacity Market (low share to central: `capacity_market.range.low`; its `range.high` key is the whole levy, a counting option, never a range end). Each end is the one line that moves the headline furthest that way. No VAT is moved with a line's range, as in 1.1.0's line ranges.
+- `range.<bound>.headline.line`: the line that sets that end.
+- `households.<year>`: M3. UK households, 2002-2025, ONS *Families and households in the UK: 2025*, Table 5, "All households" (ADR 0027 year-matched; ADR 0232 each scheme over its own area, as the Clock, so UK households, as the whole bill is the UK's).
+- `per_household.<year>.real`: each year's money paid (all lines, 2024 prices) over that year's households; 2025 provisional.
+- `per_household.year_by_year.headline.real`: the per-household figures of 2002-2024 added up (ADR 0025, 0027). 1.1.0's `per_household.headline` (over today's 29 million) stays beside it, unchanged.
+- `own_bills.per_household.<year>.real`: M4 (ADR 0025). On a household's own bills: households' share of every line but the CCL (the share 1.0.0's VAT line uses, `vat.domestic_share.<year>`), plus the VAT line, over that year's households, 2002-2025.
+- `own_bills.per_household.headline.real`: the same, 2002-2024 added up.
+- `bill.2025.real`, `bill.2025.cash` and `share_of_bill.2025` (M5) are new keys of the templates `bill.<year>.<m>` and `share_of_bill.<year>`: the whole 2025 bill (DUKES 2026, Table 1.3.A, as the frozen file holds it) and the provisional 2025 total's share of it.
+- `option.<option>.headline.<m>`: M6. The headline under another counting option the paper argues. A line taken out or added takes its VAT with it by 1.0.0's rule (5% on households' share); the CCL carries none. Never the paper's figure.
+  - `carbon_tax_only`: carbon counted as the tax collected only (§6.2).
+  - `no_carbon`: no carbon (§6.2).
+  - `ccl_above_2001`: the CCL only above its 2001 rate (§6.3). Each year's receipts over its calendar-year main rate (a quarter at the rate from the April before, three quarters at its own April's) give the taxable volume, priced at the 2001 rate, £0.0043/kWh, and taken off: Report No. 1's method (`gascf.ccl_baseline`) on the UK line, without No. 1's adjustment for exempt renewable output, which rests on No. 1's own road. Rates from HMRC's historical rates table.
+  - `no_ccl`: no CCL (§6.3).
+  - `grid_whole`: grid and balancing counted whole, the charges as paid (generators' share removed, as 1.0.0) rather than above the gas-led alternative's (§8.3, §8.4).
+  - `cm_whole_levy`: the whole Capacity Market levy in place of the part net zero caused (§8.5).
+  - `energy_saving_schemes`: the headline with suppliers' energy-saving schemes counted, plus 5% VAT on the whole of them (households pay them all) (§6.5, §15.1).
+- `energy_saving_schemes.<year>.<m>`: M6f (ADR 0233: left out, size shown). Suppliers' energy-saving schemes (EEC, CERT, CESP, ECO, GBIS), their cost on electricity bills, Great Britain, as Report No. 1's pinned release v4-s43 holds it: its NZ10, the lower end of each scheme's range, gross of the 2001 scheme (EESoP) that No. 1 nets off at its 2001 level (the release's `on_the_road` block gives it year by year). Not counted in any headline. Priced by CPIH.
+- `energy_saving_schemes.headline.<m>`: the same, 2002-2024.
+- `energy_saving_schemes.basis`: estimated, as No. 1 labels the line. No. 1's upper ends are in its notes only, rounded to £1m, so this file gives no range.
+- `cfd_renewable.by_technology.<technology>.headline.<m>`: M8. CfD by technology, 2002-2024 (payments from 2016), LCCC's contract-by-contract payments from the store snapshot the frozen file was built from, by calendar year, priced by CPIH; `all` is every technology and equals the CfD line to under £10.
+- `check.<check>.headline.<cs>`: M7, a check against a published total, £ cash as paid, over the years both cover: `model`, `reference`, `gap` (model less reference), `ratio` (model over reference). `<check>`: `hmrc.ccl`, `ofgem.ro`, `ofgem.fit`, `obr.levies`, `ref.direct` (below). `<cs>`: `model`, `reference`, `gap`, `ratio`.
+- `check.<check>.years`: the years the check covers.
+- `check.<check>.basis`: what each side holds, in words.
+- `constraints.ref_years`: the years of wind constraint payments still on REF's database (2010-2015).
+
+### The checks (1.2.0)
+
+| Check | Model side | Reference (saved file) | Result (1.2.0 build) |
+|---|---|---|---|
+| `hmrc.ccl` | CCL line, 2002-2024 | HMRC Environmental Taxes Bulletin, Table 1b, electricity declarations | exact: the line is HMRC's figure |
+| `ofgem.ro` | RO line, SY1-SY23 (2002-03 to 2024-25) | Ofgem's scheme value, ROCs presented x worth of a ROC (annual reports 2005-06, 2009-10, SY23 Figure A4.1) | the line is £525.5m higher: the mutualisation received 2017-18 to 2021-22, which the line adds |
+| `ofgem.fit` | FiT line, 2010-11 to 2024-25 | the levelisation fund printed in Ofgem's document for each year (15 documents) | exact |
+| `obr.levies` | RO line plus CfD by financial year, 2002-03 to 2024-25 | OBR public finances databank (October 2026), "Environmental levies" | the model is £10.3bn (11%) lower. The OBR's series also holds the Warm Home Discount and the green gas levy, which the model does not count; the rest of the gap is not explained here |
+| `ref.direct` | RO, FiT, CfD (financial years), constraints (calendar years), to 2023-24 | REF April 2025, Table 1 totals, £bn to one decimal, REGO left out | the model is £0.14bn (0.15%) higher |
+
+Not built: `check.ofgem.price_cap_policy_costs`. Ofgem's price cap began in January 2019 and its policy-cost allowance is a forward allowance per typical customer, not an outturn. A matched comparison needs each cap period's Annex 4 workbook from January 2019 to December 2024 (about 20 files, none saved yet) and a ruling on the matching basis (Ofgem's typical consumption against the model's average household; which schemes). Its keys are absent until then.

@@ -15,7 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
-from billpaid import bridge, provisional, ranges
+from billpaid import bridge, checks, elexon_record, outline, outline_sources, provisional, ranges
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
@@ -44,7 +44,7 @@ def frozen_results(root: Path) -> dict:
 # receipts as recorded), modelled (a share or alternative taken from the pinned gas model) or estimated.
 BASIS = {
     "cfd_renewable": "measured",      # LCCC settlement payments
-    "constraints": "measured",        # Elexon bids; REF's history before 6 Nov 2015
+    "constraints": "measured",        # Elexon's accepted wind bids from 2016 (1.2.0); REF's database 2010-2015
     "ro": "measured",                 # Ofgem annual reports
     "fit": "measured",                # the levelisation fund, Ofgem
     "ccl": "measured",                # HMRC receipts, electricity's published share
@@ -69,6 +69,9 @@ PLACEHOLDERS = {
     "step": "|".join([bridge.START, *(name for name, _, _ in bridge.STEPS), bridge.END]),
     "basis": "measured|modelled|estimated",
     "ranged": "carbon|constraint_turnup",
+    "check": r"hmrc\.ccl|ofgem\.ro|ofgem\.fit|obr\.levies|ofgem\.price_cap_policy_costs|ref\.direct",
+    "cs": "model|reference|gap|ratio",
+    "option": "carbon_tax_only|no_carbon|ccl_above_2001|no_ccl|grid_whole|cm_whole_levy|energy_saving_schemes",
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
 KEYS = {
@@ -125,6 +128,31 @@ KEYS = {
     "<ranged>.range.years": "the years the line has a range for, comma-separated",
     "<ranged>.range.method": "how the range is made, in words (docs/figures.md, \"The ranges\")",
     "carbon.allowance_price.<end>.<year>": "the allowance price carbon is priced at, central, low and high (EUR/t)",
+    "all.headline.<basis>.<m>": ("the 2002-2024 headline's measured, modelled and estimated parts, each line "
+                                 "counted by its basis year by year (carbon 2005-2012 estimated); they add up"),
+    "range.<bound>.headline.<m>": ("the headline's range (ADR 0234): the headline with the one estimated line, of "
+                                   "carbon, turn-up and the Capacity Market, that moves it furthest, at that end"),
+    "range.<bound>.headline.line": "the line that sets that end of the headline's range",
+    "households.<year>": "UK households that year (ONS, Families and households, Table 5), 2002-2025",
+    "per_household.<year>.real": "all lines that year, 2024 prices, over that year's households (2025 provisional)",
+    "per_household.year_by_year.headline.real": "the per-household figures of 2002-2024 added up",
+    "own_bills.per_household.<year>.real": ("on a household's own bills that year: households' share of every line "
+                                            "but the CCL, plus VAT, over that year's households, 2024 prices"),
+    "own_bills.per_household.headline.real": "the same, 2002-2024 added up",
+    "option.<option>.headline.<m>": ("the headline under another counting option (outline §6, §8): its lines "
+                                     "changed, with the VAT on them; never the paper's figure"),
+    "energy_saving_schemes.<year>.<m>": ("suppliers' energy-saving schemes on electricity bills (EEC to GBIS), "
+                                         "Report No. 1's figure gross of the 2001 scheme; not counted (ADR 0233)"),
+    "energy_saving_schemes.headline.<m>": "the same, 2002-2024",
+    "energy_saving_schemes.basis": "estimated (the lower end of each scheme's range, as Report No. 1 holds it)",
+    "cfd_renewable.by_technology.<technology>.headline.<m>": ("CfD by technology, 2002-2024 (payments from 2016), "
+                                                              "LCCC's payments by calendar year (all: every one)"),
+    "check.<check>.headline.<cs>": ("a check against a published total, £ cash, over the years both cover: the "
+                                      "model, the reference, gap (model less reference), ratio (model over it)"),
+    "check.<check>.years": "the years the check covers",
+    "check.<check>.basis": "what each side of the check holds, in words",
+    "constraints.ref_years": ("the years of wind constraint payments still on REF's database, comma-separated: "
+                              "every other year is Elexon's own record (1.2.0)"),
 }
 
 
@@ -235,9 +263,14 @@ PARTS = {"carbon": _carbon, "capacity_market": _capacity_market, "vat": _vat, "c
          "constraint_turnup": _turnup, "tnuos": _road, "bsuos": _road}
 
 
-def build(doc: dict, no1: bridge.No1Release) -> dict[str, float | str]:
-    """Every figure: `doc` is the frozen results file, `no1` Report No. 1's pinned run file (the bridge)."""
+def build(doc: dict, no1: bridge.No1Release, root: Path | None = None) -> dict[str, float | str]:
+    """Every figure: `doc` is the frozen results file, `no1` Report No. 1's pinned run file (the bridge). From
+    1.2.0, wind constraint payments are Elexon's record wherever it holds the whole year (billpaid.elexon_record)."""
+    from billpaid.__main__ import ROOT
+    root = root or ROOT
+    doc, _, on_ref = elexon_record.apply(doc, root, LAST_CLOSED_YEAR)
     out: dict[str, float | str] = {}
+    out["constraints.ref_years"] = ",".join(str(y) for y in on_ref)
     for s in doc["model"]["schemes"]:
         line, layer = s["scheme_id"], s["layer"]
         if layer not in LAYERS:
@@ -263,7 +296,18 @@ def build(doc: dict, no1: bridge.No1Release) -> dict[str, float | str]:
     bridge.build(out, doc, no1)
     provisional.build(out, doc, no1.run)
     ranges.build(out, doc)
+    _bill_2025(out, doc)
+    outline.build(out, root, no1.run, doc)
+    checks.build(out, root, doc)
     return out
+
+
+def _bill_2025(out: dict, doc: dict) -> None:
+    """M5 (1.2.0): the whole 2025 bill (DUKES 1.3, as the frozen file holds it) and the provisional 2025 total's
+    share of it."""
+    r = next(r for r in doc["bill"]["rows"] if r["year"] == LAST_CLOSED_YEAR + 1)
+    out[f"bill.{r['year']}.real"], out[f"bill.{r['year']}.cash"] = r["total_bill_gbp_2024"], r["total_bill_gbp"]
+    out[f"share_of_bill.{r['year']}"] = out[f"all.{r['year']}.real"] / r["total_bill_gbp_2024"]
 
 
 def _context(out: dict, doc: dict) -> None:
@@ -295,4 +339,5 @@ def document(doc: dict, no1: bridge.No1Release) -> dict:
                                     "version": doc["meta"]["version"], "generated_at": doc["meta"]["generated_at"]},
                      "no1": no1.meta(),
                      "provisional_2025": provisional.sources(), "ranges": ranges.sources(),
+                     "outline_sources": outline_sources.sources(),
                      "headline_years": [2002, LAST_CLOSED_YEAR], "keys": KEYS, "placeholders": PLACEHOLDERS}}

@@ -36,6 +36,25 @@ def _schemes(doc):
     return {s["scheme_id"]: s for s in doc["model"]["schemes"]}
 
 
+# 1.2.0 (aios-harness#235): Elexon's record replaces REF's for wind constraint payments 2016-2023, and the
+# three balancing lines are split again; those cells are tested against the audit's sums in
+# tests/test_elexon_constraints.py. Every other 1.0.0 value stays as it was.
+MOVED_LINES, MOVED_YEARS = ("constraints", "constraint_turnup", "bsuos"), range(2016, 2024)
+
+
+def _moved(line, y):
+    return line in MOVED_LINES and y in MOVED_YEARS
+
+
+def _shift(frozen, figs, y, m):
+    """What the constraint line moved in year y (£), which moves from the indirect layer to the direct."""
+    if y not in MOVED_YEARS:
+        return 0.0
+    col = {"real": "cost_gbp_2024", "cash": "cost_gbp"}[m]
+    old = next(r for r in _schemes(frozen)["constraints"]["annual"]["rows"] if r["year"] == y)[col]
+    return figs[f"constraints.{y}.{m}"] - old
+
+
 def test_the_figures_are_built_from_the_file_the_paper_pins():
     data = figures.frozen_bytes(ROOT)
     assert hashlib.sha256(data).hexdigest() == PINNED_SHA256
@@ -46,7 +65,7 @@ def test_every_line_every_year_is_its_1_0_0_value_in_2024_prices_and_cash(frozen
     assert sorted(schemes) == sorted(LINES)
     for line, s in schemes.items():
         for r in s["annual"]["rows"]:
-            if r["year"] > figures.LAST_CLOSED_YEAR:
+            if r["year"] > figures.LAST_CLOSED_YEAR or _moved(line, r["year"]):
                 continue
             assert figs[f"{line}.{r['year']}.real"] == r["cost_gbp_2024"], (line, r["year"])
             assert figs[f"{line}.{r['year']}.cash"] == r["cost_gbp"], (line, r["year"])
@@ -62,18 +81,20 @@ def test_direct_and_indirect_by_year_are_the_1_0_0_totals(frozen, figs):
     assert sorted(direct) == sorted(indirect) == list(range(2002, 2025))
     for y in range(2002, 2025):
         for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
-            assert _close(figs[f"direct.{y}.{m}"], direct[y][col]), (y, m)
-            assert _close(figs[f"indirect.{y}.{m}"], indirect[y][col]), (y, m)
+            assert _close(figs[f"direct.{y}.{m}"], direct[y][col] + _shift(frozen, figs, y, m)), (y, m)
+            assert _close(figs[f"indirect.{y}.{m}"], indirect[y][col] - _shift(frozen, figs, y, m)), (y, m)
             assert _close(figs[f"all.{y}.{m}"], direct[y][col] + indirect[y][col]), (y, m)
 
 
 def test_the_headlines_are_2002_to_2024_each_line_and_together(frozen, figs):
     for line, s in _schemes(frozen).items():
         for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
-            assert _close(figs[f"{line}.headline.{m}"], sum(r[col] for r in _table(s).values()))
+            assert _close(figs[f"{line}.headline.{m}"],
+                          sum(figs[f"{line}.{y}.{m}"] if _moved(line, y) else r[col] for y, r in _table(s).items()))
     for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
-        direct = sum(r[col] for r in _table(frozen["model"]["perspectives"]["renewables"]).values())
-        indirect = sum(r[col] for r in _table(frozen["model"]["indirect"]).values())
+        shift = sum(_shift(frozen, figs, y, m) for y in MOVED_YEARS)
+        direct = sum(r[col] for r in _table(frozen["model"]["perspectives"]["renewables"]).values()) + shift
+        indirect = sum(r[col] for r in _table(frozen["model"]["indirect"]).values()) - shift
         assert _close(figs[f"direct.headline.{m}"], direct)
         assert _close(figs[f"indirect.headline.{m}"], indirect)
         assert _close(figs[f"all.headline.{m}"], direct + indirect)
@@ -186,7 +207,9 @@ def test_the_turn_up_cross_check_and_the_cfd_reconciliation(frozen, figs):
     cc = tu["extras"]["cross_check_cumulative"]
     assert figs["constraint_turnup.cross_check.accepted_offers.cash"] == cc["accepted_offers"]
     assert figs["constraint_turnup.cross_check.accepted_offers_wind.cash"] == cc["accepted_offers_wind"]
-    assert figs["constraint_turnup.cross_check.estimate.cash"] == tu["cumulative_gbp"]
+    old = {r["year"]: r["cost_gbp"] for r in tu["annual"]["rows"]}
+    moved = sum(figs[f"constraint_turnup.{y}.cash"] - old[y] for y in MOVED_YEARS)
+    assert _close(figs["constraint_turnup.cross_check.estimate.cash"], tu["cumulative_gbp"] + moved)
     rec = frozen["reconciliation"]
     assert figs["cfd_renewable.reconciliation.divergence_pct"] == rec["overall"]["divergence_pct"] == -0.6164
     assert figs["cfd_renewable.reconciliation.bottom_up.cash"] == rec["overall"]["bottom_up"]

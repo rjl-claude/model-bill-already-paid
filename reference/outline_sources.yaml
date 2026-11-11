@@ -1,0 +1,191 @@
+# The publishers' files version 1.2.0 reads for the figures Report No. 2's approved outline asks of the bill already
+# paid (aios-harness#235; outline-beats.md, "Missing figures"). Each file is saved here as fetched and refused if its
+# sha256 differs. The figures are read from the files by billpaid.outline_sources; none is typed here.
+#
+# A newer edition of any of these is never picked up by itself: save the new file beside the old, change file and
+# sha256 here, rebuild, and measure what moves.
+sources:
+  ons-households:
+    what: >-
+      ONS, "Families and households in the UK: 2025" dataset (published 17 Apr 2026), Table 5 "Households by size,
+      United Kingdom, 1996 to 2025", row "All households" (thousands), each year's estimate.
+    url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/families/datasets/familiesandhouseholdsfamiliesandhouseholds/current/familiesandhouseholdsuk2025.xlsx
+    page: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/datasets/familiesandhouseholdsfamiliesandhouseholds
+    file: reference/sources/ons-families-and-households-uk-2025.xlsx
+    retrieved: "2026-11-11"
+    sha256: a89eaa3d7f519bfa949c7cfa12f531b8c7a86c704adcb70e81f49567ae724a91
+  hmrc-ccl-rates:
+    what: >-
+      HMRC, "Environmental taxes bulletin: historical rates", Table 1 "Main Climate Change Levy rates", the electricity
+      rate per kWh from each date (the 2001 rate, £0.0043/kWh, and every change since), for the option "the CCL above
+      its 2001 rate". Byte for byte the copy Report No. 1's release v4-s43 saved (its data/raw/SHA256SUMS,
+      hmrc/s18a-envtax_historical_rates.html); the input audit of 11 Nov 2026 found every cell the same on gov.uk.
+    url: https://www.gov.uk/government/statistics/environmental-taxes-bulletin/environmental-taxes-bulletin-historical-rates
+    file: reference/sources/hmrc-envtax-historical-rates.html
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 10f1a2d4488f4711ebf4af1f1fba7d2a0e69730c477471636908c2de18566b48
+  hmrc-envtax-bulletin:
+    what: >-
+      HMRC, Environmental Taxes Bulletin tables, "April 2025 to February 2026 provisional data update" (published
+      31 Mar 2026), sheet CCL_and_CPF_statistics_tables, Table 1b (calendar years), "Electricity declarations
+      (£ million)": the check of the CCL line. Byte for byte the copy Report No. 1's release v4-s43 saved (its
+      data/raw/SHA256SUMS, hmrc/s18a-envtax_bulletin_tables_2026-03-31.ods); the input audit found it the same as
+      gov.uk's on 11 Nov 2026.
+    url: https://assets.publishing.service.gov.uk/media/69ca4948b66990e31f67e8e3/2026_March_env_tabs_test.ods
+    page: https://www.gov.uk/government/statistics/environmental-taxes-bulletin
+    file: reference/sources/hmrc-envtax-bulletin-tables-2026-03-31.ods
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: e996ff3cd4d6c543ef1bd9d436f0f89f1210941600b4759fd4f2ab2cf2356ae7
+  obr-databank:
+    what: >-
+      OBR, Public finances databank, October 2026 EFO, sheet "Receipts (£bn)", column "Environmental levies
+      (Renewables Obligation and Contracts for Difference)" (its note: also capacity markets, green gas levy and warm
+      home discount), by financial year: the check of the levy lines against the official outturn.
+    url: https://obr.uk/download/public-finances-databank-october-2026-efo/
+    page: https://obr.uk/data/
+    file: reference/sources/obr-public-finances-databank-october-2026.xlsx
+    retrieved: "2026-11-11"
+    sha256: 16a4bf46d8692e18790e87add342c6c44aa909cebb19f68ae857126a36d36459
+  ofgem-ro-2005-06:
+    what: >-
+      Ofgem, Renewables Obligation: Annual report 2005-06 (28 Feb 2007), Tables 1-3: ROCs presented and what a ROC
+      was worth to a supplier, England and Wales, Scotland (2002-03 to 2005-06) and Northern Ireland (2005-06). Byte
+      for byte Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/s18c-RO_annual_report_2005-06.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2007/02/17098-3607_0.pdf
+    file: reference/sources/ofgem-ro-annual-report-2005-06.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 5a64a8e04fe3bbd39b0c302d8ded050df5fe41f7888b11ba703065ff90a3eb12
+  ofgem-ro-2009-10:
+    what: >-
+      Ofgem, Renewables Obligation: Annual Report 2009-10 (Feb 2011), Tables 1-3: total ROCs presented and the
+      worth of a ROC to a supplier, the three countries, 2006-07 to 2009-10. Report No. 1's saved copy
+      (ofgem_ro_fit/s18c-RO_annual_report_2009-10.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2011/02/ro-annual-report-2009-10_0.pdf
+    file: reference/sources/ofgem-ro-annual-report-2009-10.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 6d866946795efdbdcc0caa902348e2e97e5e4f0132a78f3c12f6934a8fbf268b
+  ofgem-ro-sy23:
+    what: >-
+      Ofgem, Renewables Obligation Annual Report Scheme Year 23 (2024-25, Mar 2026), Figure A4.1: total ROCs
+      presented (m) and the assumed value of a ROC to a supplier, SY9 (2010-11) to SY23. Report No. 1's saved copy
+      (ofgem_ro_fit/RO_annual_report_SY23.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/2026-03/RO_24-25_SY23_Annual_Report-20260327121336.pdf
+    file: reference/sources/ofgem-ro-annual-report-sy23.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 2043fe4ab9dcac2102715f861325c3c386f92d767ef71e1bb9f02a86bd26e2ef
+  ofgem-fit-2010:
+    what: >-
+      Ofgem, Feed-in Tariff Annual Report 2010-11: the levelisation fund for FIT year 1 (April 2010 to March 2011). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_2010-11.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2012/01/fits-annual-report-2010-2011.pdf
+    file: reference/sources/ofgem-fit-annual-report-2010-11.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 2154a31cc5abcc6c76506805b9bc8029131cf5c1b0889bf98e87c44b0e9dba6a
+  ofgem-fit-2011:
+    what: >-
+      Ofgem, Feed-in Tariff Annual Report 2011-12: the levelisation fund for FIT year 2 (April 2011 to March 2012). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_2011-12.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2012/12/fits-annual-report-2011-2012.pdf
+    file: reference/sources/ofgem-fit-annual-report-2011-12.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 20d299ab76c1215e7c53b00d4f2411500308cd13c41cfcab9695e4ae4c898a07
+  ofgem-fit-2012:
+    what: >-
+      Ofgem, Feed-in Tariff Annual Report 2012-13: the levelisation fund for FIT year 3 (April 2012 to March 2013). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_2012-13.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2013/12/fit_year_3_annual_report_-_final_edition_0.pdf
+    file: reference/sources/ofgem-fit-annual-report-2012-13.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: f9319636c046f7498be34e97fe2529ba0cebc6d02254a77be22f0bc3d52be934
+  ofgem-fit-2013:
+    what: >-
+      Ofgem, Feed-in Tariff Annual Report 2013-14: the levelisation fund for FIT year 4 (April 2013 to March 2014). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_2013-14.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2014/12/feed-in_tariff_fit_annual_report_2013_2014.pdf
+    file: reference/sources/ofgem-fit-annual-report-2013-14.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: d71b2b9ec5466b2ef9afccc5ae0794a1c3eb8294effd2cdca842daaa93ac38f4
+  ofgem-fit-2014:
+    what: >-
+      Ofgem, Feed-in Tariff Annual Report 2014-15: the levelisation fund for FIT year 5 (April 2014 to March 2015). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_2014-15.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/docs/2016/03/fit_annual_report.pdf
+    file: reference/sources/ofgem-fit-annual-report-2014-15.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 030a2682b9857534e70483abcd5226bbaf0d54acb50a0e8f67264475c8b54af0
+  ofgem-fit-2015:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2015-16: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2015-16.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2015-2016
+    file: reference/sources/ofgem-fit-levelisation-notice-2015-16.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: e897979738654821ac9eadd7fe527119c600d8fe76ea6e5547add1dad3aed082
+  ofgem-fit-2016:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2016-17: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2016-17.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2016-2017
+    file: reference/sources/ofgem-fit-levelisation-notice-2016-17.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 37c39fa0ff72bd72a71333b7240d43bf9dcb0012665224b56a88a681f0bea558
+  ofgem-fit-2017:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2017-18: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2017-18.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2017-2018
+    file: reference/sources/ofgem-fit-levelisation-notice-2017-18.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 52288081ce146f5c526e030754be1e36624803e0aa6db82f9c14296041f5fd4d
+  ofgem-fit-2018:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2018-19: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2018-19.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2018-2019
+    file: reference/sources/ofgem-fit-levelisation-notice-2018-19.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: c1dfc18b894509e02f73048d70cd199b08ff5401bf8df7a0515a3798711e3328
+  ofgem-fit-2019:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2019-20: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2019-20.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2019-2020
+    file: reference/sources/ofgem-fit-levelisation-notice-2019-20.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 42c63b29c24775fefb08560fd2f4b7bf81b90596fdd1623b9162e049c5d9d046
+  ofgem-fit-2020:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2020-21: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2020-21.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2020-2021
+    file: reference/sources/ofgem-fit-levelisation-notice-2020-21.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 542f233a495c47616eecde72b9d43b72bc0ff3efe16452b36f4ce7c2b42595ad
+  ofgem-fit-2021:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2021-22: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2021-22.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2021-2022
+    file: reference/sources/ofgem-fit-levelisation-notice-2021-22.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: e4454ede8bf672dc4cec8a8fea9e79fd50dd826a507ec194e755134196467c71
+  ofgem-fit-2022:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Levelisation Process notice 2022-23: the total levelisation fund for the year. Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_levelisation_notice_2022-23.pdf).
+    url: https://www.ofgem.gov.uk/data/feed-tariff-annual-levelisation-notice-2022-2023
+    file: reference/sources/ofgem-fit-levelisation-notice-2022-23.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: d0c3683dbe112b94af5c142e4c4ecd9a96bee5250684464ee8dadafc22a2a629
+  ofgem-fit-2023:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Report Scheme Year 14 (2023-24): the levelisation fund (D). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_SY14.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/2024-12/FIT_annual_report_SY14.pdf
+    file: reference/sources/ofgem-fit-annual-report-sy14.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 5835683611aa734c07e5240e7cae86bd65a3acc11a70036a622f0ecfafe6832a
+  ofgem-fit-2024:
+    what: >-
+      Ofgem, Feed-in Tariffs Annual Report Scheme Year 15 (2024-25): the levelisation fund (D). Report No. 1's saved copy (its data/raw/SHA256SUMS, ofgem_ro_fit/FIT_annual_report_SY15.pdf).
+    url: https://www.ofgem.gov.uk/sites/default/files/2025-12/feed_in_tariff_annual_report_sy15_20251210120852.pdf
+    file: reference/sources/ofgem-fit-annual-report-sy15.pdf
+    retrieved: "2026-10 (Report No. 1's saved copy)"
+    sha256: 213f331241084078ca1d36e5525c4004daaefc33fdb84de3bfdc4c6400a850d5
+  ref-2025:
+    what: >-
+      Renewable Energy Foundation, "UK Renewable Electricity Subsidy Totals 2002 to the Present Day" (28 Apr 2025),
+      Table 1 "Direct Subsidies to Renewable Electricity Generation in the United Kingdom (£bn, nominal) 2002-2024",
+      its totals row: the check against REF's published series (an ally's figure, cited and the difference
+      explained). The copy saved for the paper on 11 Nov 2026 (report-series price-of-the-climate-bill/sources/
+      outline/, S6-src), byte for byte.
+    url: https://ref.org.uk/blog/uk-renewable-electricity-subsidy-totals-2002-to-the-present-day
+    file: reference/sources/ref-2025-uk-renewable-electricity-subsidy-totals.html
+    retrieved: "2026-11-11"
+    sha256: 23dffd6e07709243ed59bf3fed83a47a1865699681708f16c45bde77a4deef3b
