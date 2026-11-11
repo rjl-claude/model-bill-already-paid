@@ -1,0 +1,1 @@
+Text only (the recheck of 1.3.0): the price-cap check's basis now says when Ofgem moved CfDs out of its policy costs (Annex 4 v1.11, 15 May 2022) and that the RO half tests a value per certificate against a forward allowance; a note key gives the cause of 2021-22's ratio. No number moves.

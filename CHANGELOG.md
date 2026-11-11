@@ -2,6 +2,13 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.3.1 (11 Nov 2026), wording only
+
+The recheck of 1.3.0 (aios-harness#235) passed every figure and found one wording fault. Tag `v1.3.1` on branch `release-1.3.1`, Gitea only (ADR 0228). `results/figures.json`: 2,452 keys, sha256 `98ce486f...`. **No number moves** (`docs/1.3.1-against-1.3.0.md`; `tests/test_checks.py`).
+- `check.ofgem.price_cap_policy_costs.basis`: Ofgem counted CfD costs as policy costs until v1.11 of its Annex 4 (15 May 2022), which moved them to its wholesale allowance (1.3.0 said only "under wholesale"); the check leaves CfDs out on both sides throughout. The RO half uses Ofgem's own obligation level on both sides, so it tests a value per certificate against a forward allowance, not money paid.
+- Added `check.ofgem.price_cap_policy_costs.2021.note`: 2021-22's ratio of 0.94 is FiT (the levelisation fund fell to £1,273.1m as the value of exported power rose with wholesale prices).
+- `docs/figures.md`: the same, a "for the writer" box on the per-household keys, and the ONS valuation of the RO not found (the £1.53bn RO gap with ONS stays named and sized, not explained).
+
 ## 1.3.0 (11 Nov 2026), the checker's points and the households divisor
 
 For Report No. 2's plan step 19 (aios-harness#235), after the separate checker's pass over 1.2.0 and Richard's rulings of 11 Nov 2026 on the price-cap check (report-series ADR 0241) and the households divisor (ADR 0242). Frozen on Gitea only, tag `v1.3.0` on branch `release-1.3.0` (named apart from its tag), as 1.1.0 and 1.2.0 (ADR 0228): **GitHub `master` and the live Clock stay on 1.0.0**. `results/figures.json`: 2,451 keys, sha256 `9aab3817...` (in `results/figures.json.sha256`). Key by key against 1.2.0: `docs/1.3.0-against-1.2.0.md`. Method: `docs/figures.md`, "Version 1.3.0".

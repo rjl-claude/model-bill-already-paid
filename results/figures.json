@@ -2436,7 +2436,8 @@
   "check.ofgem.price_cap_policy_costs.headline.gap": -4.866865666471313,
   "check.ofgem.price_cap_policy_costs.headline.ratio": 0.9933776903215716,
   "check.ofgem.price_cap_policy_costs.years": "2019-20 to 2025-26",
-  "check.ofgem.price_cap_policy_costs.basis": "\u00a3 per typical household (single-rate, 3.1 MWh a year), the RO and FiT only: the model's lines as paid over the volume they are charged on, against Ofgem's price-cap policy-cost allowance for the same two schemes, a forward allowance; Ofgem counts CfDs and carbon under wholesale, not policy costs; 2025-26 provisional on the model's side",
+  "check.ofgem.price_cap_policy_costs.basis": "\u00a3 per typical household (single-rate, 3.1 MWh a year), the RO and FiT only. Ofgem's side is its price-cap policy-cost allowance for the two schemes, a forward allowance set before each period, not money paid. The RO half uses Ofgem's own obligation level on both sides, so it tests the model's value per certificate obligated against Ofgem's forecast buy-out price; the FiT half sets the levelisation fund over Great Britain's supply against Ofgem's forecast. CfDs are left out on both sides in every year: Ofgem counted them as policy costs until v1.11 of its Annex 4 (15 May 2022), which \"Removed CfD costs from the annex (moved to annex 2 - wholesale costs)\". Carbon is in neither side. 2025-26 provisional on the model's side",
+  "check.ofgem.price_cap_policy_costs.2021.note": "2021-22 is the one year below 0.95 (0.94). The cause is FiT: the levelisation fund fell to \u00a31,273.1m (2020-21: \u00a31,603.0m), because the value of exported power to suppliers, which is taken off the fund, rose to \u00a3301.7m (\u00a3160.8m) with high wholesale prices, and generation payments fell to \u00a31,451.9m (\u00a31,547.0m) (Ofgem's annual levelisation notices). The model's FiT half is \u00a34.96/MWh against Ofgem's \u00a36.85/MWh, set beforehand from a forecast; the RO half agrees within 0.1%",
   "check.ofgem.price_cap_policy_costs.schemes": "ro,fit",
   "check.ofgem.price_cap_policy_costs.typical_consumption_mwh": 3.1,
   "check.obr.levies.headline.model": 85210212011.04001,
@@ -2454,7 +2455,7 @@
  },
  "meta": {
   "model": "model-bill-already-paid",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "built_from": {
    "file": "results/clock.json",
    "ref": "2a63b034",
@@ -2908,6 +2909,7 @@
    "check.<check>.headline.<cs>": "a check against a published total, \u00a3 cash, over the years both cover: the model, the reference, gap (model less reference), ratio (model over it)",
    "check.<check>.years": "the years the check covers",
    "check.ofgem.price_cap_policy_costs.<year>.<cs>": "the price-cap check each financial year from its April, \u00a3 per typical household (ADR 0241)",
+   "check.ofgem.price_cap_policy_costs.<year>.note": "why that year's price-cap ratio stands out, in words",
    "check.ofgem.price_cap_policy_costs.schemes": "the schemes the price-cap check matches, comma-separated",
    "check.ofgem.price_cap_policy_costs.typical_consumption_mwh": "the typical consumption both sides use, MWh a year",
    "check.obr.levies.reference_whole": "the OBR's environmental levies outturn as published, the years of the check",

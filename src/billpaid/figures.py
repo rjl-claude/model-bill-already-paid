@@ -160,6 +160,7 @@ KEYS = {
     "check.<check>.years": "the years the check covers",
     "check.ofgem.price_cap_policy_costs.<year>.<cs>": ("the price-cap check each financial year from its April, £ "
                                                        "per typical household (ADR 0241)"),
+    "check.ofgem.price_cap_policy_costs.<year>.note": "why that year's price-cap ratio stands out, in words",
     "check.ofgem.price_cap_policy_costs.schemes": "the schemes the price-cap check matches, comma-separated",
     "check.ofgem.price_cap_policy_costs.typical_consumption_mwh": "the typical consumption both sides use, MWh a year",
     "check.obr.levies.reference_whole": "the OBR's environmental levies outturn as published, the years of the check",

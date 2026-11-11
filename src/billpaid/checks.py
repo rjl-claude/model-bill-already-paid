@@ -134,10 +134,20 @@ def price_cap(out: dict, root: Path) -> None:
         out[f"{k}.{y}.gap"], out[f"{k}.{y}.ratio"] = model - ref, model / ref
         model_t, ref_t = model_t + model, ref_t + ref
     _put(out, "ofgem.price_cap_policy_costs", model_t, ref_t, "2019-20 to 2025-26",
-         "£ per typical household (single-rate, 3.1 MWh a year), the RO and FiT only: the model's lines as paid "
-         "over the volume they are charged on, against Ofgem's price-cap policy-cost allowance for the same two "
-         "schemes, a forward allowance; Ofgem counts CfDs and carbon under wholesale, not policy costs; 2025-26 "
-         "provisional on the model's side")
+         "£ per typical household (single-rate, 3.1 MWh a year), the RO and FiT only. Ofgem's side is its price-cap "
+         "policy-cost allowance for the two schemes, a forward allowance set before each period, not money paid. "
+         "The RO half uses Ofgem's own obligation level on both sides, so it tests the model's value per "
+         "certificate obligated against Ofgem's forecast buy-out price; the FiT half sets the levelisation fund "
+         "over Great Britain's supply against Ofgem's forecast. CfDs are left out on both sides in every year: "
+         "Ofgem counted them as policy costs until v1.11 of its Annex 4 (15 May 2022), which \"Removed CfD costs "
+         "from the annex (moved to annex 2 - wholesale costs)\". Carbon is in neither side. 2025-26 provisional on "
+         "the model's side")
+    out[f"{k}.2021.note"] = (
+        "2021-22 is the one year below 0.95 (0.94). The cause is FiT: the levelisation fund fell to £1,273.1m "
+        "(2020-21: £1,603.0m), because the value of exported power to suppliers, which is taken off the fund, "
+        "rose to £301.7m (£160.8m) with high wholesale prices, and generation payments fell to £1,451.9m "
+        "(£1,547.0m) (Ofgem's annual levelisation notices). The model's FiT half is £4.96/MWh against Ofgem's "
+        "£6.85/MWh, set beforehand from a forecast; the RO half agrees within 0.1%")
     out[f"{k}.schemes"] = "ro,fit"
     out[f"{k}.typical_consumption_mwh"] = typical
 

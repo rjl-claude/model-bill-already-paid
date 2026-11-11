@@ -97,3 +97,28 @@ def test_the_ro_and_fit_against_ofgems_price_cap_policy_costs(figs):
     assert figs[f"{k}.schemes"] == "ro,fit"
     assert figs[f"{k}.typical_consumption_mwh"] == 3.1
     assert 0.8 < ratio < 1.2
+
+
+def test_the_price_cap_basis_says_when_ofgem_moved_cfds(figs):
+    """1.3.1: Ofgem's Annex 4 counted CfD costs as policy costs until its v1.11 (15 May 2022), whose change log
+    reads "Removed CfD costs from the annex (moved to annex 2 - wholesale costs)" (the saved workbook's front
+    sheet). The check leaves CfD out on both sides in every year."""
+    from billpaid import outline_sources as src
+    front = " ".join(str(c) for r in src._sheet(ROOT, "ofgem-cap-annex-4", "Front sheet").iter_rows() for c in r if c)
+    assert "Removed CfD costs from the annex (moved to annex 2 - wholesale costs)" in front
+    basis = figs["check.ofgem.price_cap_policy_costs.basis"]
+    assert "v1.11" in basis and "15 May 2022" in basis and "left out on both sides" in basis
+    assert "obligation level" in basis and "forward allowance" in basis
+    note = figs["check.ofgem.price_cap_policy_costs.2021.note"]
+    assert "FiT" in note and "export" in note
+
+
+def test_1_3_1_moves_no_number_from_1_3_0(figs):
+    import json
+    import subprocess
+    old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.3.0:results/figures.json"],
+                                    capture_output=True, check=True).stdout)["figures"]
+    assert set(old) <= set(figs)
+    moved = [k for k in old if old[k] != figs[k]]
+    assert moved == ["check.ofgem.price_cap_policy_costs.basis"], moved
+    assert all(isinstance(figs[k], str) for k in set(figs) - set(old))
