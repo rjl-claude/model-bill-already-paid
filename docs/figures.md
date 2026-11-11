@@ -242,8 +242,7 @@ The spec proposed names and left them to this ticket; the freeze (#226) checks t
 - the 2025 total's parts `all.2025.measured` and `all.2025.estimated` are `all.2025.measured.real|cash` and `all.2025.estimated.real|cash`, with a third part, `all.2025.modelled.real|cash`, so that the parts add up to the total (the modelled lines are neither measured nor estimated);
 - each line's 2025 basis is its line's `<line>.basis` (no line is carried forward); `<line>.2025.source` says where each 2025 figure comes from.
 
-## Not yet
+## The freeze
 
-- The version in `pyproject.toml` stays 1.0.0 until the freeze (#226): the live Clock refuses a results file of any other version, so the number moves only with Richard's ruling on how 1.1.0 reaches GitHub.
-- The work is on branch `v1.1.0`, on Gitea only; `master` (and so the live Clock) is untouched until the freeze.
-- `results/` is the robot's: the figures file is not committed until the freeze writes and pins it.
+- Frozen 11 Nov 2026 (#226) as version 1.1.0, tag `v1.1.0`, with `results/figures.json` and its `figures.json.sha256` committed at the tag: the file the paper pins in `report-series/model-register.yaml`. A fresh build from the tag is byte for byte that file (`tests/test_version_1_1_0.py`). What changed: `CHANGELOG.md`.
+- On Gitea only (report-series ADR 0228). GitHub `master`, and so the live Clock, stay on 1.0.0 until the paper's release: the Clock refuses a results file of any other version, so 1.1.0 goes to GitHub only on Richard's "deploy", in the same step as the Clock's pin moves.

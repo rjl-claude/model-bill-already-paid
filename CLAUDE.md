@@ -33,12 +33,12 @@ The Subsidy Clock's sums: what UK subsidies and their indirect costs have cost, 
 
 - GitHub `master` (remote `github`) is the live copy. Its robot (`.github/workflows/update.yml`, 05:30 UTC daily) fetches the data, writes `data/` and `results/`, and commits there. Gitea (`origin`) follows: fetch `github` before any commit, and keep the two the same.
 - `data/` and `results/` are the robot's; a hand-made commit carries source only.
-- Version 1.1.0 (Report No. 2's plan steps 6-10, map #206) is built on branch `v1.1.0`, on Gitea only, until its freeze (#226); `master` stays the same on both remotes.
+- Version 1.1.0 (Report No. 2's plan steps 6-10, map #206) is frozen: branch and tag `v1.1.0` live on Gitea only until the paper's release (report-series ADR 0228), so "keep the two the same" covers `master` only. Never push `v1.1.0` to `github`; Richard's "deploy" for the paper does that and moves the Clock's pin in the same step. `master` stays 1.0.0 on both remotes until then (`CHANGELOG.md`).
 - The figures taken from the gas model (the Capacity Market's net-zero part, grid and balancing costs without net zero, carbon) are pinned in `reference/model_pin.yaml` (engine v4-s43). A new engine release is never applied by itself.
 
 ## Misleading places
 
-- `reference/engine/v4-s43*.json` are the gas model's files, not this model's version (this model is 1.0.0).
+- `reference/engine/v4-s43*.json` are the gas model's files, not this model's version (1.0.0 on `master`, 1.1.0 on `v1.1.0`).
 - `scratch/` holds working notes from October; `private/history/vault-2026-11-06/` holds the old vault method notes word for word. As found, not all rulings confirmed.
 
 ## Outside this folder
