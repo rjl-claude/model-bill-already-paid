@@ -1,0 +1,43 @@
+# The sources the ranges read beyond the frozen results file and the engine release (version 1.1.0, part 4,
+# aios-harness#225; spec: "a range for each line labelled estimated"). Each file is saved here as fetched or
+# copied and refused if its sha256 differs. The figures are read from the files by billpaid.ranges; none is
+# typed here. Method: docs/figures.md, "The ranges".
+#
+# A newer edition is never picked up by itself: save the new file beside the old, change file and sha256 here,
+# rebuild, and measure what moves.
+sources:
+  eea-eua-price:
+    what: >-
+      European Environment Agency, "Emissions, allowances, surplus and prices in the EU ETS, 2005-2020" (chart,
+      published 5 Jan 2022), data package, sheet DATA, row "EUA price (EUR / t CO2-eq)": the yearly allowance
+      price Report No. 1's release v4-s43 prices carbon at in 2005-2012, its estimated years. Byte for byte the
+      file that release read (its run file's input checksum for
+      data/raw/eea/s18a-EUETS_emissions_allowances_surplus_prices_2005-2020_data-package.zip).
+    url: https://www.eea.europa.eu/en/analysis/maps-and-charts/emissions-allowances-surplus-and-prices
+    file: reference/sources/eea-euets-emissions-allowances-prices-2005-2020.zip
+    copied_from: /srv/aios/projects/model-gas-counterfactual/data/raw/eea/s18a-EUETS_emissions_allowances_surplus_prices_2005-2020_data-package.zip
+    retrieved: "2026-10-11"
+    sha256: e4b76eaec7dc381500eef324e416e672bb52bff2e4d1c57a983927e825c64c65
+  dmo-phase2-auctions:
+    what: >-
+      UK Debt Management Office, the UK Government's 30 auctions of EU allowances in Phase II of the EU ETS
+      (19 Nov 2008 to 25 Oct 2012), one row per auction from the DMO's result press notice (notice number,
+      volumes, clearing price in euros, the DMO's settlement exchange rate). Byte for byte the table Report
+      No. 1's release v4-s43 reads (its run file's ets_auctions checksum for s36/ets/uk-ets-phase2-auctions.csv);
+      every clearing price checked on 11 Nov 2026 against the DMO notice's own text (30 of 30 agree).
+    url: http://www.dmo.gov.uk/index.aspx?page=ETS/AuctionInfo
+    file: reference/sources/dmo-uk-ets-phase2-auctions.csv
+    copied_from: /srv/aios/projects/model-gas-counterfactual/data/raw/s36/ets/uk-ets-phase2-auctions.csv
+    retrieved: "2026-10-17"
+    sha256: 0ccf58033ab5c9e6a611ebf438f6cf3769dd063609e49a07221cf2faa1806cbf
+  elexon-turnup-range:
+    what: >-
+      Constraint turn-up re-walked for its range: Elexon Insights settlement stacks (bids and offers), every
+      half-hour 1 Nov 2015 to 31 Dec 2025, fetched by tools/turnup_range.py on 11 Nov 2026 with the same calls as
+      1.0.0's turn-up feed. One row a day: the system-flagged wind volume switched off, and that volume priced on
+      the half-hour's accepted offers (CADL left out) three ways: 1.0.0's walk (central), cheapest first (low),
+      dearest first (high), MWh and £.
+    url: https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/{bid|offer}/{date}/{period}
+    file: reference/sources/turnup-range-daily.csv
+    retrieved: "2026-11-11"
+    sha256: 3698876800d44e66dbe59a67348b320932e068f21eb042227b5e4dc51b3f842f

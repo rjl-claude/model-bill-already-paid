@@ -1,13 +1,13 @@
 # The paper's figures file
 
-Version 1.1.0, parts 1 to 3 (aios-harness#222, #223 and #224, Report No. 2's plan steps 6 to 8, map #206). Report No. 2, *The Price of the Climate Bill*, prints every bill-already-paid figure by key from this file, as it does the bill still to come's from that model's `results/figures.json` (spec: `report-series/price-of-the-climate-bill/spec.md`, "The bill already paid moves to version 1.1.0"; ADR 0222).
+Version 1.1.0, parts 1 to 4 (aios-harness#222, #223, #224 and #225, Report No. 2's plan steps 6 to 9, map #206). Report No. 2, *The Price of the Climate Bill*, prints every bill-already-paid figure by key from this file, as it does the bill still to come's from that model's `results/figures.json` (spec: `report-series/price-of-the-climate-bill/spec.md`, "The bill already paid moves to version 1.1.0"; ADR 0222).
 
 ## What it is
 
 - One flat JSON file, `{"figures": {key: value}, "meta": {...}}`, keyed like model-bill-still-to-come's.
-- Built by `uv run --frozen python -m billpaid figures` (default output `results/figures.json`, with its fingerprint beside it in `figures.json.sha256`). Code: `src/billpaid/figures.py`, for the bridge `src/billpaid/bridge.py`, and for 2025 `src/billpaid/provisional.py`. Tests: `tests/test_figures.py`, `tests/test_bridge.py`, `tests/test_provisional.py`.
+- Built by `uv run --frozen python -m billpaid figures` (default output `results/figures.json`, with its fingerprint beside it in `figures.json.sha256`). Code: `src/billpaid/figures.py`, for the bridge `src/billpaid/bridge.py`, for 2025 `src/billpaid/provisional.py`, and for the ranges `src/billpaid/ranges.py`. Tests: `tests/test_figures.py`, `tests/test_bridge.py`, `tests/test_provisional.py`, `tests/test_ranges.py`.
 - Built from the frozen results file the paper pins, not from a new run: `results/clock.json` as committed at `2a63b034` (the robot's file of 9 Nov 2026, model 1.0.0, sha256 `738ac005…`, pinned in `report-series/model-register.yaml`). The command refuses that file if its fingerprint differs.
-- Each key for 2002-2024 is a 1.0.0 value, or a sum, ratio or product of them by 1.0.0's own rules (CPIH pricing, the Capacity Market range); no new method. 2025 has one new method (below, "2025, the provisional year"). The tests check every key against the 1.0.0 table it comes from, so no 1.0.0 value moves, and check that the model still writes `results/clock.json` exactly as before.
+- Each key for 2002-2024 is a 1.0.0 value, or a sum, ratio or product of them by 1.0.0's own rules (CPIH pricing, the Capacity Market range); no new method. Two parts add a new method: 2025 (below, "2025, the provisional year") and the ranges of the estimated lines (below, "The ranges"). The tests check every key against the 1.0.0 table it comes from, so no 1.0.0 value moves, and check that the model still writes `results/clock.json` exactly as before.
 - `meta` names the model and version, the file it was built from (path, commit, sha256, version, date), the headline years, and every key template with its meaning.
 
 ## The years
@@ -33,6 +33,7 @@ A `<name>` stands for any of its values:
 - `<cc>`: `estimate`, `accepted_offers`, `accepted_offers_wind`; `<when>`: `from`, `to`
 - `<d>`: `cpih`, `to_2024`
 - `<basis>`: `measured`, `modelled`, `estimated`
+- `<ranged>`: `carbon`, `constraint_turnup` (the lines labelled estimated, part 4)
 - `<step>`: the bridge's steps, in the walk's order (below): `no2_money_paid`, `cfd_renewable`, `capacity_market`, `carbon`, `tnuos`, `balancing`, `ro`, `fit`, `ccl`, `vat`, `energy_saving_schemes`, `power_before_carbon`, `no1_extra_cost`
 
 Every key in the file matches exactly one of these templates (tested):
@@ -79,6 +80,11 @@ Every key in the file matches exactly one of these templates (tested):
 - `bridge.steps`: the steps' names in the walk's order, comma-separated.
 - `bridge.no1.version`: the Report No. 1 release the bridge reads (`v4-s43`).
 - `bridge.no1.sha256`: that release's run file's fingerprint (the one pinned in `report-series/model-register.yaml`).
+- `<ranged>.range.<bound>.<year>.<m>`: an estimated line at its low or high, each year it has a range (below, "The ranges"): turn-up 2015-2025, carbon 2008-2012.
+- `<ranged>.range.<bound>.headline.<m>`: 2002-2024, each year with a range at its low or high, the other years central.
+- `<ranged>.range.years`: the years the line has a range for, comma-separated.
+- `<ranged>.range.method`: how the range is made, in one line.
+- `carbon.allowance_price.<end>.<year>`: the allowance price carbon is priced at that year, central (the EEA's) and the low and high of the range, EUR/t.
 
 ## Each line's basis
 
@@ -89,7 +95,7 @@ Every key in the file matches exactly one of these templates (tested):
 - estimated: constraint turn-up (1.0.0: "Estimated cost of paying other stations…").
 - Sizewell C (part 3, 2025 only): measured (suppliers' levy payments to LCCC as recorded).
 
-Part 4 (#225) gives a range to each estimated line that has none in 1.0.0 (constraint turn-up, carbon's estimated years).
+Part 4 (#225) gives a range to each estimated line that has none in 1.0.0 (below, "The ranges").
 
 ## The bridge with Report No. 1
 
@@ -159,6 +165,60 @@ VAT is recomputed by 1.0.0's rule (5% of households' share, the engine's 2025 sh
 
 **Saved sources.** The Ofgem pages (2025-26, and 2024-25 for the test of the reading) and the LCCC file are in `reference/sources/`, each pinned by sha256 in `reference/provisional_2025.yaml`, and refused if the bytes differ. The figures are read from the saved files, never typed. A newer edition (a later settlement run, Ofgem's late-payment fund, HMRC's next bulletin, DESNZ's ETS figure) is never picked up by itself.
 
+## The ranges
+
+Part 4 (aios-harness#225; spec: "a range for each line labelled estimated"; the review standard: an estimate passes only with its method and range given). Code: `src/billpaid/ranges.py`; tests: `tests/test_ranges.py`.
+
+**What is labelled estimated.** By the model's own labels (`<line>.basis`, `carbon.<year>.basis`), every year 2002 to 2025:
+
+| Line | Years labelled estimated | Range in 1.0.0 | Range in 1.1.0 |
+|---|---|---|---|
+| `constraint_turnup` | every year (the whole line) | none | 2015-2025, every year with a figure. 2002-2014 are zero: Elexon's settlement stacks start in November 2015, so 1.0.0 has no turn-up figure before then and any turn-up in those years sits inside the BSUoS line. There is nothing to range. |
+| `carbon` | 2005-2012 (the engine's allowance price for those years is the EEA's yearly figure, whose origin the EEA does not state) | none | 2008-2012. 2005-2007 have none yet (below). |
+
+No other line or year is labelled estimated. The one range 1.0.0 holds, the Capacity Market's, is on a modelled line (`capacity_market.range.*`). Some of the shared cost register's own rows are labelled estimated (for example BSUoS 2006-07, CPS 2013, FiT 2025), but those are the register's labels for inputs to measured or modelled lines, not this model's labels.
+
+**Constraint turn-up (new method).** What is estimated is not the volume. The switched-off wind is a record: the system-flagged wind bids each half-hour. The estimate is which of the half-hour's accepted offers replaced that wind. 1.0.0 follows Octopus's walk: unflagged offers first, then in acceptance order, pro rata at the margin. The range holds the volume and the set of offers fixed and changes only the order:
+
+- low: the same volume priced on the half-hour's accepted offers cheapest first. No choice of those offers costs less;
+- high: the dearest first. No choice of those offers costs more.
+
+The CADL offers stay out, as in 1.0.0. The re-walk is a new fetch of Elexon Insights' settlement stacks, the same public API and calls as 1.0.0's feed, every half-hour from 1 Nov 2015 to 31 Dec 2025. Offers are fetched only for half-hours with wind switched off, since every walk is zero in the others. It is made by `tools/turnup_range.py`, saved one row a day as `reference/sources/turnup-range-daily.csv` and pinned by sha256 in `reference/ranges.yaml`. Its central walk reproduces 1.0.0's measured turn-up every year (tested, within 0.5%). Each year's low and high are scaled by 1.0.0's measured figure over the re-walk's central figure, so the range sits on the frozen figure, not on a later fetch. They are then capped, as 1.0.0 caps the line, at the BSUoS uplift: turn-up is never more than it. In 2015 and 2018 the cap lies below even the cheapest walk, so low, central and high are all the line itself. In 2022 it caps the high only.
+
+| Year | Re-walk, £m cash: cheapest / 1.0.0's walk / dearest | 1.0.0 measured, £m cash | £m, 2024 prices: low / central / high |
+|---|---|---|---|
+| 2015 | 24.8 / 25.0 / 34.1 | 25.0 | 30.5 / 30.5 / 30.5 (capped) |
+| 2016 | 59.2 / 60.0 / 80.0 | 60.0 | 77.9 / 78.9 / 105.3 |
+| 2017 | 88.3 / 89.3 / 109.3 | 89.3 | 113.3 / 114.6 / 140.3 |
+| 2018 | 123.3 / 124.8 / 142.4 | 124.8 | 66.9 / 66.9 / 66.9 (capped) |
+| 2019 | 103.6 / 107.0 / 128.8 | 107.0 | 127.7 / 132.0 / 158.7 |
+| 2020 | 177.0 / 181.1 / 218.8 | 181.1 | 216.0 / 221.0 / 267.1 |
+| 2021 | 383.0 / 387.0 / 448.6 | 387.0 | 456.1 / 460.9 / 534.3 |
+| 2022 | 726.4 / 739.9 / 855.1 | 739.9 | 801.1 / 816.1 / 831.3 (high capped) |
+| 2023 | 501.0 / 505.1 / 563.2 | 505.1 | 517.8 / 522.0 / 582.0 |
+| 2024 | 827.6 / 835.2 / 919.2 | 835.2 | 827.6 / 835.2 / 919.2 |
+| 2025 (provisional) | 1,079.0 / 1,083.6 / 1,195.4 | 1,083.6 | 1,039.1 / 1,043.6 / 1,151.3 |
+
+The range is lopsided. 1.0.0's order, unflagged offers first, is already close to the cheapest: before the cap, the cheapest walk is 0.4-3.2% below 1.0.0's walk each year, and the dearest 10-36% above. Over 2002-2024, in 2024 prices, the line is £3.28bn, range £3.24bn to £3.64bn (`constraint_turnup.range.<bound>.headline.real`).
+
+**Carbon, 2005-2012 (new method).** In these years the engine prices carbon at the EEA's yearly EUA price (EUR/t) at each month's Bank of England exchange rate. There is no Carbon Price Support before April 2013, so the line is that price times the engine's carbon intensity at the margin times the volume. The range moves only the price, the input that makes these years estimated. For each year the low and high are the lowest and highest of two things: the EEA's price, and every clearing price of that year's UK Government auctions of EU allowances. The DMO ran the auctions for DECC, 30 in all from 19 Nov 2008 to 25 Oct 2012, and each price is checked against the DMO's own result notice. The line at that price is the line times that price over the EEA's. This holds the engine's merit order as it is. A lower carbon price would put more coal at the margin, and a higher price less, so the true line moves a little less than in proportion. The range is therefore, if anything, wider than a full rerun would give. In 2009-2012 the EEA's price lies inside the auctions' own spread. 2008 had one UK auction, on 19 Nov after the price had fallen, so its high is the EEA's price itself.
+
+| Year | EUR/t: low / EEA / high | £m, 2024 prices: low / central / high |
+|---|---|---|
+| 2008 | 16.15 / 20.02 / 20.02 | 2,563.0 / 3,176.9 / 3,176.9 |
+| 2009 | 10.98 / 13.16 / 15.05 | 3,102.1 / 3,717.2 / 4,252.0 |
+| 2010 | 12.15 / 14.34 / 15.60 | 2,939.5 / 3,469.0 / 3,774.2 |
+| 2011 | 9.72 / 12.94 / 16.34 | 1,916.4 / 2,551.9 / 3,221.6 |
+| 2012 | 6.67 / 7.37 / 8.55 | 1,263.3 / 1,395.9 / 1,619.4 |
+
+Over 2002-2024, in 2024 prices, the carbon line is £82.86bn, range £80.33bn to £84.59bn. Only 2008-2012 move.
+
+**Not yet: carbon 2005-2007.** These years have no UK auction, so no UK record of the price, and no range. The one exchange source found for Phase I prices, EEX's own annual reports for 2005-2007, could not be fetched: the machine's safety check refused the download. The NAO's 2009 review gives only Phase I's peak (EUR 29.75, April 2006) and says the price then "fell to nearly zero". That bounds the phase as a whole, not each year. Until a primary record of each year's price is saved, these three years carry no range, and the paper says so (chapter 13: "say plainly which lines have no range and why"). In 2024 prices the three years are 2005 £3,344.0m, 2006 £2,622.7m and 2007 £93.0m.
+
+**The headline at the range.** `<ranged>.range.<bound>.headline.<m>` is the line's 2002-2024 total with each year that has a range at its low or high, and the other years at central. It is never added to the main headline.
+
+**Saved sources.** `reference/ranges.yaml` pins each file by sha256, and the build refuses any file whose bytes differ: the re-walk of Elexon's stacks; the EEA data package, byte for byte the file Report No. 1's release v4-s43 read (its run file's input checksum, tested); and the DMO auction table, byte for byte the table that release reads (its `ets_auctions` checksum, tested). A newer edition of any of these is never picked up by itself.
+
 ## Against the spec's proposed names
 
 The spec proposed names and left them to this ticket; the freeze (#226) checks the spec against the frozen file. Where they differ:
@@ -177,4 +237,3 @@ The spec proposed names and left them to this ticket; the freeze (#226) checks t
 - The version in `pyproject.toml` stays 1.0.0 until the freeze (#226): the live Clock refuses a results file of any other version, so the number moves only with Richard's ruling on how 1.1.0 reaches GitHub.
 - The work is on branch `v1.1.0`, on Gitea only; `master` (and so the live Clock) is untouched until the freeze.
 - `results/` is the robot's: the figures file is not committed until the freeze writes and pins it.
-- Still to come in 1.1.0: the ranges (#225).

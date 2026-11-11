@@ -15,7 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
-from billpaid import bridge, provisional
+from billpaid import bridge, provisional, ranges
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
@@ -68,6 +68,7 @@ PLACEHOLDERS = {
     "cc": "estimate|accepted_offers|accepted_offers_wind", "when": "from|to", "d": "cpih|to_2024",
     "step": "|".join([bridge.START, *(name for name, _, _ in bridge.STEPS), bridge.END]),
     "basis": "measured|modelled|estimated",
+    "ranged": "carbon|constraint_turnup",
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
 KEYS = {
@@ -118,6 +119,12 @@ KEYS = {
     "bridge.steps": "the steps' names in the walk's order, comma-separated",
     "bridge.no1.version": "the Report No. 1 release the bridge reads (the gas model's version)",
     "bridge.no1.sha256": "that release's run file's fingerprint",
+    "<ranged>.range.<bound>.<year>.<m>": ("an estimated line at its low or high, each year it has a range (part 4: "
+                                          "constraint turn-up, carbon's estimated years)"),
+    "<ranged>.range.<bound>.headline.<m>": "2002-2024, each year with a range at its low or high, central elsewhere",
+    "<ranged>.range.years": "the years the line has a range for, comma-separated",
+    "<ranged>.range.method": "how the range is made, in words (docs/figures.md, \"The ranges\")",
+    "carbon.allowance_price.<end>.<year>": "the allowance price carbon is priced at, central, low and high (EUR/t)",
 }
 
 
@@ -255,6 +262,7 @@ def build(doc: dict, no1: bridge.No1Release) -> dict[str, float | str]:
     _context(out, doc)
     bridge.build(out, doc, no1)
     provisional.build(out, doc, no1.run)
+    ranges.build(out, doc)
     return out
 
 
@@ -286,5 +294,5 @@ def document(doc: dict, no1: bridge.No1Release) -> dict:
                      "built_from": {"file": FROZEN_PATH, "ref": FROZEN_REF, "sha256": FROZEN_SHA256,
                                     "version": doc["meta"]["version"], "generated_at": doc["meta"]["generated_at"]},
                      "no1": no1.meta(),
-                     "provisional_2025": provisional.sources(),
+                     "provisional_2025": provisional.sources(), "ranges": ranges.sources(),
                      "headline_years": [2002, LAST_CLOSED_YEAR], "keys": KEYS, "placeholders": PLACEHOLDERS}}
