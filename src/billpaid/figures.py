@@ -72,9 +72,11 @@ PLACEHOLDERS = {
     "check": r"hmrc\.ccl|ofgem\.ro|ofgem\.fit|obr\.levies|ofgem\.price_cap_policy_costs|ref\.direct",
     "cs": "model|reference|gap|ratio",
     "area": "gb|uk",
+    "pt": "2005_2012|2013_2020|2021_on",
+    "ptw": "method|sources|vat",
     "nc": "whd|crc",
     "gl": "ro|cfd",
-    "option": "carbon_tax_only|no_carbon|ccl_above_2001|no_ccl|grid_whole|cm_whole_levy|energy_saving_schemes",
+    "option": "carbon_tax_only|no_carbon|ccl_above_2001|no_ccl|grid_whole|cm_whole_levy|energy_saving_schemes|no_grid_balancing",
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
 KEYS = {
@@ -133,9 +135,24 @@ KEYS = {
     "carbon.allowance_price.<end>.<year>": "the allowance price carbon is priced at, central, low and high (EUR/t)",
     "all.headline.<basis>.<m>": ("the 2002-2024 headline's measured, modelled and estimated parts, each line "
                                  "counted by its basis year by year (carbon 2005-2012 estimated); they add up"),
-    "range.<bound>.headline.<m>": ("the headline's range (ADR 0234): the headline with the one estimated line, of "
-                                   "carbon, turn-up and the Capacity Market, that moves it furthest, at that end"),
+    "range.<bound>.headline.<m>": ("the headline's range (ADR 0234, changed by rulings 13b and 14c in 1.4.0): the "
+                                   "headline with the one range of range.lines that moves it furthest, at that end"),
     "range.<bound>.headline.line": "the line that sets that end of the headline's range",
+    "range.lines": ("the lines whose ranges set the headline's range, comma-separated (1.4.0: turn-up out, "
+                    "ruling 14c)"),
+    "bsuos.turnup_range.<bound>.<year>.<m>": ("the BSUoS line with turn-up at its low or high (ruling 14c): turn-up's "
+                                              "change taken off it, so their total does not move"),
+    "bsuos.turnup_range.<bound>.headline.<m>": "the same, 2002-2024",
+    "carbon.pass_through.<pt>.<end>": ("ruling 13b (1.4.0): the share of the carbon charge passed into the price in "
+                                       "that period, central, low and high (0 to 1)"),
+    "carbon.pass_through.<pt>.years": "the period's years (2021_on runs to 2025, provisional)",
+    "carbon.pass_through.<pt>.basis": "where the period's settings come from, in words",
+    "carbon.pass_through.<ptw>": "the pass-through bracket's method, sources and VAT, in words",
+    "carbon.pass_through.range.<bound>.<year>.<m>": "the carbon line at the low or high pass-through, 2005-2025",
+    "carbon.pass_through.range.<bound>.headline.<m>": "the same, 2002-2024",
+    "carbon.pass_through.swing.<bound>.<m>": ("the headline's move with the pass-through at its low or high, the VAT "
+                                              "on the carbon moved with it, 2002-2024"),
+    "carbon.pass_through.headline.<bound>.<m>": "the headline with the pass-through at its low or high, 2002-2024",
     "households.<year>": "Great Britain's households that year (the same as households.gb.<year>), 2002-2025",
     "households.<area>.<year>": "households that year, Great Britain (gb) or the UK (uk), ONS, 2002-2025",
     "per_household.<year>.real": ("money paid per household that year, 2024 prices: each line over its own area's "
@@ -146,6 +163,10 @@ KEYS = {
     "own_bills.per_household.headline.real": "the same, 2002-2024 added up",
     "option.<option>.headline.<m>": ("the headline under another counting option (outline §6, §8): its lines "
                                      "changed, with the VAT on them; never the paper's figure"),
+    "option.no_grid_balancing.less_than_headline.<m>": ("ruling 12e (1.4.0): the headline less the case with none "
+                                                        "of the grid and balancing cost above the gas-led "
+                                                        "alternative counted, nor its VAT (TNUoS and BSUoS)"),
+    "option.no_grid_balancing.words": "that case in words, to print beside the headline",
     "energy_saving_schemes.<year>.<m>": ("suppliers' energy-saving schemes on electricity bills (EEC to GBIS), "
                                          "Report No. 1's figure gross of the 2001 scheme; not counted (ADR 0233)"),
     "energy_saving_schemes.headline.<m>": "the same, 2002-2024",

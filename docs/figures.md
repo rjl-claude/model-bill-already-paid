@@ -345,3 +345,36 @@ Richard's ruling: each scheme's money is divided by the households of its own ar
 - Year by year the ratio is 0.99 to 1.01 except 2021-22, 0.94 (`check.ofgem.price_cap_policy_costs.<year>.note`, 2021 only). The cause is FiT, and Ofgem's levelisation notices show it: the 2021-22 fund fell to £1,273.1m (2020-21: £1,603.0m) because the value of exported power to suppliers, which is taken off the fund, rose to £301.7m (£160.8m) with high wholesale prices, and generation payments fell to £1,451.9m (£1,547.0m). The model's FiT half is £4.96/MWh against Ofgem's £6.85/MWh, set beforehand from a forecast; the RO half agrees within 0.1%.
 - `check.ofgem.price_cap_policy_costs.schemes`: the schemes matched (`ro,fit`).
 - `check.ofgem.price_cap_policy_costs.typical_consumption_mwh`: the typical consumption both sides use (3.1).
+
+## Version 1.4.0: Richard's rulings of 16 Nov 2026 (12e, 13b, 14c, 21a)
+
+For Report No. 2 (aios-harness#243; the rulings sheet, `report-series/price-of-the-climate-bill/rulings-sheet.md`, points 12, 13, 14 and 21). Key by key against 1.3.1: `docs/1.4.0-against-1.3.1.md`.
+
+### The headline without grid and balancing (ruling 12e)
+
+- `option.no_grid_balancing.headline.<m>`: the headline with none of the grid and balancing cost above the gas-led alternative counted: the TNUoS and BSUoS lines taken out each year, with the VAT 1.0.0's rule charges on them (5% on households' share). Printed beside the headline. The switch-off payments (`constraints`, a measured direct line) and turn-up stay in: the ruling sizes the case as the two lines the paper's §1.1 names, £14.6bn and £2.0bn.
+- `option.no_grid_balancing.less_than_headline.<m>`: the headline less that case (a positive £).
+- `option.no_grid_balancing.words`: the case in words.
+
+### Turn-up moves only the split (ruling 14c)
+
+- `bsuos.turnup_range.<bound>.<year>.<m>`: the BSUoS line with turn-up at its low or high (`constraint_turnup.range.*`, kept as in 1.3.1). Switch-off payments, turn-up and balancing are one recorded total split three ways (paper §8.1), so turn-up's change comes off the BSUoS line and the total does not move. The cap at the BSUoS uplift keeps the BSUoS line at or above zero.
+- `bsuos.turnup_range.<bound>.headline.<m>`: the same, 2002-2024.
+- `range.lines`: the lines whose ranges set the headline's range. Turn-up is no longer one of them: changed alone, it moves no total, so the headline's range (`range.<bound>.headline.<m>`) is set by the others only. This changes ADR 0234's three lines.
+
+### How fully the carbon charge passed into the price (ruling 13b)
+
+The carbon line assumes the carbon charge passed into the price of power in full. Ruling 13b gives that assumption a range from published estimates (the research and its saved sources: `report-series/price-of-the-climate-bill/handover/research-13b-pass-through.md`, `price-of-the-climate-bill/sources/carbon-pass-through/`). Code: `billpaid.outline.pass_through`.
+
+| Period | Low | Central | High | Basis |
+|---|---:|---:|---:|---|
+| 2005-2012 (EU scheme, Phases I and II) | 60% | 100% | 110% | Sijm, Neuhoff and Chen 2006 (60 to 100%, Germany and the Netherlands); Castagneto-Gissey 2014 (109%, UK) |
+| 2013-2020 (EU scheme and the Carbon Price Support) | 75% | 100% | 120% | Guo and Castagneto Gissey 2019 (75.1%, the allowance, Britain 2015-2018); Guo and Newbery 2020 (120%, the Carbon Price Support, Britain 2015-2020) |
+| 2021-2025 (UK scheme; 2025 provisional) | 75% | 100% | 120% | A judgement: no published estimate for Britain, so 2013-2020's settings carried forward |
+
+- The setting scales the whole carbon line each year (the carbon price times the price-setting plant's carbon intensity times the power made). One bracket: every period at its low together, or at its high together, everything else central.
+- **VAT moves with it**: a smaller charge passed into the price is a smaller price, so 5% on households' share of the change is moved with the line, as in the carbon counting options (`option.no_carbon`, `option.carbon_tax_only`). The carbon price range of 2005-2012 (`carbon.range.*`) still moves no VAT, as in 1.1.0.
+- `carbon.pass_through.<pt>.<end>`, `carbon.pass_through.<pt>.years`, `carbon.pass_through.<pt>.basis`: the settings, years and their basis (`<pt>`: `2005_2012`, `2013_2020`, `2021_on`). `carbon.pass_through.<ptw>`: the method, sources and VAT in words (`<ptw>`: `method`, `sources`, `vat`).
+- `carbon.pass_through.range.<bound>.<year>.<m>`, `carbon.pass_through.range.<bound>.headline.<m>`: the carbon line at each end (2025 provisional, never in the headline).
+- `carbon.pass_through.swing.<bound>.<m>`, `carbon.pass_through.headline.<bound>.<m>`: the headline's move, and the headline, at each end.
+- It joins the headline's range (`range.lines`: carbon, the Capacity Market and carbon pass-through; turn-up out under 14c). From 1.4.0 the pass-through sets both ends.

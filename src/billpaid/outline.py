@@ -50,21 +50,84 @@ def headline_parts(out: dict) -> None:
 # M2 (ADR 0234, choice 2): the three lines whose figures are estimated rather than recorded payments, each changed
 # on its own. The Capacity Market's own range is its low share to central (outline §8.5, §14.2): its high key
 # (`capacity_market.range.high`) is the whole levy, a counting option shown apart, never a range end.
-RANGE_LINES = {"carbon": ("carbon.range.low", "carbon.range.high"),
-               "constraint_turnup": ("constraint_turnup.range.low", "constraint_turnup.range.high"),
-               "capacity_market": ("capacity_market.range.low", None)}
+# Ruling 14c (1.4.0): turn-up's range moves only the split between turn-up and the BSUoS line, not their total, so
+# it no longer sets the headline's range (it changes ADR 0234's three lines).
+# Ruling 13b (1.4.0): the carbon pass-through bracket joins them, its move the headline's swing with the VAT on the
+# carbon (`carbon.pass_through.swing.*`). Each entry: the move of the headline at the low and at the high end.
+def _line_move(line: str, low: str | None, high: str | None):
+    return lambda out, i, m: (out[f"{(low, high)[i]}.headline.{m}"] - out[f"{line}.headline.{m}"]
+                              if (low, high)[i] else 0.0)
+
+
+RANGE_LINES = {"carbon": _line_move("carbon", "carbon.range.low", "carbon.range.high"),
+               "capacity_market": _line_move("capacity_market", "capacity_market.range.low", None),
+               "carbon_pass_through": lambda out, i, m: out[f"carbon.pass_through.swing.{('low', 'high')[i]}.{m}"]}
+
+# Ruling 13b (1.4.0): how fully the carbon charge passed into the price, by period (low, central, high), the
+# coordinator's settings of 17 Nov 2026 from report-series/price-of-the-climate-bill/handover/
+# research-13b-pass-through.md. Applied to the whole carbon line each year (central 100%, the line as it is).
+PASS_THROUGH = {"2005_2012": (range(2005, 2013), (0.60, 1.0, 1.10)),
+                "2013_2020": (range(2013, 2021), (0.75, 1.0, 1.20)),
+                "2021_on": (range(2021, LAST_CLOSED_YEAR + 2), (0.75, 1.0, 1.20))}
+PASS_THROUGH_WORDS = {
+    "carbon.pass_through.method": (
+        "The carbon line at a share of the carbon charge passed into the price of power, set for each period, "
+        "with every period at its low setting together or at its high setting together and everything else "
+        "central. The central setting is 100 per cent, the line as it is"),
+    "carbon.pass_through.sources": (
+        "Guo and Castagneto Gissey 2019 (Britain, the allowance price 2015 to 2018, 75 per cent), Guo and Newbery "
+        "2020 (Britain, the Carbon Price Support 2015 to 2020, 120 per cent), Sijm, Neuhoff and Chen 2006 "
+        "(Germany and the Netherlands 2005, 60 to 100 per cent) and Castagneto-Gissey 2014 (the UK in Phase II "
+        "of the EU scheme, 109 per cent)"),
+    "carbon.pass_through.vat": (
+        "The VAT on the carbon line moves with it, 5 per cent on households' share, as in the carbon counting "
+        "options. The range of the carbon price for 2005 to 2012 moves no VAT, as in 1.1.0"),
+    "carbon.pass_through.2005_2012.basis": (
+        "Low from Sijm, Neuhoff and Chen 2006, the low end of 60 to 100 per cent in Germany and the Netherlands. "
+        "High from Castagneto-Gissey 2014, 109 per cent in the UK, taken as 110 per cent"),
+    "carbon.pass_through.2013_2020.basis": (
+        "Low from Guo and Castagneto Gissey 2019, 75 per cent for the allowance price in Britain. High from Guo "
+        "and Newbery 2020, 120 per cent for the Carbon Price Support in Britain. Neither rejects 100 per cent"),
+    "carbon.pass_through.2021_on.basis": (
+        "A judgement. There is no published estimate for Britain under the UK scheme from 2021, so the settings "
+        "of 2013 to 2020 are carried forward, 2025 provisional with them"),
+}
+
+
+def pass_through(out: dict) -> None:
+    """Ruling 13b (1.4.0): the carbon pass-through bracket. The line at each end, year by year and 2002-2024, and
+    the headline at each end with the VAT on the carbon moved with it (the swing)."""
+    for p, (years, setting) in PASS_THROUGH.items():
+        out[f"carbon.pass_through.{p}.years"] = f"{years[0]}-{years[-1]}"
+        for end, v in zip(("low", "central", "high"), setting):
+            out[f"carbon.pass_through.{p}.{end}"] = v
+    out.update(PASS_THROUGH_WORDS)
+    for i, bound in ((0, "low"), (2, "high")):
+        for m in ("real", "cash"):
+            line, swing = out[f"carbon.headline.{m}"], 0.0
+            for years, setting in PASS_THROUGH.values():
+                for y in years:
+                    v = out[f"carbon.{y}.{m}"] * setting[i]
+                    out[f"carbon.pass_through.range.{bound}.{y}.{m}"] = v
+                    if y <= LAST_CLOSED_YEAR:
+                        line += v - out[f"carbon.{y}.{m}"]
+                        swing += _vat_on(out, y, v - out[f"carbon.{y}.{m}"])
+            out[f"carbon.pass_through.range.{bound}.headline.{m}"] = line
+            out[f"carbon.pass_through.swing.{bound}.{m}"] = swing
+            out[f"carbon.pass_through.headline.{bound}.{m}"] = out[f"all.headline.{m}"] + swing
 
 
 def headline_range(out: dict) -> None:
-    """The headline at each end: the one line, of the three, that moves it furthest that way, the others central."""
+    """The headline at each end: the one range, of RANGE_LINES, that moves it furthest that way, the others central."""
+    pass_through(out)
     for end, i, pick in (("low", 0, min), ("high", 1, max)):
         for m in ("real", "cash"):
-            moves = {line: (out[f"{keys[i]}.headline.{m}"] - out[f"{line}.headline.{m}"]) if keys[i] else 0.0
-                     for line, keys in RANGE_LINES.items()}
+            moves = {line: move(out, i, m) for line, move in RANGE_LINES.items()}
             line = pick(moves, key=moves.get)
             out[f"range.{end}.headline.{m}"] = out[f"all.headline.{m}"] + moves[line]
             if m == "real":
                 out[f"range.{end}.headline.line"] = line
+    out["range.lines"] = ",".join(RANGE_LINES)
 
 
 UK_WIDE = ("ro", "ccl")   # ADR 0232: these two run across the UK; every other line in Great Britain
@@ -176,6 +239,13 @@ def options(out: dict, root: Path, run: dict) -> None:
     _option(out, "ccl_above_2001", lambda y, m: -_g(out, f"ccl.{y}.{m}") * rates[2001] / cy(y))
     _option(out, "grid_whole", lambda y, m: v(y, _g(out, f"tnuos.alternative.{y}.{m}")
                                               + _g(out, f"bsuos.alternative.{y}.{m}")))
+    # ruling 12e (1.4.0): none of the grid and balancing cost above the gas-led alternative, nor its VAT
+    _option(out, "no_grid_balancing", lambda y, m: -v(y, _g(out, f"tnuos.{y}.{m}") + _g(out, f"bsuos.{y}.{m}")))
+    for m in ("real", "cash"):
+        out[f"option.no_grid_balancing.less_than_headline.{m}"] = (
+            out[f"all.headline.{m}"] - out[f"option.no_grid_balancing.headline.{m}"])
+    out["option.no_grid_balancing.words"] = ("The headline with none of the grid and balancing cost above the "
+                                             "gas-led alternative counted, and none of the VAT on it")
     _option(out, "cm_whole_levy", lambda y, m: v(y, _g(out, f"capacity_market.raw.{y}.{m}")
                                                  - _g(out, f"capacity_market.{y}.{m}")))
     energy_saving_schemes(out, run)

@@ -2,6 +2,18 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.4.0 (17 Nov 2026), Richard's rulings: grid and balancing case, carbon pass-through, turn-up, the README
+
+For Report No. 2 (aios-harness#243), Richard's rulings of 16 Nov 2026 (`report-series/price-of-the-climate-bill/rulings-sheet.md`, points 12, 13, 14 and 21). Tag `v1.4.0` on branch `release-1.4.0`, built on `v1.3.1`, Gitea only (ADR 0228). `results/figures.json`: 2,620 keys, sha256 `d8a5a804...`. Key by key against 1.3.1: `docs/1.4.0-against-1.3.1.md`. Method: `docs/figures.md`, "Version 1.4.0".
+
+**Moved: the headline's range only** (six keys). No line, total or headline of money paid moves.
+- 14c: turn-up's range moves only the split between turn-up and the BSUoS line (one recorded total split three ways, paper §8.1), so it no longer sets the headline's range. `bsuos.turnup_range.*` gives the BSUoS line at each end of turn-up's range; turn-up's own range keys are as in 1.3.1. This changes ADR 0234's three lines.
+- 13b: the carbon pass-through bracket (how fully the carbon charge passed into the price): 2005-2012 60% to 110%, 2013-2020 75% to 120%, 2021-2025 75% to 120% carried forward (a judgement: no published estimate for Britain), central 100%, all periods at their low or high together, the VAT on the carbon moved with it. Sources: Guo and Castagneto Gissey 2019, Guo and Newbery 2020, Sijm, Neuhoff and Chen 2006, Castagneto-Gissey 2014. The carbon line 2002-2024 at its ends £59.09bn to £97.40bn (2024 prices; £82.86bn central), the headline £228.19bn to £267.21bn. It joins the headline's range and sets both ends: `range.<bound>.headline.real` from £247.7bn to £257.8bn (early carbon prices) to £228.2bn to £267.2bn; cash £201.8bn to £208.3bn becomes £185.9bn to £217.1bn.
+
+Added (168 keys): 12e, the headline with none of the grid and balancing cost above the gas-led alternative counted, nor its VAT (`option.no_grid_balancing.*`): £235.6bn in 2024 prices, £16.8bn less than the headline (cash £190.9bn, £13.9bn less), printed beside the headline; the 13b and 14c keys above; `range.lines`.
+
+Words: 21a, the README's table of schemes describes carbon as the model computes it (the carbon price times the price-setting plant's carbon intensity times the power made), not "power-sector share of auction revenue", the retired emissions-trading line; the Climate Change Levy's row no longer claims the Carbon Price Support, which is in the carbon line.
+
 ## 1.3.1 (11 Nov 2026), wording only
 
 The recheck of 1.3.0 (aios-harness#235) passed every figure and found one wording fault. Tag `v1.3.1` on branch `release-1.3.1`, Gitea only (ADR 0228). `results/figures.json`: 2,452 keys, sha256 `98ce486f...`. **No number moves** (`docs/1.3.1-against-1.3.0.md`; `tests/test_checks.py`).

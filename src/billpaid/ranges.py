@@ -178,7 +178,23 @@ def _turnup(out: dict, doc: dict, root: Path) -> list[int]:
             cash = min(walks[y][bound] * scale, cap)
             out[f"constraint_turnup.range.{bound}.{y}.cash"] = cash
             out[f"constraint_turnup.range.{bound}.{y}.real"] = cash * out[f"constraint_turnup.{y}.real"] / central
+    _turnup_split(out, years)
     return years
+
+
+def _turnup_split(out: dict, years: list[int]) -> None:
+    """Ruling 14c (1.4.0): switch-off payments, turn-up and balancing are one recorded total split three ways, so
+    turn-up at its low or high takes its change off the BSUoS line (`bsuos.turnup_range.*`) and the total does
+    not move. The cap at the BSUoS uplift keeps the BSUoS line at or above zero."""
+    for bound in ("low", "high"):
+        for m in MEASURES:
+            head = out[f"bsuos.headline.{m}"]
+            for y in years:
+                change = out[f"constraint_turnup.range.{bound}.{y}.{m}"] - out[f"constraint_turnup.{y}.{m}"]
+                out[f"bsuos.turnup_range.{bound}.{y}.{m}"] = out[f"bsuos.{y}.{m}"] - change
+                if y <= LAST_CLOSED_YEAR:
+                    head -= change
+            out[f"bsuos.turnup_range.{bound}.headline.{m}"] = head
 
 
 def build(out: dict, doc: dict, root: Path = ROOT) -> None:

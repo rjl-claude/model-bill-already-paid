@@ -120,5 +120,8 @@ def test_1_3_1_moves_no_number_from_1_3_0(figs):
                                     capture_output=True, check=True).stdout)["figures"]
     assert set(old) <= set(figs)
     moved = [k for k in old if old[k] != figs[k]]
-    assert moved == ["check.ofgem.price_cap_policy_costs.basis"], moved
-    assert all(isinstance(figs[k], str) for k in set(figs) - set(old))
+    # and the headline's range, which 1.4.0's rulings 13b and 14c move (tests/test_version_1_4_0.py)
+    ranged = [f"range.{b}.headline.{x}" for b in ("low", "high") for x in ("real", "line", "cash")]
+    assert sorted(moved) == sorted(["check.ofgem.price_cap_policy_costs.basis", *ranged]), moved
+    new_in_1_4_0 = ("option.no_grid_balancing.", "bsuos.turnup_range.", "carbon.pass_through.", "range.lines")
+    assert all(isinstance(figs[k], str) for k in set(figs) - set(old) if not k.startswith(new_in_1_4_0))

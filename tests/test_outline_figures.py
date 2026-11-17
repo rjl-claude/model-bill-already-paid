@@ -39,19 +39,18 @@ def test_m1_the_headline_in_its_measured_modelled_and_estimated_parts(figs):
 def test_m2_the_headline_range_from_the_three_estimated_lines_each_changed_on_its_own(figs):
     """ADR 0234, choice 2: carbon's early prices, the turn-up order and the Capacity Market's low share, each
     changed alone; the whole Capacity Market levy is a counting option, not the top of the range. The outline
-    questions gave about £247.7bn to £257.8bn, early carbon prices setting both ends."""
-    assert round(figs["range.low.headline.real"] / 1e9, 1) == 247.7
-    assert round(figs["range.high.headline.real"] / 1e9, 1) == 257.8
-    assert figs["range.low.headline.line"] == figs["range.high.headline.line"] == "carbon"
+    questions gave about £247.7bn to £257.8bn, early carbon prices setting both ends. From 1.4.0 (rulings 13b and
+    14c) turn-up is out and the carbon pass-through sets both ends (tests/test_version_1_4_0.py); the carbon
+    price bracket alone still gives 1.3.1's ends."""
     for m in ("real", "cash"):
-        assert _close(figs[f"range.low.headline.{m}"], figs[f"all.headline.{m}"]
-                      + figs[f"carbon.range.low.headline.{m}"] - figs[f"carbon.headline.{m}"])
-        # each of the other two, changed alone, moves the headline less
-        for line, lo in (("constraint_turnup", "constraint_turnup.range.low"),
-                         ("capacity_market", "capacity_market.range.low")):
-            assert figs[f"{lo}.headline.{m}"] - figs[f"{line}.headline.{m}"] > (
-                figs[f"range.low.headline.{m}"] - figs[f"all.headline.{m}"])
-    assert figs["range.high.headline.real"] < figs["all.headline.real"] + (
+        lo = figs[f"all.headline.{m}"] + figs[f"carbon.range.low.headline.{m}"] - figs[f"carbon.headline.{m}"]
+        hi = figs[f"all.headline.{m}"] + figs[f"carbon.range.high.headline.{m}"] - figs[f"carbon.headline.{m}"]
+        if m == "real":
+            assert round(lo / 1e9, 1) == 247.7 and round(hi / 1e9, 1) == 257.8
+        # the Capacity Market's low share, changed alone, moves the headline less than early carbon prices
+        assert figs[f"capacity_market.range.low.headline.{m}"] - figs[f"capacity_market.headline.{m}"] > (
+            lo - figs[f"all.headline.{m}"])
+    assert hi < figs["all.headline.real"] + (
         figs["capacity_market.raw.headline.real"] - figs["capacity_market.headline.real"])
 
 
@@ -160,7 +159,9 @@ def test_m6_the_headline_under_each_counting_option(figs):
     cm = sum((figs.get(f"capacity_market.raw.{y}.real", 0.0) - figs.get(f"capacity_market.{y}.real", 0.0))
              * (1 + vat_share(y)) for y in YEARS)
     assert _close(figs["option.cm_whole_levy.headline.real"], head + cm)
-    assert figs["option.cm_whole_levy.headline.real"] > figs["range.high.headline.real"] - 1e9
+    # above the top of 1.3.1's range (early carbon prices; from 1.4.0 the pass-through sets a higher top)
+    assert figs["option.cm_whole_levy.headline.real"] > (
+        head + figs["carbon.range.high.headline.real"] - figs["carbon.headline.real"] - 1e9)
 
 
 def test_m6f_suppliers_energy_saving_schemes_beside_the_figure(figs):
@@ -220,7 +221,8 @@ def test_only_the_ruled_values_move_from_1_2_0(figs):
                                     capture_output=True, check=True).stdout)["figures"]
     assert set(old) <= set(figs)
     ruled = re.compile(r"households\.\d{4}|(own_bills\.)?per_household\.(\d{4}\.real|year_by_year\.headline\.real|"
-                       r"headline\.real)|check\.obr\.levies\..*")
+                       r"headline\.real)|check\.obr\.levies\..*"
+                       r"|range\.(low|high)\.headline\.(real|cash|line)")   # and 1.4.0's rulings 13b, 14c
     moved = [k for k in old if old[k] != figs[k] and not (isinstance(old[k], float)
                                                            and math.isclose(old[k], figs[k], rel_tol=1e-13))]
     assert moved and all(ruled.fullmatch(k) for k in moved), [k for k in moved if not ruled.fullmatch(k)]

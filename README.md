@@ -57,8 +57,8 @@ data/raw/{scheme}/{table}/{partition}/{retrieved-at}/manifest.json
 | Renewables Obligation | Direct | Ofgem annual reports | Annual | ROCs presented × (buy-out price + recycle value) |
 | Feed-in Tariffs | Direct | Ofgem annual reports | Annual | Official levelisation totals |
 | Capacity Market | Indirect | LCCC data portal | Monthly | Obligation volumes × auction clearing prices |
-| CCL & Carbon Price Support | Indirect | HMRC bulletin | Annual | Electricity share of receipts |
-| Emissions trading (UK/EU ETS) | Indirect | DESNZ trust statement | Annual | Power-sector share of auction revenue |
+| Climate Change Levy | Indirect | HMRC bulletin | Annual | Electricity share of receipts at the main rates (its Carbon Price Support rates are in the carbon line) |
+| Carbon in the electricity price | Indirect | Report No. 1's gas model, pinned release (`reference/model_pin.yaml`) | Annual | The carbon price (the emissions allowance, and from April 2013 the Carbon Price Support rate) times the carbon intensity of the price-setting plant times the power made, as the gas model computes it, assumed passed into the price in full |
 | Transmission (TNUoS) | Indirect | NESO charging statements | Annual | Uplift above pre-renewables baseline, floored at zero |
 | Balancing (BSUoS) | Indirect | NESO data portal (history: NAO) | Daily | Uplift above baseline, constraints netted to avoid double-counting |
 
