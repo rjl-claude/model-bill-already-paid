@@ -1,0 +1,10 @@
+{
+  "scheme": "bsuos",
+  "table": "daily",
+  "partition": "2026-2027",
+  "source_url": "https://www.neso.energy/data-portal/current-balancing-services-use-of-system-bsuos-data",
+  "source_date": "2026-2027",
+  "retrieved_at": "2026-11-18T06:34:08.084381+00:00",
+  "row_count": 223,
+  "sha256": "3bfb11aa3ad756d8e86b53f397475663450b2aac09f1eca0267e00b3080bd0f9"
+}
