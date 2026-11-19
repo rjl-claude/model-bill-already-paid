@@ -44,7 +44,7 @@ SOURCES = {
     "tnuos": ("NESO final TNUoS reports 2024-25 and 2025-26 (shared cost register v4-s43), above the gas-led "
               "alternative of Report No. 1's release v4-s43"),
     "vat": "1.0.0's rule on every line above, the Climate Change Levy apart",
-    "generators_share": ("1.6.0: the shared cost register's TNUoS and BSUoS 2025 and Report No. 1's release v4-s43 "
+    "generators_share": ("ADR 0264: the shared cost register's TNUoS and BSUoS 2025 and Report No. 1's release v4-s43 "
                          "(the gas-led alternative), times the share of 2025's output with no subsidy (DUKES 2026 "
                          "Table 6.2, LCCC; Feed-in Tariff output for April to December 2025 carried from Ofgem's "
                          "2024-25 report, the 2025-26 one not yet published)"),

@@ -2,6 +2,10 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.6.2 (19 Nov 2026), words only
+
+The independent check of 1.6.1 passed every figure and found three wording faults, fixed here; no number moves (`tests/test_version_1_6_2.py`). Tag `v1.6.2` on branch `release-1.6.0`, Gitea only. Changed text values: `generators_share.range.method`, `generators_share.2025.source`; in the file's meta, the description of `generators_share.<grid>.<year>.<m>` ("residual balancing" became the whole balancing charge, switch-off and turn-up included). `docs/figures.md` now has one current account of the line ("Version 1.6.2"), states its limits (the subsidy-income simplification, spread by output not capacity or zone, UK output for Great Britain, about £10-20m; Feed-in Tariff output possibly inside DUKES's RO row in 2010-2014, about £5.9m) and drops an unsupported sentence on why DUKES's RO row falls. List: `docs/1.6.2-against-1.6.1.md`.
+
 ## 1.6.1 (19 Nov 2026), the generators' share of the whole balancing charge
 
 The coordinator's ruling of 19 Nov 2026 on 1.6.0's judgement 6, under ADR 0264. Tag `v1.6.1` on branch `release-1.6.0`, built on `v1.6.0` (which stays as built and is never pinned), Gitea only (ADR 0228). `results/figures.json`: 3,119 keys, sha256 `601ec953...`. Against 1.5.0, the paper's pin: `docs/1.6.1-against-1.5.0.md`; against 1.6.0: `docs/1.6.1-against-1.6.0.md`. Method: `docs/figures.md`, "Version 1.6.1".

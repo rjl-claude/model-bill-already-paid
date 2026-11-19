@@ -195,10 +195,10 @@ def test_no_1_3_1_key_moves_but_the_headline_range_and_none_is_dropped(figs):
     assert round(whole["range.high.headline.real"] / 1e9, 1) == 257.8
 
 
-def test_the_model_is_version_1_6_1_and_its_figures_file_says_so():
-    assert results.model_version() == "1.6.1"
+def test_the_model_is_version_1_6_2_and_its_figures_file_says_so():
+    assert results.model_version() == "1.6.2"
     doc = figures.document(figures.frozen_results(ROOT), bridge.no1_release(ROOT))
-    assert doc["meta"]["version"] == "1.6.1"
+    assert doc["meta"]["version"] == "1.6.2"
     assert doc["meta"]["built_from"]["version"] == "1.0.0"
 
 
@@ -210,4 +210,4 @@ def test_the_committed_figures_file_is_the_one_the_model_builds(tmp_path):
     committed = ROOT / "results" / "figures.json"
     assert committed.read_bytes() == out.read_bytes()
     assert (ROOT / "results" / "figures.json.sha256").read_text() == f"{fp}  figures.json\n"
-    assert json.loads(committed.read_text())["meta"]["version"] == "1.6.1"
+    assert json.loads(committed.read_text())["meta"]["version"] == "1.6.2"

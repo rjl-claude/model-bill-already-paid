@@ -44,6 +44,6 @@ def test_every_moved_total_moves_by_the_line_and_its_vat(figs, old):
             assert figs[f"bridge.no2_money_paid.{y}.{m}"] == figs[f"all.{y}.{m}"] if y < 2025 else True
 
 
-def test_the_version_is_1_6_1():
+def test_the_version_is_1_6_2():
     import tomllib
-    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.1"
+    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.2"

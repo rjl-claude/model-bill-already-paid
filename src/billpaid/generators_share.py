@@ -17,7 +17,7 @@ recover it through the price of power, which the model does not count: that part
    1 - (RO-eligible + CfD + FIT output) / all output (DUKES 6.2, LCCC, Ofgem). The range: every renewable station
    counted as subsidised (low), or FIT left out, as small stations on local wires pay neither charge (high).
 
-The method and the figures: docs/figures.md, "Version 1.6.0".
+The method and the figures: docs/figures.md, "Version 1.6.2" (the current account of the line).
 """
 from __future__ import annotations
 
@@ -186,7 +186,7 @@ def apply(doc: dict, root: Path) -> tuple[dict, dict]:
         "scheme_id": LINE, "label": "Generators' share of grid and balancing charges, not paid out of subsidy",
         "layer": "indirect", "perspectives": [], "cadence": "annual", "annual": {"rows": rows},
         "cumulative_gbp": math.fsum(r["cost_gbp"] for r in rows), "attribution_confidence": "low",
-        "extras": {"method": "billpaid.generators_share; docs/figures.md, Version 1.6.0"}})
+        "extras": {"method": "billpaid.generators_share; docs/figures.md, Version 1.6.2"}})
     vat = next(s for s in doc["model"]["schemes"] if s["scheme_id"] == "vat")
     share = {r["year"]: r["share"] for r in vat["extras"]["domestic_share"]}
     for r in vat["annual"]["rows"]:
@@ -201,7 +201,7 @@ def apply(doc: dict, root: Path) -> tuple[dict, dict]:
 METHOD = ("The line at the share of output from stations with no subsidy read two other ways: low, every renewable "
           "station counted as subsidised (DUKES 6.2, all renewable output); high, Feed-in Tariff stations left out, "
           "as small stations on local wires pay neither generators' charge. The generators' share above the "
-          "gas-led alternative is held as it is")
+          "gas-led alternative is held as it is. docs/figures.md, Version 1.6.2")
 GRIDS = ("tnuos", "bsuos")
 OUTPUT = ("ro", "cfd", "fit", "renewables", "total")
 

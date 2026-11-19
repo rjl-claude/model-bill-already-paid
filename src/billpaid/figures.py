@@ -199,9 +199,10 @@ KEYS = {
                                         "Elexon's own record (1.5.0)"),
     "constraints.spread_years": ("the years among them holding part of an April-March total National Grid printed "
                                  "without months, spread across calendar years by rule (1.5.0)"),
-    "generators_share.<grid>.<year>.<m>": ("1.6.0 (ADR 0264): the generators' share of the grid (tnuos) or residual "
-                                           "balancing (bsuos) cost above the gas-led alternative, before the part "
-                                           "paid out of subsidy is taken off; signed"),
+    "generators_share.<grid>.<year>.<m>": ("ADR 0264: the generators' share of the grid (tnuos) or whole balancing "
+                                           "(bsuos, switch-off payments and turn-up included, from 1.6.1) cost above "
+                                           "the gas-led alternative, before the part paid out of subsidy is taken "
+                                           "off; signed"),
     "generators_share.<grid>.headline.<m>": "the same, 2002-2024",
     "generators_share.unsubsidised_share.<year>.<end>": ("the share of the year's output from stations with no "
                                                          "subsidy (0 to 1): central, low and high"),

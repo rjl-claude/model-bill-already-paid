@@ -38,7 +38,8 @@ def _same(a, b) -> bool:
 def test_against_1_6_0_only_the_balancing_part_and_what_holds_it_move(figs, v160):
     assert set(figs) == set(v160)
     moved = {k for k in v160 if not _same(v160[k], figs[k])}
-    allowed = {k for k in v160 if MOVED.fullmatch(k) or v1_6_0.moved(k)}
+    from tests.test_version_1_6_2 import CHANGED_TEXT   # 1.6.2 rewrites these words, no number
+    allowed = {k for k in v160 if MOVED.fullmatch(k) or v1_6_0.moved(k)} | CHANGED_TEXT
     assert moved <= allowed, sorted(moved - allowed)
     for k in ("generators_share.headline.real", "generators_share.bsuos.headline.cash", "all.headline.real",
               "bridge.generators_share.headline.real", "vat.headline.real"):
