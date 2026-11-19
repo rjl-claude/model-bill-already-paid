@@ -58,8 +58,9 @@ STEPS = (
     ("vat", "NZ11 - GO7", ("vat",)),
     # 1.6.0 (ADR 0264): No. 1 counts the whole net-zero part of the generators' share of grid and balancing charges,
     # inside its price of power (GEN: its run file's fleet.<year>.gen_nz_charge, taken out of the gas-led
-    # alternative's market price, 0167 way 2); No. 2 counts the part not paid out of subsidy, without switch-off
-    # payments and turn-up. The power step loses it, so the walk still adds up.
+    # alternative's market price, 0167 way 2); No. 2 counts the part not paid out of subsidy (from 1.6.1 with the
+    # share of switch-off payments and turn-up), so the step is the subsidised stations' part. The power step loses
+    # No. 1's figure, so the walk still adds up.
     ("generators_share", "GEN", ("generators_share",)),
     # in No. 1 only
     ("energy_saving_schemes", "NZ10", ()),

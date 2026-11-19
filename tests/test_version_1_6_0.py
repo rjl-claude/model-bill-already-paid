@@ -1,5 +1,5 @@
-"""Version 1.6.0 (report-series ADR 0264; Richard, 19 Nov 2026): what the new line moves from 1.5.0, and that nothing
-else moves. 1.5.0's values come from its own frozen figures file at tag v1.5.0."""
+"""Version 1.6.0 (report-series ADR 0264; Richard, 19 Nov 2026), as corrected by 1.6.1: what the new line moves from
+1.5.0, the paper's pin, and that nothing else moves. 1.5.0's values come from its own frozen figures file at tag v1.5.0."""
 import json
 import math
 import subprocess
@@ -44,6 +44,6 @@ def test_every_moved_total_moves_by_the_line_and_its_vat(figs, old):
             assert figs[f"bridge.no2_money_paid.{y}.{m}"] == figs[f"all.{y}.{m}"] if y < 2025 else True
 
 
-def test_the_version_is_1_6_0():
+def test_the_version_is_1_6_1():
     import tomllib
-    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.0"
+    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.1"

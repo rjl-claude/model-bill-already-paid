@@ -61,7 +61,7 @@ data/raw/{scheme}/{table}/{partition}/{retrieved-at}/manifest.json
 | Carbon in the electricity price | Indirect | Report No. 1's gas model, pinned release (`reference/model_pin.yaml`) | Annual | The carbon price (the emissions allowance, and from April 2013 the Carbon Price Support rate) times the carbon intensity of the price-setting plant times the power made, as the gas model computes it, assumed passed into the price in full |
 | Transmission (TNUoS) | Indirect | NESO charging statements | Annual | Uplift above pre-renewables baseline, floored at zero |
 | Balancing (BSUoS) | Indirect | NESO data portal (history: NAO) | Daily | Uplift above baseline, constraints netted to avoid double-counting |
-| Generators' share of grid and balancing charges, not paid out of subsidy (from 1.6.0, figures file only) | Indirect | Shared cost register and Report No. 1's pinned release; DUKES 6.2, LCCC, Ofgem FIT reports | Annual | The generators' share of the TNUoS and residual BSUoS cost above the gas-led alternative, times the share of output from stations with no RO, CfD or FIT; estimated, with a range (`docs/figures.md`, "Version 1.6.0") |
+| Generators' share of grid and balancing charges, not paid out of subsidy (from 1.6.0, figures file only) | Indirect | Shared cost register and Report No. 1's pinned release; DUKES 6.2, LCCC, Ofgem FIT reports | Annual | The generators' share of the TNUoS and whole BSUoS cost above the gas-led alternative (switch-off and turn-up included, from 1.6.1), times the share of output from stations with no RO, CfD or FIT; estimated, with a range (`docs/figures.md`, "Version 1.6.1") |
 
 Attribution rules and their confidence levels are quoted in full on the [methodology page](https://subsidyclock.co.uk/methodology#indirect).
 

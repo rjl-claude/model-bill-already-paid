@@ -121,7 +121,7 @@ The steps, in order:
 | `fit` | NZ3 | `fit` | No. 1 counts by calendar year, No. 2 by scheme year (the same levelisation cost). |
 | `ccl` | NZ8 | `ccl` | No. 2 counts electricity's whole levy (UK). No. 1 counts only what is above the levy at its 2001 rate, which the gas-led alternative would also have paid, Great Britain only. |
 | `vat` | NZ11 − GO7 | `vat` | No. 1 charges 5% on households' share of the extra cost (so on the saving in power too), No. 2 on households' share of the money paid. |
-| `generators_share` (1.6.0) | GEN: the run file's `fleet.<year>.gen_nz_charge.gbp_m` | `generators_share` | No. 1 counts the whole net-zero part of the generators' share, inside its price of power; No. 2 only the part stations with no subsidy pay, and not the share of switch-off and turn-up payments ("Version 1.6.0"). |
+| `generators_share` (1.6.0) | GEN: the run file's `fleet.<year>.gen_nz_charge.gbp_m` | `generators_share` | No. 1 counts the whole net-zero part of the generators' share, inside its price of power; No. 2 only the part stations with no subsidy pay, so the step is the subsidised stations' part ("Version 1.6.1"). |
 | `energy_saving_schemes` | NZ10 | none | Suppliers' energy-saving schemes on electricity bills (EEC to GBIS): No. 1 counts them, No. 2 does not. |
 | `power_before_carbon` | NZ1 − NZ1c − GO1 − GO1k (− GEN from 1.6.0) | none | The cost of power itself, before carbon: actual less the gas-led alternative's. The largest step and a saving in every year but 2008: what the policies took off the price of power, which a gross figure does not net off. |
 
@@ -405,6 +405,8 @@ aios-harness#266; Richard's rulings of 19 Nov 2026. Code: `src/billpaid/mbss.py`
 
 ## Version 1.6.0: the generators' share of grid and balancing charges, the part not paid out of subsidy
 
+> **Corrected by 1.6.1 (below).** 1.6.0 took the generators' share of the residual balancing line only. 1.6.1 takes the share of the whole balancing charge, switch-off payments and turn-up included. The method otherwise stands as written here, but the balancing figures, the line's figures, its total and range, the headline and the comparison with Report No. 1 in this section are 1.6.0's. Read "Version 1.6.1" for the figures the paper uses.
+
 Richard's ruling of 19 Nov 2026 (report-series ADR 0264, from the fact-check's row C-147, aios-harness#247). Code: `src/billpaid/generators_share.py`; the bridge step in `bridge.py`; the option in `outline.py`. Tests: `tests/test_generators_share.py`, `tests/test_version_1_6_0.py` (and `tests/v1_6_0.py`, the rule for which 1.5.0 keys move). Key by key against 1.5.0: `docs/1.6.0-against-1.5.0.md`.
 
 ### Why
@@ -496,4 +498,60 @@ No 1.5.0 key is dropped. 407 values move, all because they hold the new line or 
 - A station on two schemes (an RO phase and a CfD extension, say) is metered separately, so no output is counted twice; stations that moved from the RO to FIT in 2010 are a few GWh.
 - 2025: FIT output for April to December carries 2024-25's (Ofgem's 2025-26 report is not yet published); DUKES 2026's 2025 figures and LCCC's 2025 settlement are used as they stand. 2025 is provisional and never in the headline.
 - `results/clock.json`, the Clock's file, is not changed: the paper's figures are built from the frozen results file, and the Clock's own build takes the line at the Clock's release (ADR 0228, ADR 0264).
+
+## Version 1.6.1: the balancing part takes the generators' share of the whole charge
+
+The coordinator's ruling of 19 Nov 2026 on 1.6.0's judgement 6, under ADR 0264 (Richard's rule: a missing expense is added; nothing is counted twice). Tests: `tests/test_generators_share.py`, `tests/test_version_1_6_1.py` (against 1.6.0) and `tests/test_version_1_6_0.py` (against 1.5.0, the paper's pin). Key by key against 1.5.0: `docs/1.6.1-against-1.5.0.md`; against 1.6.0: `docs/1.6.1-against-1.6.0.md`. Tag `v1.6.0` stays as built and is never pinned.
+
+### What changed, and why
+
+- 1.6.0 counted the generators' share of the **residual** balancing line only, leaving out their share of switch-off payments and turn-up, on the reasoning that those two are counted whole in their own lines.
+- But the model's residual balancing line (1.0.0's rule) takes the generators' share of the **whole** BSUoS charge off itself, switch-off payments and turn-up included. So the three balancing lines together count the whole charge less the generators' whole share, and the generators' share of those two payments was counted nowhere.
+- 1.6.1's balancing part is therefore the generators' share of the whole BSUoS charge above the alternative: the share of the charge generators paid times the whole charge, less the alternative's share. It equals Report No. 1's own figure (`gen_nz_charge.bsuos_gbp_m`) to the pound, every year (tested).
+- So the three balancing lines plus the new line's balancing part now equal the whole BSUoS charge above the alternative, generators' share in, less only the subsidised stations' part of that share, every year (tested). Nothing is counted twice: switch-off payments and turn-up are in their own lines once, and the generators' share of them is in the new line once.
+- The grid part, the unsubsidised share, the output, the range's method and every other step stand as in 1.6.0. The grid part does not move (tested).
+
+### The figures
+
+| Year | Grid share above the alternative, £m cash | Balancing share (whole charge), £m cash | Share of output with no subsidy: low / central / high | Line, £m cash | Line, £m 2024 prices: low / central / high |
+|---|---:|---:|---|---:|---|
+| 2002 | 4.2 | 37.6 | 0.971 / 0.985 / 0.985 | 41.2 | 71.3 / 72.3 / 72.3 |
+| 2003 | 1.0 | 2.6 | 0.973 / 0.982 / 0.982 | 3.6 | 6.1 / 6.2 / 6.2 |
+| 2004 | -2.5 | -5.3 | 0.964 / 0.975 / 0.975 | -7.6 | -13.0 / -13.0 / -12.8 |
+| 2005 | -3.0 | -29.2 | 0.957 / 0.967 / 0.967 | -31.1 | -52.1 / -52.1 / -51.6 |
+| 2006 | 44.4 | -43.5 | 0.954 / 0.963 / 0.963 | 0.8 | 1.3 / 1.3 / 1.3 |
+| 2007 | 49.0 | 37.8 | 0.950 / 0.960 / 0.960 | 83.3 | 131.6 / 132.9 / 132.9 |
+| 2008 | 60.4 | 40.8 | 0.944 / 0.954 / 0.954 | 96.5 | 147.1 / 148.7 / 148.7 |
+| 2009 | 68.8 | 121.8 | 0.933 / 0.944 / 0.944 | 180.0 | 268.9 / 272.1 / 272.1 |
+| 2010 | 73.9 | -0.7 | 0.931 / 0.940 / 0.940 | 68.8 | 100.6 / 101.6 / 101.6 |
+| 2011 | 91.0 | -3.2 | 0.904 / 0.915 / 0.916 | 80.3 | 112.7 / 114.1 / 114.2 |
+| 2012 | 128.3 | -34.9 | 0.887 / 0.895 / 0.898 | 83.6 | 114.7 / 115.7 / 116.2 |
+| 2013 | 167.1 | -38.5 | 0.851 / 0.861 / 0.867 | 110.7 | 148.3 / 149.8 / 151.0 |
+| 2014 | 229.3 | 65.6 | 0.809 / 0.819 / 0.830 | 241.7 | 318.5 / 322.5 / 326.6 |
+| 2015 | 239.1 | 111.2 | 0.754 / 0.784 / 0.799 | 274.7 | 351.1 / 365.0 / 372.1 |
+| 2016 | 187.0 | 269.6 | 0.755 / 0.785 / 0.806 | 358.4 | 453.7 / 471.6 / 484.0 |
+| 2017 | 137.2 | 221.0 | 0.708 / 0.743 / 0.767 | 266.2 | 325.1 / 341.5 / 352.6 |
+| 2018 | 128.6 | 166.9 | 0.670 / 0.708 / 0.733 | 209.1 | 248.2 / 262.2 / 271.5 |
+| 2019 | 127.0 | 356.3 | 0.634 / 0.679 / 0.706 | 327.9 | 377.7 / 404.3 / 420.6 |
+| 2020 | 112.6 | 631.8 | 0.569 / 0.624 / 0.654 | 464.8 | 517.3 / 567.3 / 594.0 |
+| 2021 | 257.4 | 627.4 | 0.602 / 0.654 / 0.680 | 578.4 | 634.5 / 688.8 / 717.0 |
+| 2022 | 329.2 | 869.9 | 0.584 / 0.658 / 0.685 | 788.9 | 771.9 / 870.1 / 905.4 |
+| 2023 | 423.9 | 309.0 | 0.533 / 0.636 / 0.664 | 465.8 | 403.8 / 481.4 / 503.2 |
+| 2024 | 456.4 | 0.0 | 0.495 / 0.610 / 0.639 | 278.6 | 225.9 / 278.6 / 291.4 |
+| 2025 (provisional) | 551.4 | 0.0 | 0.479 / 0.590 / 0.617 | 325.4 | 254.3 / 313.4 / 327.8 |
+
+The generators' share of BSUoS is nil from April 2023 (CMP308), so 2024 and 2025 are as in 1.6.0.
+
+**The total, 2002-2024:** £4.96bn cash, £6.10bn in 2024 prices (1.6.0: £3.91bn and £4.85bn). Grid part £3.31bn cash, £4.05bn in 2024 prices (unchanged); balancing part £3.71bn cash, £4.46bn in 2024 prices, both before the subsidised part is taken off. Range £5.67bn to £6.29bn in 2024 prices (£4.58bn to £5.13bn cash). With its VAT (£0.11bn), the headline is £258.6bn in 2024 prices (1.5.0: £252.4bn) and £209.9bn cash (1.5.0: £204.9bn). Per household in Great Britain, year by year, £9,590 (1.5.0: £9,358); on households' own bills £3,425 (1.5.0: £3,335). 2025 (provisional): £325.4m cash, as in 1.6.0.
+
+**Against Report No. 1.** Before the subsidised part is taken off, the generators' share above the alternative is £8.52bn in 2024 prices (£7.02bn cash): exactly Report No. 1's own figure for the net-zero part of the generators' share (decision 0167 expected about £8.5bn). The line is £6.10bn. The only gap is the part paid by stations with a subsidy, £2.41bn in 2024 prices (£2.06bn cash), which the line leaves out because the subsidies are counted. That is the bridge step `generators_share` (`bridge.generators_share.headline.<m>`), tested every year to equal the share above the alternative times the subsidised share of output. The walk still adds up to a tenth of a penny every year.
+
+### What moves
+
+- Against 1.5.0 (the paper's pin): the same keys as 1.6.0 (`tests/v1_6_0.py`, tested both ways), now with 1.6.1's values; 500 keys added; none dropped. Every one: `docs/1.6.1-against-1.5.0.md`.
+- Against 1.6.0: the line and its balancing part and range for 2002-2023 and their headlines, the bridge step `generators_share`, and every total, VAT, per-household, option and range figure that holds them (`tests/test_version_1_6_1.py`). The grid part, the unsubsidised share, the output and `option.no_generators_share` do not move. Every one: `docs/1.6.1-against-1.6.0.md`.
+
+### What is assumed
+
+As in 1.6.0 ("What is assumed" above), less the judgement on switch-off payments and turn-up, now ruled: the generators' share of them is counted, in this line, once.
 

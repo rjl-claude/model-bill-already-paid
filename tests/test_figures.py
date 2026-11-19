@@ -126,9 +126,9 @@ def test_the_2024_price_headline_is_the_worked_figure(figs):
     # 1.5.0: £46.7m moves from indirect to direct (National Grid's record 2010-2015), so direct, £125.81bn at
     # 1.4.0, is £125.86bn and prints £125.9bn; indirect, £126.60bn, is £126.55bn and still prints £126.6bn
     assert round(figs["direct.headline.real"] / 1e9, 1) == 125.9
-    # 1.6.0: the generators' share, £4.85bn, and its VAT, £0.09bn, join the indirect layer: £131.5bn and £257.3bn
-    assert round(figs["indirect.headline.real"] / 1e9, 1) == 131.5
-    assert round(figs["all.headline.real"] / 1e9, 1) == 257.3
+    # 1.6.1: the generators' share, £6.10bn, and its VAT, £0.11bn, join the indirect layer: £132.8bn and £258.6bn
+    assert round(figs["indirect.headline.real"] / 1e9, 1) == 132.8
+    assert round(figs["all.headline.real"] / 1e9, 1) == 258.6
 
 
 def _cpih(doc):

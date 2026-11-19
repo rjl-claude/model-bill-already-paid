@@ -8,9 +8,9 @@ recover it through the price of power, which the model does not count: that part
 
 1. The generators' share of the cost above the gas-led alternative, each year, signed: the line counted with the
    share in, less the line counted with it out. For TNUoS, (whole charge - alternative with the share in) - (charge
-   less the share - alternative without it). For BSUoS, the share of the residual balancing line only: switch-off
-   payments and turn-up are counted whole in their own lines (decision 0027), so the share of the BSUoS charge left
-   after them, less the alternative's share. The whole charge and the charge less the share are the pinned shared
+   less the share - alternative without it). For BSUoS, the share of the whole charge, switch-off payments and
+   turn-up included, less the alternative's share (1.6.1: the model's balancing lines take that whole share off the
+   residual line, so it is counted nowhere else; 1.6.0 took the residual line's share only). The whole charge and the charge less the share are the pinned shared
    cost register's (the series, and the register's own row that takes the share out); the alternative with and
    without it are Report No. 1's release v4-s43 (its Clock export and its run file).
 2. The part not paid out of subsidy: that times the share of the year's power made by stations with no subsidy,
@@ -125,9 +125,9 @@ def charges(doc: dict, root: Path) -> dict[int, dict[str, float]]:
     """{year: parts}, £ cash: the generators' share of the cost above the gas-led alternative, signed. `doc` is the
     results file with wind constraint payments from primary records (billpaid.elexon_record.apply).
     - tnuos: the grid line's share.
-    - bsuos: the residual balancing line's share: the share of the charge generators paid (bsuos_share_rate) times
-      the charge less switch-off payments and turn-up as counted (switch_off_and_turn_up), less the alternative's
-      share (the alternative holds no switch-off payments or turn-up: a system with no wind)."""
+    - bsuos: the balancing share: the share of the charge generators paid (bsuos_share_rate) times the whole charge,
+      switch-off payments and turn-up included (1.6.1), less the alternative's share. switch_off_and_turn_up is
+      those two payments as counted, for the record."""
     reg = reg_mod.load_pinned(root)["register"]
     whole = {"tnuos": reg.series("TNUOS"), "bsuos": reg.series("BSUOS")}
     less_tnuos = provisional.register_line(root, "tnuos")
@@ -143,7 +143,9 @@ def charges(doc: dict, root: Path) -> dict[int, dict[str, float]]:
         rate = -share_out.get(y, 0.0) * 1e6 / bs_whole
         paid = con.get(y, 0.0) + tu.get(y, 0.0)
         out[y] = {"tnuos": (whole["tnuos"][y] * 1e6 - alt["tnuos"][0]) - (less_tnuos[y] - alt["tnuos"][1]),
-                  "bsuos": rate * (bs_whole - paid) - (alt["bsuos"][0] - alt["bsuos"][1]),
+                  # 1.6.1: the share of the whole charge, switch-off payments and turn-up included: the model's
+                  # balancing lines take that share off the residual line and count it nowhere else
+                  "bsuos": rate * bs_whole - (alt["bsuos"][0] - alt["bsuos"][1]),
                   "bsuos_share_rate": rate, "switch_off_and_turn_up": paid}
     return out
 

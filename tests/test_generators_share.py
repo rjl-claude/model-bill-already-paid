@@ -33,19 +33,37 @@ def test_the_grid_share_above_the_alternative_is_report_no_1s_own_figure(charges
                             abs_tol=1.0), y
 
 
-def test_the_balancing_share_is_the_residual_lines_only(charges, no1):
-    """No. 1 counts the generators' share of the whole BSUoS charge, switch-off payments and turn-up inside it. This
-    line takes the residual line only: those two are counted whole in their own lines (0027). So the line plus the
-    generators' share of those two payments (the share of the charge they pay, times the payments) is No. 1's
-    figure, to a pound, every year. The share is nil from April 2023 (CMP308), so 2024 and 2025 are nil."""
+def test_the_balancing_share_is_the_whole_charges_share_above_the_alternative(charges, no1):
+    """1.6.1 (the coordinator's ruling of 19 Nov 2026 on 1.6.0's judgement 6, under ADR 0264): the generators' share
+    of the whole BSUoS charge above the alternative, switch-off payments and turn-up included, since the model's
+    balancing lines take that share off and count it nowhere else. It is No. 1's figure, to a pound, every year.
+    The share is nil from April 2023 (CMP308), so 2024 and 2025 are nil."""
     for y in YEARS:
-        c = charges[y]
-        assert math.isclose(c["bsuos"] + c["bsuos_share_rate"] * c["switch_off_and_turn_up"],
-                            no1["fleet"][str(y)]["gen_nz_charge"]["bsuos_gbp_m"] * 1e6, abs_tol=1.0), y
+        assert math.isclose(charges[y]["bsuos"], no1["fleet"][str(y)]["gen_nz_charge"]["bsuos_gbp_m"] * 1e6,
+                            abs_tol=1.0), y
     assert abs(charges[2024]["bsuos"]) < 1.0 and abs(charges[2025]["bsuos"]) < 1.0   # nil, to float noise
-    # the share of the charge generators paid: 50% to 2012 (decision 0024's figures, from the register)
-    assert round(charges[2010]["bsuos_share_rate"], 3) == 0.5
-    assert charges[2010]["switch_off_and_turn_up"] > 0 and charges[2009]["switch_off_and_turn_up"] == 0
+
+
+def test_balancing_is_now_counted_whole_less_only_the_subsidised_stations_part(figs, no1):
+    """The three balancing lines (switch-off, turn-up, BSUoS) plus the new line's balancing part equal the whole BSUoS
+    charge above the alternative with the generators' share in, less the subsidised stations' part of that share,
+    every year 2002-2024. Whole charge: the register's BSUOS series; the alternative: No. 1's Clock export; the
+    share: No. 1's own figure."""
+    from billpaid import register as R
+    whole = R.load_pinned(ROOT)["register"].series("BSUOS")
+    ex, _ = R.engine_export(ROOT)
+    for y in range(2002, 2025):
+        share = no1["fleet"][str(y)]["gen_nz_charge"]["bsuos_gbp_m"] * 1e6
+        u = figs[f"generators_share.unsubsidised_share.{y}.central"]
+        three = sum(figs.get(f"{line}.{y}.cash", 0.0) for line in ("constraints", "constraint_turnup", "bsuos"))
+        expect = whole[y] * 1e6 - ex["balancing"]["years"][str(y)]["central_gbp"] - (1 - u) * share
+        assert math.isclose(three + u * figs[f"generators_share.bsuos.{y}.cash"], expect, abs_tol=1.0), y
+
+
+def test_the_grid_part_is_1_6_0s(figs, v160):
+    for y in YEARS:
+        for m in ("cash", "real"):
+            assert figs[f"generators_share.tnuos.{y}.{m}"] == v160[f"generators_share.tnuos.{y}.{m}"], (y, m)
 
 
 @pytest.fixture(scope="module")
@@ -99,6 +117,15 @@ def old():
     import json
     import subprocess
     return json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.5.0:results/figures.json"],
+                                     capture_output=True, check=True).stdout)["figures"]
+
+
+@pytest.fixture(scope="module")
+def v160():
+    """1.6.0's figures file, as tagged (never pinned)."""
+    import json
+    import subprocess
+    return json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.6.0:results/figures.json"],
                                      capture_output=True, check=True).stdout)["figures"]
 
 

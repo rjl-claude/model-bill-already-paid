@@ -51,8 +51,8 @@ def test_m2_the_headline_range_from_the_three_estimated_lines_each_changed_on_it
         lo = figs[f"all.headline.{m}"] + figs[f"carbon.range.low.headline.{m}"] - figs[f"carbon.headline.{m}"]
         hi = figs[f"all.headline.{m}"] + figs[f"carbon.range.high.headline.{m}"] - figs[f"carbon.headline.{m}"]
         if m == "real":
-            # 1.6.0: the headline is £4.94bn higher (the generators' share and its VAT), so £252.6bn to £262.8bn
-            assert round(lo / 1e9, 1) == 252.6 and round(hi / 1e9, 1) == 262.8
+            # 1.6.1: the headline is £6.22bn higher (the generators' share and its VAT), so £253.9bn to £264.0bn
+            assert round(lo / 1e9, 1) == 253.9 and round(hi / 1e9, 1) == 264.0
         # the Capacity Market's low share, changed alone, moves the headline less than early carbon prices
         assert figs[f"capacity_market.range.low.headline.{m}"] - figs[f"capacity_market.headline.{m}"] > (
             lo - figs[f"all.headline.{m}"])

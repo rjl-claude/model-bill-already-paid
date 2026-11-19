@@ -2,6 +2,12 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.6.1 (19 Nov 2026), the generators' share of the whole balancing charge
+
+The coordinator's ruling of 19 Nov 2026 on 1.6.0's judgement 6, under ADR 0264. Tag `v1.6.1` on branch `release-1.6.0`, built on `v1.6.0` (which stays as built and is never pinned), Gitea only (ADR 0228). `results/figures.json`: 3,119 keys, sha256 `601ec953...`. Against 1.5.0, the paper's pin: `docs/1.6.1-against-1.5.0.md`; against 1.6.0: `docs/1.6.1-against-1.6.0.md`. Method: `docs/figures.md`, "Version 1.6.1".
+
+**Moved: the line's balancing part takes the generators' share of the whole BSUoS charge above the alternative, switch-off payments and turn-up included** (1.6.0 took the residual line's only; the model's balancing lines take the whole share off, so that part was counted nowhere). It now equals Report No. 1's own figure. The line 2002-2024: £6.10bn in 2024 prices, £4.96bn cash (1.6.0: £4.85bn, £3.91bn), range £5.67bn to £6.29bn. Headline £258.6bn in 2024 prices, £209.9bn cash (1.5.0: £252.4bn, £204.9bn). Per household £9,590 (1.5.0: £9,358); own bills £3,425 (1.5.0: £3,335). The bridge step is now only the subsidised stations' part, £2.41bn. Against 1.5.0 the same 407 keys move as at 1.6.0; 500 added; none dropped. `results/clock.json` is not changed.
+
 ## 1.6.0 (19 Nov 2026), the generators' share of grid and balancing charges, the part not paid out of subsidy
 
 For Report No. 2, Richard's ruling of 19 Nov 2026 (report-series ADR 0264, aios-harness#247, fact-check row C-147). Tag `v1.6.0` on branch `release-1.6.0`, built on `v1.5.0`, Gitea only (ADR 0228). `results/figures.json`: 3,119 keys, sha256 `6cfe4c53...`. Key by key against 1.5.0: `docs/1.6.0-against-1.5.0.md`. Method: `docs/figures.md`, "Version 1.6.0".

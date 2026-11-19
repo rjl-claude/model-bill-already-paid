@@ -59,8 +59,8 @@ def test_the_headline_ends_are_the_two_reports_own_headlines(figs):
     # 140.31191674096607, £bn, 2002-24, 2024 prices): "£140.3bn"
     assert figs["bridge.no1_extra_cost.headline.real"] == pytest.approx(140.31191674096607e9, rel=1e-12)
     assert round(figs["bridge.no1_extra_cost.headline.real"] / 1e9, 1) == 140.3
-    # 1.6.0: £252.4bn at 1.5.0, plus the generators' share (£4.85bn) and the VAT on it
-    assert round(figs["bridge.no2_money_paid.headline.real"] / 1e9, 1) == 257.3
+    # 1.6.1: £252.4bn at 1.5.0, plus the generators' share (£6.10bn) and the VAT on it
+    assert round(figs["bridge.no2_money_paid.headline.real"] / 1e9, 1) == 258.6
 
 
 def test_the_lines_both_reports_count_alike_are_steps_of_nothing(figs):

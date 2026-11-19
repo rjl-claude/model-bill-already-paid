@@ -191,8 +191,8 @@ def test_the_2025_total_and_its_measured_modelled_and_estimated_parts(frozen, fi
         # 1.6.0: and the generators' share, estimated (ADR 0264)
         assert math.isclose(parts["estimated"], _row(frozen, "constraint_turnup", 2025)[
             "cost_gbp_2024" if m == "real" else "cost_gbp"] + figs[f"generators_share.2025.{m}"], rel_tol=1e-12)
-    # 2025 stays out of the headline (ADR 0035, 0226): the 2002-2024 sum (1.6.0: £257.3bn with the generators' share)
-    assert round(figs["all.headline.real"] / 1e9, 1) == 257.3
+    # 2025 stays out of the headline (ADR 0035, 0226): the 2002-2024 sum (1.6.1: £258.6bn with the generators' share)
+    assert round(figs["all.headline.real"] / 1e9, 1) == 258.6
 
 
 def test_each_2025_line_names_its_source(figs):
