@@ -2,6 +2,20 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.5.0 (19 Nov 2026), National Grid's record for wind constraint payments 2010-2015; primary sources only
+
+For Report No. 2 (aios-harness#266), Richard's rulings of 19 Nov 2026. Tag `v1.5.0` on branch `release-1.5.0`, built on `v1.4.0`, Gitea only (ADR 0228). `results/figures.json`: 2,619 keys, sha256 `c64c01d8...`. Key by key against 1.4.0: `docs/1.5.0-against-1.4.0.md`. Method: `docs/figures.md`, "Version 1.5.0".
+
+**Moved (85 values): wind constraint payments 2010-2015, and what is made from them.** The headline does not move (£252.4bn in 2024 prices, £204.9bn cash), nor any year's total, the bridge or VAT.
+- 2010-2015 are National Grid's Monthly Balancing Services Summary, "Payments to Wind Powered Generation" (eight reports saved from NESO with checksums, `reference/sources/mbss/`, typed in `reference/mbss_wind_payments.yaml`): £229.5m cash in place of £195.6m; in 2024 prices £309.3m in place of £262.6m. 2014 and 2015 are their printed months. 2010-2013 hold three April-March totals National Grid printed without months, spread a quarter and three quarters across calendar years, plus April-December 2013's months; those four years count as estimated in the headline's parts.
+- The three balancing lines are re-split by 1.0.0's rule: the constraints line up £33.9m cash (£46.7m in 2024 prices), BSUoS down £27.7m (£38.5m), turn-up down £6.2m (£8.2m, 2015, capped at the uplift). Direct £125.86bn (was £125.81bn), indirect £126.55bn (was £126.60bn).
+- The headline's parts: measured £144.45bn (was £144.51bn), modelled £84.21bn (was £84.25bn), estimated £23.74bn (was £23.65bn).
+- National Grid counts every payment to a wind farm, in or out of the Balancing Mechanism; Elexon's record, from 2016, counts accepted bids in the Balancing Mechanism.
+
+**Dropped (7 keys):** `constraints.ref_years` and the six `check.ref.direct.*` keys. **Added (6):** `constraints.national_grid_years`, `constraints.spread_years`, `constraints.<year>.basis` for 2010-2013.
+
+**Removed from the model:** every input and cross-check from the earlier third-party database: its years in `reference/annual_scheme_costs.yaml` (the history now holds National Grid's record 2010-2015 and Elexon's own yearly sums 2016-2023; the pin stays 2024), the shared register's CONSTRAINTS rows as an input, `reference/ref_totals.yaml`, `reference/ref_crosscheck.yaml`, the saved page, and the command line's printed cross-checks. A new run of `results/clock.json` therefore differs from the frozen file in the three balancing lines 2010-2023 (and matches the figures file there): that reaches the Clock only at its next release, with its own changelog entry.
+
 ## 1.4.0 (17 Nov 2026), Richard's rulings: grid and balancing case, carbon pass-through, turn-up, the README
 
 For Report No. 2 (aios-harness#243), Richard's rulings of 16 Nov 2026 (`report-series/price-of-the-climate-bill/rulings-sheet.md`, points 12, 13, 14 and 21). Tag `v1.4.0` on branch `release-1.4.0`, built on `v1.3.1`, Gitea only (ADR 0228). `results/figures.json`: 2,620 keys, sha256 `d8a5a804...`. Key by key against 1.3.1: `docs/1.4.0-against-1.3.1.md`. Method: `docs/figures.md`, "Version 1.4.0".

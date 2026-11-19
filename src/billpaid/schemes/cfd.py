@@ -27,8 +27,7 @@ PORTFOLIO_RESOURCE = "fdaf09d2-8cff-4799-a5b0-1c59444e492b"
 PORTFOLIO_URL = "https://dp.lowcarboncontracts.uk/dataset/cfd-contract-portfolio-status"
 
 # Renewable CfD technologies. These are the generators that hold renewable
-# CfDs and count toward the UK's renewable targets and REF's renewable
-# subsidy totals — so they belong in the renewables headline. The biomass
+# CfDs and count toward the UK's renewable targets — so they belong in the renewables headline. The biomass
 # family (conversions like Drax, dedicated biomass, advanced conversion and
 # energy-from-waste) is officially renewable and is counted here; excluding it
 # would understate renewable subsidy and mismatch every external aggregate we

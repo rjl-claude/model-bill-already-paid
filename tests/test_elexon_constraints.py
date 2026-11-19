@@ -1,9 +1,8 @@
 """Version 1.2.0 (Report No. 2's plan step 19, aios-harness#235): wind switch-off (constraint) payments from Elexon's
-own record wherever it holds the whole year, in place of REF's database (Richard's standing ruling: primary sources,
-no REF where a primary record exists).
+own record wherever it holds the whole year (Richard's standing ruling: primary sources).
 
-Elexon's settlement stacks start on 6 Nov 2015, so 2016-2023 move to Elexon; 2010-2015 stay on REF and are named by
-`constraints.ref_years`. Expected values are the input audit's own sums of Elexon's record (report-series,
+Elexon's settlement stacks start on 6 Nov 2015, so 2016-2023 are Elexon's; 2010-2015 are National Grid's record from
+1.5.0 and are named by `constraints.national_grid_years`. Expected values are the input audit's own sums of Elexon's record (report-series,
 price-of-the-climate-bill/input-audit-bill-already-paid/output/spot_checks.txt, section 3), never the model's code."""
 import json
 import math
@@ -17,8 +16,8 @@ from billpaid.__main__ import ROOT
 # £m cash, Elexon's record summed by calendar year (the audit, 11 Nov 2026, two decimals)
 ELEXON_AUDIT = {2016: 82.32, 2017: 109.32, 2018: 125.65, 2019: 141.49, 2020: 283.00, 2021: 147.42,
                 2022: 235.64, 2023: 318.84}
-# £m cash, REF's database figures 1.0.0 holds (the same audit file)
-REF_AUDIT = {2016: 81.86, 2017: 108.25, 2018: 124.65, 2019: 138.99, 2020: 274.16, 2021: 143.34,
+# £m cash, the figures 1.0.0 holds for those years (the same audit file)
+HELD_1_0_0 = {2016: 81.86, 2017: 108.25, 2018: 124.65, 2019: 138.99, 2020: 274.16, 2021: 143.34,
              2022: 227.18, 2023: 310.48}
 BALANCING = ("constraints", "constraint_turnup", "bsuos")
 
@@ -43,17 +42,15 @@ def test_2016_to_2023_are_elexons_record(figs):
         assert abs(figs[f"constraints.{y}.cash"] / 1e6 - v) < 0.005, y
 
 
-def test_1_0_0_held_refs_figures_for_those_years(frozen):
-    for y, v in REF_AUDIT.items():
+def test_1_0_0_held_lower_figures_for_those_years(frozen):
+    for y, v in HELD_1_0_0.items():
         assert abs(_row(frozen, "constraints", y)["cost_gbp"] / 1e6 - v) < 0.005, y
 
 
-def test_2010_to_2015_stay_on_ref_and_are_named(frozen, figs):
-    for y in range(2010, 2016):
-        r = _row(frozen, "constraints", y)
-        assert figs[f"constraints.{y}.cash"] == r["cost_gbp"]
-        assert figs[f"constraints.{y}.real"] == r["cost_gbp_2024"]
-    assert figs["constraints.ref_years"] == "2010,2011,2012,2013,2014,2015"
+def test_2010_to_2015_are_not_elexons_and_are_named(figs):
+    """Elexon holds no whole year before 2016. From 1.5.0 those years are National Grid's record
+    (tests/test_national_grid_constraints.py)."""
+    assert figs["constraints.national_grid_years"] == "2010,2011,2012,2013,2014,2015"
 
 
 def test_the_three_balancing_lines_still_add_to_the_same_total_each_year(frozen, figs):
@@ -82,16 +79,20 @@ def test_the_headline_does_not_move_and_money_moves_from_indirect_to_direct(froz
         assert math.isclose(figs[f"all.headline.{m}"], old[f"all.headline.{m}"], rel_tol=1e-13)
         moved = figs[f"direct.headline.{m}"] - old[f"direct.headline.{m}"]
         assert math.isclose(moved, old[f"indirect.headline.{m}"] - figs[f"indirect.headline.{m}"], rel_tol=1e-9)
-    assert abs((figs["direct.headline.cash"] - old["direct.headline.cash"]) / 1e6 - 34.8) < 0.05
+    # Elexon's years: £34.8m more than 1.1.0 held for 2016-2023
+    assert abs(sum(figs[f"constraints.{y}.cash"] - old[f"constraints.{y}.cash"] for y in ELEXON_AUDIT) / 1e6
+               - 34.8) < 0.05
 
 
 def test_no_other_1_1_0_value_moves(figs):
-    """Every 1.1.0 key is kept, and the only values that move are the REF-replaced years and their sums: the
+    """Every 1.1.0 key is kept, and the only values that move are the replaced years and their sums: the
     three balancing lines 2016-2023, their headlines, the direct and indirect totals, turn-up's range where the cap
     at the balancing uplift binds (2018 both ends, 2022 the high) and its headline, and the turn-up cross-check's
     whole-window estimate. The bridge's balancing step stays zero (it moves by under a millionth of a penny)."""
     old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.1.0:results/figures.json"],
                                     capture_output=True, check=True).stdout)["figures"]
+    from tests.v1_5_0 import kept
+    old = kept(old)    # less what 1.5.0 drops or moves (tests/test_national_grid_constraints.py)
     assert set(old) <= set(figs)
     allowed = {f"{line}.{y}.{m}" for line in BALANCING for y in range(2016, 2024) for m in ("cash", "real")}
     allowed |= {f"{line}.headline.{m}" for line in BALANCING + ("direct", "indirect") for m in ("cash", "real")}

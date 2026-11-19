@@ -155,17 +155,6 @@ def ofgem_fit_levelisation(root: Path, years: range) -> dict[int, float]:
     return out
 
 
-def ref_direct_totals(root: Path = ROOT) -> dict[str, float]:
-    """{column: £}: REF's Table 1 totals row (RO, CfD, FiT, Constraints, REGO, Totals), £bn nominal as printed."""
-    import html
-    import re
-    t = source(root, "ref-2025").decode("utf-8", errors="replace")
-    s = html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", t)))
-    i = s.index("Table 1: Direct Subsidies")
-    m = re.search(r"Totals\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)", s[i:])
-    return dict(zip(("ro", "cfd", "fit", "constraints", "rego", "total"), (float(x) * 1e9 for x in m.groups())))
-
-
 GB_NATIONS = ("England", "Wales", "Scotland")
 GB_NEW_FROM = 2015   # first year read from the 2025 workbook (as Report No. 1)
 

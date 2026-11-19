@@ -2,17 +2,16 @@
 Mechanism bids from wind units — money paid to NOT generate.
 
 Methodology: ALL accepted bids from wind BM units are counted, regardless of
-soFlag, consistent with REF's published curtailment methodology. The soFlag
+soFlag. The soFlag
 governs imbalance-price tagging, not whether the unit is paid; wind units bid
 in the BM almost exclusively when being constrained off.
 
 Cost basis (corrected 2026-10-10): cost = volume x originalPrice x
 transmissionLossMultiplier, which is what Elexon settles. The multiplier
 scales each unit's metered volume for transmission losses in its zone; for
-northern Scottish units it is about 0.96. Volume alone (no multiplier) ran
-3.7-3.9% above REF every year: 2024 GBP 410.8m vs REF 394.3m, 2025 GBP 397.4m
-vs 382.1m. With the multiplier: 395.7m and 382.1m. Volume stays unscaled, as
-REF publishes it (8.36 / 10.24 TWh, an exact match). Known limitations:
+northern Scottish units it is about 0.96. Volume alone (no multiplier) runs
+3.7-3.9% high every year: 2024 GBP 410.8m and 2025 GBP 397.4m, against 395.7m
+and 382.1m with the multiplier. Volume stays unscaled. Known limitations:
 a failed day aborts the remainder of a backfill run (the missing day is
 retried on the next run because its partition was never written), and a day
 stored with zero rows is treated as complete by skip_existing."""
@@ -133,8 +132,8 @@ def backfill(
             # fix 5 guard: a day with no bids in any period is unknown, not a nil day, so it
             # is not stored. It is not fetched again: the backfill only steps back from the
             # earliest stored day and the daily update re-fetches only the last 3 days. The
-            # missing day shows up, loudly (the build fails), only when the pin or REF's
-            # last year reaches it
+            # missing day shows up, loudly (the build fails), only when the pin or the
+            # history's last year reaches it
             if answered:
                 write_day(store, partition, daily_summary(raw))
                 answered_days += 1
@@ -155,7 +154,7 @@ def update(store: SnapshotStore, *, days: int = 3, client: httpx.Client | None =
 
 def result(store: SnapshotStore, history: ReferenceScheme,
            to_register=None) -> list[SchemeResult]:
-    """The constraints line: bottom-up daily spliced with ``history`` (REF), or the
+    """The constraints line: bottom-up daily spliced with ``history`` (National Grid's record, then Elexon's yearly sums), or the
     history alone with no Elexon data (``held_from`` then None). ``to_register``
     (billpaid.register.ToRegister) makes each closed Elexon year from the pin
     the shared cost register's (0168); omitted in unit tests."""
@@ -164,7 +163,7 @@ def result(store: SnapshotStore, history: ReferenceScheme,
         daily = (con_daily.group_by("date").agg(pl.col("cost_gbp").sum()).sort("date"))
         if to_register is not None and history.bottom_up_from is not None:
             daily = to_register(daily, ("CONSTRAINTS",), first_year=history.bottom_up_from)
-        # Elexon replaces REF from the reference file's pin, guarded (splice module)
+        # Elexon replaces the history from the reference file's pin, guarded (splice module)
         annual, held_from, held_to = splice("constraints", history, daily,
                                             store.partitions("constraints", "daily"))
         runrate = trailing_runrate(daily)

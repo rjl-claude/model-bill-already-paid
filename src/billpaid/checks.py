@@ -90,20 +90,6 @@ def _cfd_by_fy(doc: dict, root: Path) -> dict[int, float]:
     return {fy: math.fsum(v) for fy, v in by.items()}   # exact, whatever the rows' order
 
 
-def ref(out: dict, root: Path, doc: dict) -> None:
-    """REF's published direct series (April 2025, Table 1, to 2023/24) against the four direct lines over the
-    same years: RO and FiT by obligation year, CfD by financial year, constraints by calendar year (REF's own
-    constraint figures are its calendar-year database). REGO is in REF's table, not in the model."""
-    t = src.ref_direct_totals(root)
-    cfd = _cfd_by_fy(doc, root)
-    years = range(2002, 2024)
-    model = sum(out.get(f"{line}.{y}.cash", 0.0) for line in ("ro", "fit", "constraints") for y in years) \
-        + sum(cfd.get(y, 0.0) for y in years)
-    _put(out, "ref.direct", model, t["ro"] + t["cfd"] + t["fit"] + t["constraints"], "2002-03 to 2023-24",
-         "the RO, FiT, CfD and constraint lines against REF's Table 1 totals (£bn to one decimal), REGO left out; "
-         "constraints from Elexon's record 2016-2023 here, REF's database in REF's figure")
-
-
 CAP_YEARS = range(2019, 2026)   # ADR 0241: 2019-20 to 2025-26; the cap began in January 2019
 
 
@@ -156,6 +142,5 @@ def build(out: dict, root: Path, doc: dict) -> None:
     ccl(out, root)
     ro(out, root)
     fit(out, root)
-    ref(out, root, doc)
     price_cap(out, root)
     levies(out, root, doc)

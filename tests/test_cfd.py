@@ -97,7 +97,7 @@ def test_classify_nuclear_is_not_renewable():
 
 def test_classify_biomass_is_renewable():
     """Biomass holds renewable CfDs and counts toward renewable targets, so it
-    belongs in the renewables headline (REF and every external aggregate count
+    belongs in the renewables headline (every external aggregate counts
     it there)."""
     for tech in ("Biomass Conversion", "Dedicated Biomass",
                  "Advanced Conversion Technology", "Energy from Waste"):

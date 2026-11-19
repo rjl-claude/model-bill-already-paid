@@ -68,16 +68,6 @@ def test_feed_in_tariffs_against_ofgems_levelisation_fund(figs):
     assert figs["check.ofgem.fit.years"] == "2010-11 to 2024-25"
 
 
-def test_the_direct_lines_against_refs_published_series(figs):
-    """REF, "UK Renewable Electricity Subsidy Totals 2002 to the Present Day" (April 2025), Table 1, totals row,
-    £bn nominal, 2002/03 to 2023/24: RO 67.0, CfD 7.8, FiT 15.3, constraints 1.7 (REGO 1.7 left out: the model
-    does not count it), so £91.8bn, read by hand."""
-    model, ref, gap, ratio = _check(figs, "ref.direct")
-    assert abs(ref / 1e9 - 91.8) < 1e-9
-    assert figs["check.ref.direct.years"] == "2002-03 to 2023-24"
-    assert abs(gap - (model - ref)) < 1e-3 and 0.95 < ratio < 1.1
-
-
 def test_the_ro_and_fit_against_ofgems_price_cap_policy_costs(figs):
     """ADR 0241: 2019-20 to 2025-26, only the schemes both Ofgem's policy-cost allowance and the model count (the RO
     and FiT), per typical household, at Ofgem's typical consumption (3.1 MWh, single-rate, April 2018 to December
@@ -118,10 +108,17 @@ def test_1_3_1_moves_no_number_from_1_3_0(figs):
     import subprocess
     old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.3.0:results/figures.json"],
                                     capture_output=True, check=True).stdout)["figures"]
+    from tests.v1_5_0 import kept
+    all_old = set(old)
+    old = kept(old)    # less what 1.5.0 drops or moves (tests/test_national_grid_constraints.py)
     assert set(old) <= set(figs)
-    moved = [k for k in old if old[k] != figs[k]]
+    import math
+    # floats to a part in a million million: 1.5.0's re-split leaves sums of the three balancing lines a
+    # fraction of a penny away
+    moved = [k for k in old if old[k] != figs[k] and not (isinstance(old[k], float) and math.isclose(
+        old[k], figs[k], rel_tol=1e-12, abs_tol=1e-3))]
     # and the headline's range, which 1.4.0's rulings 13b and 14c move (tests/test_version_1_4_0.py)
     ranged = [f"range.{b}.headline.{x}" for b in ("low", "high") for x in ("real", "line", "cash")]
     assert sorted(moved) == sorted(["check.ofgem.price_cap_policy_costs.basis", *ranged]), moved
     new_in_1_4_0 = ("option.no_grid_balancing.", "bsuos.turnup_range.", "carbon.pass_through.", "range.lines")
-    assert all(isinstance(figs[k], str) for k in set(figs) - set(old) if not k.startswith(new_in_1_4_0))
+    assert all(isinstance(figs[k], str) for k in set(figs) - all_old if not k.startswith(new_in_1_4_0))

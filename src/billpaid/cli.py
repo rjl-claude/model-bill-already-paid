@@ -79,8 +79,7 @@ def cmd_backfill_turnup(args: argparse.Namespace) -> int:
 
 
 def cmd_results(args: argparse.Namespace) -> int:
-    """Run the model and write its results file (billpaid.results), then print the internal checks
-    against REF (printed only, never written: REF comparisons were taken off the site, 17 Oct 2026)."""
+    """Run the model and write its results file (billpaid.results)."""
     import polars as pl
 
     generated_at = datetime.now(timezone.utc).isoformat()
@@ -100,50 +99,6 @@ def cmd_results(args: argparse.Namespace) -> int:
               f"{report['matched_days']} matched days "
               f"({report['excluded_recent_days']} recent days excluded)")
 
-    crosscheck_path = args.root / "reference" / "ref_crosscheck.yaml"
-    if crosscheck_path.is_file():
-        ref_cc = reference.load_ref_crosscheck(crosscheck_path)
-        cc_year = int(ref_cc["year"][:4])
-        ours = {}
-        for s in model["schemes"]:
-            if s.layer == "indirect":
-                row = s.annual.filter(pl.col("year") == cc_year)
-                key = REF_KEY.get(s.scheme_id, s.scheme_id)
-                if key is None:
-                    continue
-                ours[key] = ours.get(key, 0.0) + (float(row["cost_gbp"][0]) if row.height else 0.0)
-        # Internal check only: the result is printed, not written to the results file
-        # (REF comparisons were taken off the site, 17 Oct 2026).
-        cc = reconcile.indirect_crosscheck(ours, ref_cc)
-        print(f"[crosscheck] {len(cc['components'])} components vs REF {cc['comparison_year']}; "
-              f"{cc['unexplained_count']} unexplained beyond ±{cc['bound_pct']}%")
-
-    ref_totals_path = args.root / "reference" / "ref_totals.yaml"
-    if ref_totals_path.is_file():
-        ref_t = reference.load_ref_totals(ref_totals_path)
-        thru = int(ref_t["ours_through_year"])
-        comp: dict[str, float] = {}
-        real_total = 0.0
-        for s in model["schemes"]:
-            cut = s.annual.filter(pl.col("year") <= thru)
-            nom = float(cut["cost_gbp"].sum()) if cut.height else 0.0
-            if "cost_gbp_2024" in cut.columns and cut.height:
-                real_total += float(cut["cost_gbp_2024"].sum())
-            key = REF_KEY.get(s.scheme_id, s.scheme_id)
-            if key is None:      # a line REF does not count at all (VAT, aios-harness#45)
-                continue
-            comp[key] = comp.get(key, 0.0) + nom
-        unmapped = set(comp) - set(ref_t["components"])
-        if unmapped:
-            raise SystemExit(f"[ref-reconciliation] schemes not in REF table: {sorted(unmapped)}")
-        # Internal check only: the result is printed, not written to the results file
-        # (REF comparisons were taken off the site, 17 Oct 2026).
-        recon = reconcile.ref_reconciliation(comp, real_total, ref_t)
-        print(f"[ref-reconciliation] ours £{recon['ours_total']/1e9:.1f}bn vs "
-              f"REF £{recon['ref_total']/1e9:.1f}bn to {thru}; "
-              f"stricter choices remove £{recon['stricter_gap']/1e9:.1f}bn "
-              f"against the £{recon['gap']/1e9:.1f}bn gap")
-
     out = args.out or args.root / "results" / results.FILE
     fp = results.write(doc, out)
     print(f"[ok] results written to {out} (model {doc['meta']['version']}, sha256 {fp[:12]})")
@@ -159,10 +114,3 @@ def cmd_figures(args: argparse.Namespace) -> int:
     print(f"[ok] {len(doc['figures'])} figures written to {out} (from {figures.FROZEN_PATH} at "
           f"{figures.FROZEN_REF}; model {doc['meta']['version']}, sha256 {fp[:12]})")
     return 0
-
-
-# How our schemes map onto REF's components for the like-for-like checks.
-# REF's BSUoS is the whole balancing charge, so constraint turn-up, which we
-# carve out of the BSUoS uplift, folds back into it for comparison.
-REF_KEY = {"cfd_renewable": "cfd", "cfd_low_carbon": "cfd",
-           "constraint_turnup": "bsuos", "carbon": "ets", "vat": None}

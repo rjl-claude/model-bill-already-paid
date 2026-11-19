@@ -66,7 +66,7 @@ COVERED = [
     ("TNUOS", 2020, "tnuos", True),
     ("BSUOS", 2010, "bsuos", True),          # from the Clock's history
     ("BSUOS", 2020, "bsuos", True),          # from NESO's daily files
-    ("CONSTRAINTS", 2015, "constraints", False),   # REF history
+    # CONSTRAINTS before 2024: not read from the register (1.5.0); the history is National Grid's record
     ("CONSTRAINTS", 2024, "constraints", False),   # Elexon daily (fix 5 guard year)
     ("TURNUP", 2020, "constraint_turnup", False),
     ("CFD", 2020, "cfd_renewable", False),
@@ -114,10 +114,12 @@ def test_every_closed_year_of_every_covered_line_is_the_registers(base_model):
         got = ({int(r["year"]): r["cost"] for r in s.extras[key]} if raw else
                {r["year"]: r["cost_gbp"] for r in s.annual.to_dicts()})
         for y, v in vals.items():
+            if sid == "constraints" and y < 2024:
+                continue    # the register's rows before 2024 are not Elexon's sums and are not read (1.5.0)
             if y <= closed and y in got:
                 assert got[y] == pytest.approx(v * 1e6, abs=0.01), (sid, y)
                 n += 1
-    assert n > 130   # 23 fewer since ETS left for the carbon line (aios-harness#44)
+    assert n > 116   # 23 fewer since ETS left for the carbon line (aios-harness#44); 14 fewer at 1.5.0
 
 
 def test_register_pin_refuses_other_bytes(tmp_path):

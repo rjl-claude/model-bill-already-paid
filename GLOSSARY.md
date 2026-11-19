@@ -7,8 +7,8 @@ What renewable electricity support costs Britain, in pounds, built from publishe
 ### Sources and joining them
 
 **Reference history**:
-Curated annual cost figures for a scheme from published studies (REF, NAO), used for years the fetched data does not cover.
-_Avoid_: REF data (REF is one source of it), history
+Curated annual cost figures for a scheme from published records (National Grid, the NAO), used for years the fetched data does not cover.
+_Avoid_: history
 
 **Bottom-up**:
 Annual cost built from fetched daily or settlement data (Elexon, NESO, LCCC).

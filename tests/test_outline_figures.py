@@ -28,11 +28,14 @@ def test_m1_the_headline_in_its_measured_modelled_and_estimated_parts(figs):
     for m in ("real", "cash"):
         parts = [figs[f"all.headline.{b}.{m}"] for b in ("measured", "modelled", "estimated")]
         assert _close(sum(parts), figs[f"all.headline.{m}"])
+        # 1.5.0: wind constraint payments 2010-2013 are estimated inside a measured line (National Grid's
+        # April-March totals spread across calendar years)
+        spread = sum(figs[f"constraints.{y}.{m}"] for y in range(2010, 2014))
         # measured: the direct lines and the Climate Change Levy, every year (the outline's §1.1 beat)
-        assert _close(parts[0], figs[f"direct.headline.{m}"] + figs[f"ccl.headline.{m}"])
+        assert _close(parts[0], figs[f"direct.headline.{m}"] + figs[f"ccl.headline.{m}"] - spread)
         # estimated: turn-up, and carbon in 2005-2012 (labelled estimated inside a modelled line)
         carbon_est = sum(figs[f"carbon.{y}.{m}"] for y in range(2005, 2013))
-        assert _close(parts[2], figs[f"constraint_turnup.headline.{m}"] + carbon_est)
+        assert _close(parts[2], figs[f"constraint_turnup.headline.{m}"] + carbon_est + spread)
     assert round(figs["all.headline.measured.real"] / 1e9, 1) == 144.5
 
 
@@ -219,10 +222,12 @@ def test_only_the_ruled_values_move_from_1_2_0(figs):
     import subprocess
     old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.2.0:results/figures.json"],
                                     capture_output=True, check=True).stdout)["figures"]
+    from tests.v1_5_0 import kept
+    old = kept(old)    # less what 1.5.0 drops or moves (tests/test_national_grid_constraints.py)
     assert set(old) <= set(figs)
     ruled = re.compile(r"households\.\d{4}|(own_bills\.)?per_household\.(\d{4}\.real|year_by_year\.headline\.real|"
                        r"headline\.real)|check\.obr\.levies\..*"
                        r"|range\.(low|high)\.headline\.(real|cash|line)")   # and 1.4.0's rulings 13b, 14c
     moved = [k for k in old if old[k] != figs[k] and not (isinstance(old[k], float)
-                                                           and math.isclose(old[k], figs[k], rel_tol=1e-13))]
+                                                           and math.isclose(old[k], figs[k], rel_tol=1e-12, abs_tol=1e-3))]
     assert moved and all(ruled.fullmatch(k) for k in moved), [k for k in moved if not ruled.fullmatch(k)]

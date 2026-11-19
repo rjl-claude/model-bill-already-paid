@@ -178,17 +178,6 @@ sources:
     file: reference/sources/ofgem-fit-annual-report-sy15.pdf
     retrieved: "2026-10 (Report No. 1's saved copy)"
     sha256: 213f331241084078ca1d36e5525c4004daaefc33fdb84de3bfdc4c6400a850d5
-  ref-2025:
-    what: >-
-      Renewable Energy Foundation, "UK Renewable Electricity Subsidy Totals 2002 to the Present Day" (28 Apr 2025),
-      Table 1 "Direct Subsidies to Renewable Electricity Generation in the United Kingdom (£bn, nominal) 2002-2024",
-      its totals row: the check against REF's published series (an ally's figure, cited and the difference
-      explained). The copy saved for the paper on 11 Nov 2026 (report-series price-of-the-climate-bill/sources/
-      outline/, S6-src), byte for byte.
-    url: https://ref.org.uk/blog/uk-renewable-electricity-subsidy-totals-2002-to-the-present-day
-    file: reference/sources/ref-2025-uk-renewable-electricity-subsidy-totals.html
-    retrieved: "2026-11-11"
-    sha256: 23dffd6e07709243ed59bf3fed83a47a1865699681708f16c45bde77a4deef3b
   ons-households-gb-2015-2025:
     what: >-
       ONS, "Households by household size, regions of England and GB constituent countries" 2025 (Labour Force Survey,
@@ -251,7 +240,7 @@ sources:
   elexon-stack-bid-2012-02-01-p36:
     what: >-
       Elexon Insights API (BMRS), the settlement stack of accepted bids, 1 Feb 2012, period 36: empty: kept to show that Elexon's own record of wind switch-off payments begins on
-      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+      6 Nov 2015, so 2010-2015 are National Grid's record (constraints.national_grid_years).
     url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid/2012-02-01/36"
     file: reference/sources/elexon-stack-bid-2012-02-01-p36.json
     retrieved: "2026-11-11"
@@ -259,7 +248,7 @@ sources:
   elexon-stack-bid-2015-11-05-p48:
     what: >-
       Elexon Insights API (BMRS), the same, 5 Nov 2015, period 48 (the last of the day): empty: kept to show that Elexon's own record of wind switch-off payments begins on
-      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+      6 Nov 2015, so 2010-2015 are National Grid's record (constraints.national_grid_years).
     url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid/2015-11-05/48"
     file: reference/sources/elexon-stack-bid-2015-11-05-p48.json
     retrieved: "2026-11-11"
@@ -267,7 +256,7 @@ sources:
   elexon-stack-bid-2015-11-06-p48:
     what: >-
       Elexon Insights API (BMRS), the same, 6 Nov 2015, period 48: accepted bids, the record's first day: kept to show that Elexon's own record of wind switch-off payments begins on
-      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+      6 Nov 2015, so 2010-2015 are National Grid's record (constraints.national_grid_years).
     url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid/2015-11-06/48"
     file: reference/sources/elexon-stack-bid-2015-11-06-p48.json
     retrieved: "2026-11-11"
@@ -275,7 +264,7 @@ sources:
   elexon-boalf-2014-06-01:
     what: >-
       Elexon Insights API (BMRS), bid-offer acceptance levels (BOALF), the whole of 1 Jun 2014: empty: kept to show that Elexon's own record of wind switch-off payments begins on
-      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+      6 Nov 2015, so 2010-2015 are National Grid's record (constraints.national_grid_years).
     url: "https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from=2014-06-01T00:00Z&to=2014-06-02T00:00Z&format=json"
     file: reference/sources/elexon-boalf-2014-06-01.json
     retrieved: "2026-11-11"
@@ -283,7 +272,7 @@ sources:
   elexon-bod-2014-06-01-1000:
     what: >-
       Elexon Insights API (BMRS), bid-offer data (BOD), 1 Jun 2014 10:00-10:30: empty: kept to show that Elexon's own record of wind switch-off payments begins on
-      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+      6 Nov 2015, so 2010-2015 are National Grid's record (constraints.national_grid_years).
     url: "https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from=2014-06-01T10:00Z&to=2014-06-01T10:30Z&format=json"
     file: reference/sources/elexon-bod-2014-06-01-1000.json
     retrieved: "2026-11-11"
@@ -291,7 +280,7 @@ sources:
   elexon-cashflow-bid-2015-06-01:
     what: >-
       Elexon Insights API (BMRS), indicative bid cashflows (EBOCF), 1 Jun 2015: empty: kept to show that Elexon's own record of wind switch-off payments begins on
-      6 Nov 2015, so 2010-2015 stay on REF (constraints.ref_years).
+      6 Nov 2015, so 2010-2015 are National Grid's record (constraints.national_grid_years).
     url: "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/indicative/cashflows/all/bid/2015-06-01"
     file: reference/sources/elexon-cashflow-bid-2015-06-01.json
     retrieved: "2026-11-11"

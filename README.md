@@ -2,7 +2,7 @@
 
 The sums behind **[the Subsidy Clock](https://subsidyclock.co.uk)**: the subsidies paid to UK renewable and low-carbon electricity generators since 2002, and the indirect costs they cause, scheme by scheme. Its years 2002 to 2025 are the first half of Report No. 2, *The Price of the Climate Bill*.
 
-Figures are reconstructed bottom-up from official sources (LCCC, Elexon, NESO, Ofgem, HMRC, DESNZ, the NAO, with REF for cross-checks and constraint history), with full provenance: every retrieved data point links to its source URL, retrieval timestamp and content hash.
+Figures are reconstructed bottom-up from official sources (LCCC, Elexon, NESO, Ofgem, HMRC, DESNZ, the NAO, National Grid), with full provenance: every retrieved data point links to its source URL, retrieval timestamp and content hash.
 
 This repository holds the data engine, the raw data store and the reference inputs. The website is [richardjlyon/subsidy-clock](https://github.com/richardjlyon/subsidy-clock); it reads only this model's results file. Until 6 Nov 2026 both were one repository; the history of every file here is kept from it.
 
@@ -33,7 +33,7 @@ src/billpaid/   retrieval (ckan.py, elexon.py, schemes/), money model (money.py)
                 (reference.py), station mapping (stations.py), immutable store (store.py),
                 the results file (results.py)
 reference/      reference inputs: CPIH deflators, buy-out prices, bill denominator, indirect-cost
-                annuals and REF cross-checks (*.yaml); the pinned register and engine release
+                annuals (*.yaml); the pinned register and engine release
 data/raw/       the Parquet store
 results/        the results file and its fingerprint
 tests/          pytest suite
@@ -46,14 +46,14 @@ data/raw/{scheme}/{table}/{partition}/{retrieved-at}/data.parquet
 data/raw/{scheme}/{table}/{partition}/{retrieved-at}/manifest.json
 ```
 
-`manifest.json` records `source_url`, `retrieved_at`, `sha256` (content hash of the table's canonical CSV serialisation) and `row_count`. The store is append-only: nothing is ever deleted. When a source revises history, the new version is stored alongside the old and the change is logged in `restatements.jsonl`. Bottom-up totals are checked against official aggregates and REF's published series when the model runs.
+`manifest.json` records `source_url`, `retrieved_at`, `sha256` (content hash of the table's canonical CSV serialisation) and `row_count`. The store is append-only: nothing is ever deleted. When a source revises history, the new version is stored alongside the old and the change is logged in `restatements.jsonl`. Bottom-up totals are checked against official aggregates when the model runs.
 
 ## Schemes
 
 | Scheme | Layer | Source | Cadence | Method |
 |---|---|---|---|---|
 | Contracts for Difference | Direct | LCCC data portal | Daily | Per-contract generation × (strike − reference price), paybacks netted |
-| Wind constraints | Direct | Elexon BMRS | Daily | Settlement bid stacks; earlier years from REF annual totals |
+| Wind constraints | Direct | Elexon BMRS | Daily | Settlement bid stacks from 2016; 2010-2015 from National Grid's Monthly Balancing Services Summary |
 | Renewables Obligation | Direct | Ofgem annual reports | Annual | ROCs presented × (buy-out price + recycle value) |
 | Feed-in Tariffs | Direct | Ofgem annual reports | Annual | Official levelisation totals |
 | Capacity Market | Indirect | LCCC data portal | Monthly | Obligation volumes × auction clearing prices |

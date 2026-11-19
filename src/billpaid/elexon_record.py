@@ -1,12 +1,13 @@
-"""Wind switch-off (constraint) payments from Elexon's own record in place of REF's database (version 1.2.0,
-Report No. 2's plan step 19, aios-harness#235; Richard's standing ruling: primary sources, no REF where a primary
-record exists).
+"""Wind switch-off (constraint) payments from primary records only (versions 1.2.0 and 1.5.0; Richard's standing
+ruling: primary sources).
 
-1.0.0 takes 2010-2023 from REF's database and Elexon's settlement stacks from 2024. The stacks start on 6 Nov 2015
-(billpaid.elexon.STACK_FIRST_DAY) and 1.0.0's store already holds every day since. So each calendar year the store
-holds whole is taken from Elexon: 2016-2023 replace REF. 2010-2015 have no Elexon record (Elexon's API returns no
-settlement stack, acceptance or bid-offer data before November 2015, checked 11 Nov 2026) and stay on REF; they are
-named by `constraints.ref_years`.
+The frozen results file (1.0.0) holds an earlier third-party series for 2010-2023 and Elexon's settlement stacks
+from 2024 (FROZEN_ELEXON_FROM). The stacks start on 6 Nov 2015 (billpaid.elexon.STACK_FIRST_DAY) and the store
+holds every day since. So each calendar year the store holds whole is taken from Elexon: 2016-2023 (1.2.0). The
+years before have no Elexon record (its API returns no settlement stack, acceptance or bid-offer data before
+November 2015, checked 11 and 19 Nov 2026) and are National Grid's own record, the Monthly Balancing Services
+Summary (1.5.0; billpaid.mbss, held as calendar years in reference/annual_scheme_costs.yaml, constraints_history).
+`constraints.national_grid_years` names them.
 
 The store is read as it stood when the frozen results file was written (each day's latest version retrieved at or
 before the file's `generated_at`), so the figure does not depend on a later fetch.
@@ -27,10 +28,12 @@ from pathlib import Path
 
 import polars as pl
 
+from billpaid import mbss
 from billpaid.money import add_real
 from billpaid.reference import load_annual_costs
 
 TABLE = ("constraints", "daily")
+FROZEN_ELEXON_FROM = 2024   # the frozen file already takes Elexon from this year: only the years before are replaced
 
 
 def _cutoff(doc: dict) -> str:
@@ -63,26 +66,31 @@ def _scheme(doc: dict, line: str) -> dict:
 
 
 def apply(doc: dict, root: Path, last_year: int) -> tuple[dict, list[int], list[int]]:
-    """A copy of the frozen results file with each whole Elexon year up to `last_year` in place of REF's, and the
-    split re-applied. Returns (doc, years moved to Elexon, years left on REF)."""
+    """A copy of the frozen results file with every year before FROZEN_ELEXON_FROM, up to `last_year`, from a
+    primary record (Elexon where the store holds the whole year, National Grid before), and the split re-applied.
+    Returns (doc, years from Elexon, years from National Grid)."""
     doc = copy.deepcopy(doc)
     con, tu, bs = (_scheme(doc, line) for line in ("constraints", "constraint_turnup", "bsuos"))
     measured = {r["year"]: r["cost"] for r in tu["extras"]["measured_annual"]}
     rows = {line["scheme_id"]: {r["year"]: r for r in line["annual"]["rows"]} for line in (con, tu, bs)}
     elexon = elexon_by_year(doc, root)
-    moved, on_ref = [], []
+    from_elexon, from_national_grid = [], []
     delta = dict.fromkeys(rows, 0.0)
     deflators = pl.DataFrame(doc["deflators"]["rows"],
                              schema={k: getattr(pl, v) for k, v in doc["deflators"]["schema"].items()}, orient="row")
-    # 1.0.0 already takes Elexon from the history's pin year (2024): only the years before it are REF's
-    pin = load_annual_costs(root / "reference/annual_scheme_costs.yaml")["constraints_history"].bottom_up_from
+    hist = load_annual_costs(root / "reference/annual_scheme_costs.yaml")["constraints_history"]
+    history = dict(zip(hist.annual["year"].to_list(), hist.annual["cost_gbp"].to_list()))
     for y in sorted(rows["constraints"]):
-        if y > last_year or y >= pin:
+        if y > last_year or y >= FROZEN_ELEXON_FROM:
             continue
-        if y not in elexon or not _whole_year(y, elexon[y][1]):
-            on_ref.append(y)
-            continue
-        new_con = elexon[y][0]
+        if y in elexon and _whole_year(y, elexon[y][1]):
+            new_con = elexon[y][0]
+            from_elexon.append(y)
+        elif y in history and y in mbss.YEARS:
+            new_con = history[y]
+            from_national_grid.append(y)
+        else:
+            raise ValueError(f"no primary record of wind constraint payments for {y}")
         old = {line: rows[line][y]["cost_gbp"] if y in rows[line] else 0.0 for line in rows}
         uplift = old["bsuos"] + old["constraint_turnup"] + old["constraints"] - new_con
         new_tu = min(measured.get(y, 0.0), max(0.0, uplift))
@@ -95,10 +103,9 @@ def apply(doc: dict, root: Path, last_year: int) -> tuple[dict, list[int], list[
                 r["cost_gbp_2024"] = _real(v, y, deflators)
             elif v:
                 raise ValueError(f"{line} has no {y} row to take {v}")
-        moved.append(y)
     for s in (con, tu, bs):
         s["cumulative_gbp"] += delta[s["scheme_id"]]   # each line's own total moves by what its years moved
-    return doc, moved, on_ref
+    return doc, from_elexon, from_national_grid
 
 
 def _real(cash: float, y: int, deflators: pl.DataFrame) -> float:

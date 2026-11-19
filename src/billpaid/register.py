@@ -51,7 +51,8 @@ REF_LINES = {
     "ccl": ("CCL_ELEC",),
     "tnuos": ("TNUOS",),
     "bsuos_history": ("BSUOS",),
-    "constraints_history": ("CONSTRAINTS",),
+    # constraints_history is not here (1.5.0): the register's CONSTRAINTS rows before 2024 are a third party's
+    # series; the history is National Grid's record and Elexon's yearly sums (reference/annual_scheme_costs.yaml)
 }
 
 

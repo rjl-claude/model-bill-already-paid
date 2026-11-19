@@ -36,10 +36,11 @@ def _schemes(doc):
     return {s["scheme_id"]: s for s in doc["model"]["schemes"]}
 
 
-# 1.2.0 (aios-harness#235): Elexon's record replaces REF's for wind constraint payments 2016-2023, and the
-# three balancing lines are split again; those cells are tested against the audit's sums in
-# tests/test_elexon_constraints.py. Every other 1.0.0 value stays as it was.
-MOVED_LINES, MOVED_YEARS = ("constraints", "constraint_turnup", "bsuos"), range(2016, 2024)
+# 1.2.0 (aios-harness#235): Elexon's record for wind constraint payments 2016-2023; 1.5.0 (aios-harness#266):
+# National Grid's for 2010-2015. The three balancing lines are split again; those cells are tested against the
+# sources' own sums in tests/test_elexon_constraints.py and tests/test_national_grid_constraints.py. Every other
+# 1.0.0 value stays as it was.
+MOVED_LINES, MOVED_YEARS = ("constraints", "constraint_turnup", "bsuos"), range(2010, 2024)
 
 
 def _moved(line, y):
@@ -102,7 +103,9 @@ def test_the_headlines_are_2002_to_2024_each_line_and_together(frozen, figs):
 
 def test_the_2024_price_headline_is_the_worked_figure(figs):
     # summed from the 9 Nov file's two total tables, 2002-2024, 9 Nov 2026: direct £125.8bn + indirect £126.6bn
-    assert round(figs["direct.headline.real"] / 1e9, 1) == 125.8
+    # 1.5.0: £46.7m moves from indirect to direct (National Grid's record 2010-2015), so direct, £125.81bn at
+    # 1.4.0, is £125.86bn and prints £125.9bn; indirect, £126.60bn, is £126.55bn and still prints £126.6bn
+    assert round(figs["direct.headline.real"] / 1e9, 1) == 125.9
     assert round(figs["indirect.headline.real"] / 1e9, 1) == 126.6
     assert round(figs["all.headline.real"] / 1e9, 1) == 252.4
 

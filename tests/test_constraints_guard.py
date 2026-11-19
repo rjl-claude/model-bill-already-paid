@@ -12,7 +12,7 @@ from billpaid.reference import ReferenceScheme
 from billpaid.store import SnapshotStore
 from billpaid import build as uk_build
 
-REF = {2022: 227.2e6, 2023: 310.5e6, 2024: 394.3e6, 2025: 382.1e6}
+HISTORY = {2022: 227.2e6, 2023: 310.5e6, 2024: 394.3e6, 2025: 382.1e6}
 
 
 def _deflators():
@@ -40,7 +40,7 @@ def _store(path, earliest, latest=date(2025, 1, 3)):
 
 
 def _refs(pin=2024):
-    return {"constraints_history": _annual("constraints_history", REF, pin),
+    return {"constraints_history": _annual("constraints_history", HISTORY, pin),
             "ro": _annual("ro", {2024: 1.0}), "fit": _annual("fit", {2024: 1.0})}
 
 
@@ -61,7 +61,7 @@ def test_the_build_refuses_a_bsuos_history_with_no_pin(tmp_path):
 
 
 def test_the_pinned_year_and_the_held_window_are_in_the_model(tmp_path):
-    # the pages say from which year Elexon replaces REF and from which day data is held
+    # the pages say from which year Elexon replaces HISTORY and from which day data is held
     m = uk_build.build(_store(tmp_path / "store", date(2023, 8, 25)), _refs(), deflators=_deflators())
     assert m["elexon_first_year"] == 2024
     con = next(s for s in m["schemes"] if s.scheme_id == "constraints")

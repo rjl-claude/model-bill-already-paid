@@ -1,11 +1,10 @@
 """National Grid's own record of payments to wind farms, 2010-11 to 2016-17 (aios-harness#266): the Monthly
 Balancing Services Summary (MBSS), "Payments to Wind Powered Generation", saved from NESO's website and typed in
-reference/mbss_wind_payments.yaml.
+reference/mbss_wind_payments.yaml. From 1.5.0 it is the model's source for 2010-2015 (billpaid.mbss).
 
-It is evidence only: no figure of the model reads it. It cannot replace REF's database like for like for 2010-2015
-(the report docs/ref-out-2010-2015.md in the model folder on VM 113, aios-harness#266), and these tests hold the two reasons in place: the MBSS prints no month before April
-2013, and it counts every payment to a wind farm, in or out of the Balancing Mechanism, where Elexon's record
-(the model's series from 2016) counts accepted bids in the Balancing Mechanism only."""
+These tests hold in place the two ways it differs from Elexon's record, which the model takes from 2016: it prints
+no month before April 2013, and it counts every payment to a wind farm, in or out of the Balancing Mechanism, where
+Elexon's record counts accepted bids in the Balancing Mechanism only."""
 import glob
 import hashlib
 import math
@@ -95,8 +94,3 @@ def test_where_they_overlap_the_mbss_matches_elexon_until_july_2016_then_runs_hi
     assert 8.0 < gap_late < 9.2
     y2016 = _span("2016-01", "2016-12")
     assert 6.5 < math.fsum(m[k] for k in y2016) - math.fsum(_elexon_month(k) for k in y2016) < 8.0
-
-
-def test_the_model_does_not_read_it():
-    used = [p for p in (ROOT / "src/billpaid").rglob("*.py") if "mbss" in p.read_text().lower()]
-    assert used == []

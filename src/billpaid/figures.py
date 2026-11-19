@@ -15,7 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
-from billpaid import bridge, checks, elexon_record, outline, outline_sources, provisional, ranges
+from billpaid import bridge, checks, elexon_record, mbss, outline, outline_sources, provisional, ranges
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
@@ -44,7 +44,7 @@ def frozen_results(root: Path) -> dict:
 # receipts as recorded), modelled (a share or alternative taken from the pinned gas model) or estimated.
 BASIS = {
     "cfd_renewable": "measured",      # LCCC settlement payments
-    "constraints": "measured",        # Elexon's accepted wind bids from 2016 (1.2.0); REF's database 2010-2015
+    "constraints": "measured",        # Elexon's accepted wind bids from 2016; National Grid's record 2010-2015
     "ro": "measured",                 # Ofgem annual reports
     "fit": "measured",                # the levelisation fund, Ofgem
     "ccl": "measured",                # HMRC receipts, electricity's published share
@@ -69,7 +69,7 @@ PLACEHOLDERS = {
     "step": "|".join([bridge.START, *(name for name, _, _ in bridge.STEPS), bridge.END]),
     "basis": "measured|modelled|estimated",
     "ranged": "carbon|constraint_turnup",
-    "check": r"hmrc\.ccl|ofgem\.ro|ofgem\.fit|obr\.levies|ofgem\.price_cap_policy_costs|ref\.direct",
+    "check": r"hmrc\.ccl|ofgem\.ro|ofgem\.fit|obr\.levies|ofgem\.price_cap_policy_costs",
     "cs": "model|reference|gap|ratio",
     "area": "gb|uk",
     "pt": "2005_2012|2013_2020|2021_on",
@@ -190,8 +190,13 @@ KEYS = {
     "check.obr.levies.ons_parts_less_obr": "ONS's series of the OBR figure's parts added up, less the OBR's figure",
     "check.obr.levies.gap.<gl>": "the model's line less ONS's series of it (ro: the RO; cfd: CfDs), the gap's parts",
     "check.<check>.basis": "what each side of the check holds, in words",
-    "constraints.ref_years": ("the years of wind constraint payments still on REF's database, comma-separated: "
-                              "every other year is Elexon's own record (1.2.0)"),
+    "constraints.national_grid_years": ("the years of wind constraint payments from National Grid's Monthly "
+                                        "Balancing Services Summary, comma-separated: every other year is "
+                                        "Elexon's own record (1.5.0)"),
+    "constraints.spread_years": ("the years among them holding part of an April-March total National Grid printed "
+                                 "without months, spread across calendar years by rule (1.5.0)"),
+    "constraints.<year>.basis": ("the line's basis that year where it differs from the line's own: estimated in "
+                                 "the spread years (their total is measured, its split between years is not)"),
 }
 
 
@@ -303,13 +308,18 @@ PARTS = {"carbon": _carbon, "capacity_market": _capacity_market, "vat": _vat, "c
 
 
 def build(doc: dict, no1: bridge.No1Release, root: Path | None = None) -> dict[str, float | str]:
-    """Every figure: `doc` is the frozen results file, `no1` Report No. 1's pinned run file (the bridge). From
-    1.2.0, wind constraint payments are Elexon's record wherever it holds the whole year (billpaid.elexon_record)."""
+    """Every figure: `doc` is the frozen results file, `no1` Report No. 1's pinned run file (the bridge). Wind
+    constraint payments are Elexon's record wherever it holds the whole year (1.2.0) and National Grid's before
+    (1.5.0): billpaid.elexon_record."""
     from billpaid.__main__ import ROOT
     root = root or ROOT
-    doc, _, on_ref = elexon_record.apply(doc, root, LAST_CLOSED_YEAR)
+    doc, _, national_grid = elexon_record.apply(doc, root, LAST_CLOSED_YEAR)
     out: dict[str, float | str] = {}
-    out["constraints.ref_years"] = ",".join(str(y) for y in on_ref)
+    out["constraints.national_grid_years"] = ",".join(str(y) for y in national_grid)
+    spread = [y for y in mbss.SPREAD_YEARS if y in national_grid]
+    out["constraints.spread_years"] = ",".join(str(y) for y in spread)
+    for y in spread:
+        out[f"constraints.{y}.basis"] = "estimated"
     for s in doc["model"]["schemes"]:
         line, layer = s["scheme_id"], s["layer"]
         if layer not in LAYERS:

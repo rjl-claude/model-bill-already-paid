@@ -22,7 +22,7 @@ LIVE_PIN = {"constraints": 2024, "bsuos": 2017}
 
 # How each scheme's errors name its sources, settings file and the fetch that fills a gap
 _WORDS = {
-    "constraints": {"bu": "Elexon", "ref": "REF", "file": "reference/annual_scheme_costs.yaml",
+    "constraints": {"bu": "Elexon", "ref": "the history", "file": "reference/annual_scheme_costs.yaml",
                     "fetch": "backfill-constraints --start --end"},
     "bsuos": {"bu": "NESO", "ref": "the history", "file": "reference/indirect_annual.yaml",
               "fetch": "update"},

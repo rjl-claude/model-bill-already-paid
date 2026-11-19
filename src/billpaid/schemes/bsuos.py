@@ -248,7 +248,7 @@ def result(store: SnapshotStore, hist: ReferenceScheme, road: dict,
     whose payments the uplift
     is counted net of. ``to_register`` (billpaid.register.ToRegister) makes
     each closed year of the NESO and turn-up feeds the shared cost register's (0168);
-    omitted in unit tests. ``constraints_history`` (the constraints REF history) lets the
+    omitted in unit tests. ``constraints_history`` (the constraints history) lets the
     netting take only the constraint days the BSUoS data covers in its last year."""
     out: list[SchemeResult] = []
     bs_daily = store.read_all_partitions("bsuos", "daily")

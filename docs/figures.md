@@ -90,7 +90,7 @@ Every key in the file matches exactly one of these templates (tested):
 
 1.0.0 labels some years and parts but gives no basis for a whole line. Part 1 reads it from 1.0.0's own account of each line:
 
-- measured (payments or receipts as recorded): CfD (LCCC settlement), constraints (from 1.2.0: Elexon's record 2016-2025, REF's database 2010-2015; 1.1.0 took REF's through 2023), RO and FiT (Ofgem), the Climate Change Levy (HMRC receipts, electricity's published share);
+- measured (payments or receipts as recorded): CfD (LCCC settlement), constraints (Elexon's record 2016-2025 from 1.2.0; National Grid's record 2010-2015 from 1.5.0, of which 2010-2013 are counted estimated: "Version 1.5.0" below), RO and FiT (Ofgem), the Climate Change Levy (HMRC receipts, electricity's published share);
 - modelled (a share or alternative from the pinned gas model): Capacity Market, carbon, TNUoS, BSUoS, VAT (households' share from the gas model);
 - estimated: constraint turn-up (1.0.0: "Estimated cost of paying other stations…").
 - Sizewell C (part 3, 2025 only): measured (suppliers' levy payments to LCCC as recorded).
@@ -253,15 +253,15 @@ The spec proposed names and left them to this ticket; the freeze (#226) checks t
 
 ## Version 1.2.0: the outline's figures
 
-Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-series/price-of-the-climate-bill/outline-beats.md`, "Missing figures", ADR 0240) asks the bill already paid for figures 1.1.0 does not hold, M1 to M9. 1.2.0 adds them, and replaces REF with Elexon's own record for wind constraint payments wherever Elexon holds the whole year. Code: `src/billpaid/elexon_record.py`, `outline.py`, `checks.py`, `outline_sources.py`. Tests: `tests/test_elexon_constraints.py`, `test_outline_figures.py`, `test_checks.py`. The publishers' files are saved in `reference/sources/` and pinned by sha256 in `reference/outline_sources.yaml`; the build refuses any whose bytes differ. Every value that moves from 1.1.0, and every key added, is listed in `docs/1.2.0-against-1.1.0.md`.
+Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-series/price-of-the-climate-bill/outline-beats.md`, "Missing figures", ADR 0240) asks the bill already paid for figures 1.1.0 does not hold, M1 to M9. 1.2.0 adds them, and takes Elexon's own record for wind constraint payments wherever Elexon holds the whole year. Code: `src/billpaid/elexon_record.py`, `outline.py`, `checks.py`, `outline_sources.py`. Tests: `tests/test_elexon_constraints.py`, `test_outline_figures.py`, `test_checks.py`. The publishers' files are saved in `reference/sources/` and pinned by sha256 in `reference/outline_sources.yaml`; the build refuses any whose bytes differ. Every value that moves from 1.1.0, and every key added, is listed in `docs/1.2.0-against-1.1.0.md`.
 
-### Wind constraint payments: Elexon in place of REF (M9)
+### Wind constraint payments: Elexon's own record (M9)
 
-- 1.1.0 took 2010-2023 from REF's database (`reference/annual_scheme_costs.yaml`, `constraints_history`) and Elexon's settlement stacks from 2024 (the history's pin, `bottom_up_from`).
+- 1.1.0 took 2010-2023 from an earlier third-party series and Elexon's settlement stacks from 2024.
 - Elexon's settlement stacks start on 6 Nov 2015. 1.0.0's store holds every day since. Each calendar year before the pin that the store holds whole now comes from Elexon: 2016-2023. The store is read as it stood when the frozen results file was written (each day's latest version retrieved at or before its `generated_at`).
-- 2010-2015 stay on REF. Elexon's API returns no settlement stack, acceptance (BOALF) or bid-offer (BOD) data before November 2015, and 2015 has only its last 55 days. `constraints.ref_years` names them. The evidence is saved (1.3.0): Elexon's own answers of 11 Nov 2026, each pinned by sha256 in `reference/outline_sources.yaml` (`elexon-*`): empty for the settlement stack of 1 Feb 2012 and of the last period of 5 Nov 2015, for acceptances (BOALF) and bid-offer data (BOD) on 1 Jun 2014 and for indicative bid cashflows on 1 Jun 2015; accepted bids for the last period of 6 Nov 2015 (`tests/test_elexon_constraints.py`).
+- 2010-2015 have no Elexon record: its API returns no settlement stack, acceptance (BOALF) or bid-offer (BOD) data before November 2015, and 2015 has only its last 55 days. From 1.5.0 they are National Grid's record ("Version 1.5.0" below). The evidence is saved (1.3.0): Elexon's own answers of 11 Nov 2026, each pinned by sha256 in `reference/outline_sources.yaml` (`elexon-*`): empty for the settlement stack of 1 Feb 2012 and of the last period of 5 Nov 2015, for acceptances (BOALF) and bid-offer data (BOD) on 1 Jun 2014 and for indicative bid cashflows on 1 Jun 2015; accepted bids for the last period of 6 Nov 2015 (`tests/test_elexon_constraints.py`).
 - The three balancing lines are one measured total split three ways. 1.0.0's own split rule is applied again with the new figure: the uplift is that total less constraint payments; turn-up is its measured figure, never more than the uplift nor below zero; BSUoS takes the rest. So `all`, the bridge and VAT do not move. Money moves between the direct layer (constraints, up £34.8m cash over 2016-2023) and the indirect (BSUoS, and in 2018, when turn-up is capped and BSUoS is nil, turn-up).
-- `results/clock.json`, the Clock's file, is unchanged: the Clock moves to Elexon for those years only if the history's pin moves, a release decision.
+- `results/clock.json`, the Clock's file, is unchanged at 1.2.0: the Clock moves to Elexon for those years once the history holds Elexon's sums for them (it does at 1.5.0, below).
 
 ### The keys
 
@@ -289,7 +289,7 @@ Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-se
 - `check.<check>.headline.<cs>`: M7, a check against a published total, £ cash as paid, over the years both cover: `model`, `reference`, `gap` (model less reference), `ratio` (model over reference). `<check>`: `hmrc.ccl`, `ofgem.ro`, `ofgem.fit`, `obr.levies`, `ref.direct` (below). `<cs>`: `model`, `reference`, `gap`, `ratio`.
 - `check.<check>.years`: the years the check covers.
 - `check.<check>.basis`: what each side holds, in words.
-- `constraints.ref_years`: the years of wind constraint payments still on REF's database (2010-2015).
+- `constraints.national_grid_years` and `constraints.spread_years` (1.5.0, below) name the years not on Elexon's record. 1.2.0 to 1.4.0 named them in another key, gone at 1.5.0.
 
 ### The checks (1.2.0)
 
@@ -299,7 +299,6 @@ Report No. 2's plan step 19 (aios-harness#235). The approved outline (`report-se
 | `ofgem.ro` | RO line, SY1-SY23 (2002-03 to 2024-25) | Ofgem's scheme value, ROCs presented x worth of a ROC (annual reports 2005-06, 2009-10, SY23 Figure A4.1) | the line is £525.5m higher: the mutualisation received 2017-18 to 2021-22, which the line adds |
 | `ofgem.fit` | FiT line, 2010-11 to 2024-25 | the levelisation fund printed in Ofgem's document for each year (15 documents) | exact |
 | `obr.levies` | RO line plus CfD by financial year, 2002-03 to 2024-25 | OBR public finances databank (October 2026), "Environmental levies" | the model is £10.3bn (11%) lower. The OBR's series also holds the Warm Home Discount and the green gas levy, which the model does not count; the rest of the gap is not explained here |
-| `ref.direct` | RO, FiT, CfD (financial years), constraints (calendar years), to 2023-24 | REF April 2025, Table 1 totals, £bn to one decimal, REGO left out | the model is £0.14bn (0.15%) higher |
 
 `check.ofgem.price_cap_policy_costs` was not built in 1.2.0; 1.3.0 builds it (ADR 0241, below). The `obr.levies` row above is 1.2.0's; 1.3.0 makes it like for like (below).
 
@@ -378,3 +377,25 @@ The carbon line assumes the carbon charge passed into the price of power in full
 - `carbon.pass_through.range.<bound>.<year>.<m>`, `carbon.pass_through.range.<bound>.headline.<m>`: the carbon line at each end (2025 provisional, never in the headline).
 - `carbon.pass_through.swing.<bound>.<m>`, `carbon.pass_through.headline.<bound>.<m>`: the headline's move, and the headline, at each end.
 - It joins the headline's range (`range.lines`: carbon, the Capacity Market and carbon pass-through; turn-up out under 14c). From 1.4.0 the pass-through sets both ends.
+
+## Version 1.5.0: National Grid's record for 2010-2015, and primary sources only
+
+aios-harness#266; Richard's rulings of 19 Nov 2026. Code: `src/billpaid/mbss.py`, `elexon_record.py`. Tests: `tests/test_national_grid_constraints.py`, `tests/test_mbss_wind_payments.py`. What moves from 1.4.0: `docs/1.5.0-against-1.4.0.md`.
+
+### Wind constraint payments 2010-2015: National Grid's Monthly Balancing Services Summary
+
+- The source is the payer's own monthly report, section "Payments to Wind Powered Generation". Eight reports, as NESO hosts them, are saved in `reference/sources/mbss/` and typed with their checksums in `reference/mbss_wind_payments.yaml`.
+- National Grid prints each month from April 2013. Before that it prints one total for each April-March year: 2010/11 £0.2m, 2011/12 £34.1m, 2012/13 £7.6m, and says no payment was made earlier.
+- 2014 and 2015 are the sums of their twelve printed months: £57.0m and £96.9m.
+- The three April-March totals are spread by the model's rule for April-March years (`calendar_years.fy_to_cy`): a quarter to the calendar year they end in, three quarters to the one they start in. April to December 2013's printed months (£33.7m) are added to 2013. So 2010 is £0.15m, 2011 £25.625m, 2012 £14.225m, 2013 £35.6m.
+- The four years' total is what National Grid printed, whatever the spread. Only its split between the four years is estimated, so those years carry `constraints.<year>.basis` = estimated and count in the headline's estimated part. `constraints.spread_years` names them; `constraints.national_grid_years` names all six.
+- The widest the spread could be wrong in any one year: 2012 holds £14.2m and could hold anything from nil to £41.7m (all of 2011/12 and 2012/13); 2011 holds £25.6m and could hold nil to £34.3m.
+- National Grid counts every payment to a wind farm "regardless of the reason", in or out of the Balancing Mechanism. Elexon's record, from 2016, counts accepted bids in the Balancing Mechanism. Where the two overlap, December 2015 to July 2016 agree within rounding, and August 2016 to March 2017 National Grid's count is £8.6m (14%) higher (`tests/test_mbss_wind_payments.py`).
+- Elexon's own older record was not used: its open services return nothing before November 2015, and its portal's archive could not be opened (Richard, 19 Nov 2026: he could not log in, and it needs him to contact Elexon and register as a tenant, which he will not do).
+- The three balancing lines are re-split by 1.0.0's rule as at 1.2.0, so `all`, the bridge and VAT do not move. Constraints rise £33.9m cash over 2010-2015; BSUoS falls £27.7m and turn-up £6.2m (2015, where turn-up is capped at the uplift and BSUoS is nil).
+- `reference/annual_scheme_costs.yaml`, `constraints_history`, now holds these six years and, for 2016-2023, Elexon's own yearly sums; its pin (`bottom_up_from`) stays 2024. So a new run of the results file gives the same three balancing lines as the figures file (`tests/test_results.py`). `results/clock.json` as frozen is not rebuilt here.
+
+### Primary sources only
+
+- The check against a third party's published total (keys `check.ref.*`) and the key naming the years on its database are gone, with their saved page, the two reference files that fed the command line's printed cross-checks, and those cross-checks.
+- `reference/register/shared-cost-register-v4-s43.csv` is Report No. 1's pinned register, kept byte for byte; its CONSTRAINTS rows are no longer read (`register.REF_LINES`). `reference/clock_findings.yaml` records what the live Clock's old histories were and stays as written.

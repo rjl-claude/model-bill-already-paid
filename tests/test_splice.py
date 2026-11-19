@@ -12,11 +12,11 @@ import pytest
 from billpaid.reference import ReferenceScheme, load_annual_costs
 from billpaid import splice
 
-REF = {2022: 227.2e6, 2023: 310.5e6, 2024: 394.3e6, 2025: 382.1e6}
+HISTORY = {2022: 227.2e6, 2023: 310.5e6, 2024: 394.3e6, 2025: 382.1e6}
 REFERENCE = Path(__file__).parent.parent / "reference"
 
 
-def _history(pin, values=REF):
+def _history(pin, values=HISTORY):
     df = pl.DataFrame({"year": list(values), "cost_gbp": list(values.values())},
                       schema={"year": pl.Int64, "cost_gbp": pl.Float64})
     return ReferenceScheme("h", "h", [], "annual", "s", "https://s", True, df,
@@ -50,15 +50,15 @@ def _year(annual, y):
 
 def test_years_from_the_pin_come_from_bottom_up_and_earlier_years_from_the_history():
     annual, held_from, held_to = _con(2024)
-    assert _year(annual, 2023) == REF[2023]          # 2023 partly held: stays on REF
+    assert _year(annual, 2023) == HISTORY[2023]          # 2023 partly held: stays on HISTORY
     assert _year(annual, 2024) == 366 * 1.0e6        # 2024 from Elexon
-    assert _year(annual, 2022) == REF[2022]
+    assert _year(annual, 2022) == HISTORY[2022]
     assert (held_from, held_to) == ("2023-08-25", "2025-01-03")
 
 
 def test_the_pin_2024_still_holds_2023_on_the_history_once_2023_is_fully_held():
     annual, _, _ = _con(2024, earliest=date(2022, 12, 30))
-    assert _year(annual, 2023) == REF[2023]
+    assert _year(annual, 2023) == HISTORY[2023]
 
 
 def test_the_backfill_passing_1_jan_2023_moves_no_year():
@@ -87,7 +87,7 @@ def test_a_pin_written_as_text_fails_naming_the_value():
 
 def test_a_pin_as_a_fraction_or_a_date_fails_naming_the_value():
     # the fact-checker found 2024.5 and the YAML date 2024-01-01 built silently and put
-    # 2024 back on REF
+    # 2024 back on HISTORY
     for pin in (2024.5, "2024-01-01", date(2024, 1, 1), True):
         with pytest.raises(ValueError, match=r"bottom_up_from .* whole-number year"):
             _con(pin)
@@ -107,7 +107,7 @@ def test_a_pin_with_no_held_day_on_or_after_it_fails():
 
 
 def test_a_pin_only_partly_held_fails_rather_than_swapping_in_a_part_year():
-    # data from 25 Aug 2023: 2023 would replace REF's full year with four months of Elexon
+    # data from 25 Aug 2023: 2023 would replace HISTORY's full year with four months of Elexon
     with pytest.raises(ValueError, match=r"bottom_up_from 2023 .*not every day from 1 Jan 2023"):
         _con(2023)
 
@@ -130,14 +130,14 @@ def test_a_held_day_with_no_rows_counts_as_held():
 # --- the live pin: no year at or after it goes back on the history
 
 def test_a_pin_after_the_live_pin_fails_naming_the_setting():
-    # the fact-checker found 2025 and 2026 built silently and put 2024 back on REF
+    # the fact-checker found 2025 and 2026 built silently and put 2024 back on HISTORY
     for pin in (2025, 2026, 2030):
         with pytest.raises(ValueError, match=rf"bottom_up_from {pin} .*later than 2024"):
             _con(pin)
 
 
 def test_a_raised_pin_fails_when_2024_has_a_missing_day():
-    # the fact-checker removed 15 Jun 2024 and pinned 2025: calendar 2024 went back on REF
+    # the fact-checker removed 15 Jun 2024 and pinned 2025: calendar 2024 went back on HISTORY
     with pytest.raises(ValueError, match=r"bottom_up_from 2025 .*later than 2024"):
         _con(2025, missing={date(2024, 6, 15)})
 

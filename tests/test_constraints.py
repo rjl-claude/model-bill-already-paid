@@ -92,7 +92,7 @@ def test_fetch_day_collects_all_periods():
 
 
 def test_cost_applies_transmission_loss_multiplier():
-    """Elexon settles volume x price x TLM; REF's totals match only with it."""
+    """Elexon settles volume x price x TLM."""
     row = dict(STACK_ROWS[0], transmissionLossMultiplier=0.96)
     df = constraints.parse_stack([row], WIND)
     r = df.to_dicts()[0]

@@ -98,45 +98,41 @@ schemes:
       2023: 1754915050.0
       2024: 1725741218.0
   constraints_history:
-    label: Wind constraint payments (pre-backfill history)
+    label: Wind constraint payments (the years before the pin)
     perspectives: [renewables, low_carbon]
     cadence: annual
     source: >-
-      Renewable Energy Foundation (REF) online database of wind farm
-      constraint payments, "Year" view (Elexon Balancing Mechanism bid
-      acceptance data), retrieved 9 June 2026.
-    source_url: https://www.ref.org.uk/constraints/index.php?tab=yr
+      2010-2015: National Grid, Monthly Balancing Services Summary, "Payments to Wind Powered Generation", the
+      reports of August 2013 to March 2016 as NESO hosts them, retrieved 19 November 2026 and saved with their
+      checksums (reference/mbss_wind_payments.yaml). 2016-2023: Elexon's settlement record of accepted wind bids,
+      each whole calendar year summed from the model's own store as it stood on 9 November 2026.
+    source_url: https://www.neso.energy/document/60941/download
     verified: true
-    expected_next_update: 2027-02-01   # REF database is rolling; refresh once the prior calendar year is complete
-    # First year Elexon bottom-up replaces this history (fix 5 guard, 17 Oct 2026). 2024 is
-    # today's live split (2023 from REF, 2024 on from Elexon), held still until the
-    # release Richard approves. Changing it is a release decision with a changelog entry:
-    # it moves the split between the constraints and balancing lines (balancing is net of
-    # constraints), not the end-2024 figure. The build refuses 0 or below, and a year later
-    # than 2024 while Elexon holds any day of 2024 or later before the pin year.
-    # Nothing enforces the changelog entry yet: a pin change builds with only this comment
-    # asking for one (an item for the single release).
+    # First year the daily Elexon feed replaces this history (fix 5 guard, 17 Oct 2026). Changing it is a release
+    # decision with a changelog entry. The build refuses 0 or below, and a year later than 2024 while Elexon holds
+    # any day of 2024 or later before the pin year.
     bottom_up_from: 2024
     note: >-
-      Calendar-year wind curtailment cost for years before the bottom-up
-      Elexon backfill window. The money model uses these only for years not
-      covered bottom-up. Figures are Balancing Mechanism trades only; REF
-      notes confidential bilateral constraint trades (e.g. ~GBP 12.7m in
-      2011) are excluded, so these values are conservative (lower bound).
+      Calendar years, £ cash, primary records only (version 1.5.0, aios-harness#266). 2010-2015 are made from
+      National Grid's printed figures by billpaid.mbss: 2014 and 2015 are their twelve printed months; 2010-2013
+      hold the April-March totals 2010/11 (£0.2m), 2011/12 (£34.1m) and 2012/13 (£7.6m), which National Grid
+      printed without months, spread a quarter to the year they end in and three quarters to the year they start
+      in, plus April-December 2013's printed months. National Grid counts every payment to a wind farm, in or out
+      of the Balancing Mechanism, and says none was made before 2010/11. 2016-2023 are Elexon's accepted wind bids
+      in the Balancing Mechanism, the same record the daily feed carries from the pin (billpaid.elexon_record).
+      Tests hold both parts equal to their sources (tests/test_national_grid_constraints.py).
     annual:
-      2010: 174128
-      2011: 12826756
-      2012: 5924231
-      2013: 32707351
-      2014: 53261058
-      2015: 90738134
-      2016: 81861075
-      2017: 108247860
-      2018: 124649106
-      2019: 138992769
-      2020: 274161002
-      2021: 143342294
-      2022: 227183472
-      2023: 310482753
-      2024: 394302243
-      2025: 382108509
+      2010: 150000
+      2011: 25625000
+      2012: 14225000
+      2013: 35600000
+      2014: 57000000
+      2015: 96900000
+      2016: 82316694.32977201
+      2017: 109317610.19690977
+      2018: 125651666.68553942
+      2019: 141492470.79800454
+      2020: 283003181.026572
+      2021: 147421625.58777833
+      2022: 235638443.2672907
+      2023: 318837334.72687

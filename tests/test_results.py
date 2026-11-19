@@ -65,12 +65,39 @@ def _same(a, b, path=""):
         assert a == b, path
 
 
-def test_the_model_still_writes_the_committed_results_file(tmp_path):
-    """1.1.0 adds a figures file and changes nothing in results/clock.json (aios-harness#222): run on the
-    repository's data, the model writes the committed file again, its stamp (meta) apart."""
+BALANCING = ("constraints", "constraint_turnup", "bsuos")
+
+
+def _rows(doc, line):
+    s = next(s for s in doc["model"]["schemes"] if s["scheme_id"] == line)
+    return {r["year"]: r["cost_gbp"] for r in s["annual"]["rows"]}
+
+
+def test_a_new_run_differs_from_the_frozen_results_file_only_in_the_balancing_split(tmp_path):
+    """1.1.0 to 1.4.0 changed nothing in results/clock.json. 1.5.0 (aios-harness#266) makes the constraints
+    history National Grid's record (2010-2015) and Elexon's yearly sums (2016-2023), so a new run on the repository's data differs from the
+    committed (frozen) file in the three balancing lines 2010-2023 and nowhere else among the lines; each year's
+    three still add to the same total; and the new run's three lines are the ones the figures file holds."""
+    from billpaid import elexon_record
     committed = json.loads((ROOT / "results" / results.FILE).read_text())
     doc, _ = results.assemble(ROOT, generated_at=committed["meta"]["generated_at"])
     doc = json.loads(json.dumps(doc, allow_nan=False))
     assert doc["meta"]["model"] == committed["meta"]["model"]
     assert doc["meta"]["format"] == committed["meta"]["format"]
-    _same({k: v for k, v in doc.items() if k != "meta"}, {k: v for k, v in committed.items() if k != "meta"})
+    assert doc["model"]["elexon_first_year"] == committed["model"]["elexon_first_year"] == 2024
+    lines = [s["scheme_id"] for s in committed["model"]["schemes"]]
+    assert [s["scheme_id"] for s in doc["model"]["schemes"]] == lines
+    for line in lines:
+        new, old = _rows(doc, line), _rows(committed, line)
+        assert sorted(new) == sorted(old), line
+        for y in old:
+            if line in BALANCING and 2010 <= y <= 2023:
+                continue
+            assert math.isclose(new[y], old[y], rel_tol=1e-9, abs_tol=1e-6), (line, y)
+    figures_doc, _, _ = elexon_record.apply(committed, ROOT, 2024)
+    for y in range(2010, 2024):
+        assert math.isclose(sum(_rows(doc, line).get(y, 0.0) for line in BALANCING),
+                            sum(_rows(committed, line).get(y, 0.0) for line in BALANCING), rel_tol=1e-9), y
+        for line in BALANCING:
+            assert math.isclose(_rows(doc, line).get(y, 0.0), _rows(figures_doc, line).get(y, 0.0),
+                                rel_tol=1e-9, abs_tol=1e-3), (line, y)

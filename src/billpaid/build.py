@@ -104,7 +104,7 @@ def build(store: SnapshotStore, refs: dict[str, ReferenceScheme],
         block["runrate_gbp_per_year_2024"] = block["runrate_gbp_per_year"] * factor
         block["rate_gbp_per_sec_2024"] = block["rate_gbp_per_sec"] * factor
     return {"schemes": schemes, "perspectives": out_perspectives,
-            # the first year Elexon replaces REF for constraints (fix 5 guard); published
+            # the first year Elexon replaces the history for constraints (fix 5 guard); published
             # in breakdown.json so the pages state the same year as the figures
             "elexon_first_year": (refs["constraints_history"].bottom_up_from
                                   if con[0].extras["held_from"] else None),

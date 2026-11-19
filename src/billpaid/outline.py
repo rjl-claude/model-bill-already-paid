@@ -31,8 +31,9 @@ def _lines(out: dict) -> list[str]:
 
 
 def basis_of(out: dict, line: str, y: int) -> str:
-    """A line's basis in a year: its own, or carbon's year by year (2005-2012 estimated)."""
-    return out.get(f"{line}.{y}.basis", out[f"{line}.basis"]) if line == "carbon" else out[f"{line}.basis"]
+    """A line's basis in a year: that year's where the line has one (carbon 2005-2012 and constraints 2010-2013
+    estimated), else the line's own."""
+    return out.get(f"{line}.{y}.basis", out[f"{line}.basis"])
 
 
 def headline_parts(out: dict) -> None:
