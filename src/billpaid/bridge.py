@@ -56,18 +56,23 @@ STEPS = (
     ("fit", "NZ3", ("fit",)),
     ("ccl", "NZ8", ("ccl",)),
     ("vat", "NZ11 - GO7", ("vat",)),
+    # 1.6.0 (ADR 0264): No. 1 counts the whole net-zero part of the generators' share of grid and balancing charges,
+    # inside its price of power (GEN: its run file's fleet.<year>.gen_nz_charge, taken out of the gas-led
+    # alternative's market price, 0167 way 2); No. 2 counts the part not paid out of subsidy, without switch-off
+    # payments and turn-up. The power step loses it, so the walk still adds up.
+    ("generators_share", "GEN", ("generators_share",)),
     # in No. 1 only
     ("energy_saving_schemes", "NZ10", ()),
-    ("power_before_carbon", "NZ1 - NZ1c - GO1 - GO1k", ()),
+    ("power_before_carbon", "NZ1 - NZ1c - GO1 - GO1k - GEN", ()),
 )
 START, END = "no2_money_paid", "no1_extra_cost"
 KIND = {**{n: "same" for n in ("cfd_renewable", "capacity_market", "carbon", "tnuos", "balancing")},
-        **{n: "counted_differently" for n in ("ro", "fit", "ccl", "vat")},
+        **{n: "counted_differently" for n in ("ro", "fit", "ccl", "vat", "generators_share")},
         **{n: "no1_only" for n in ("energy_saving_schemes", "power_before_carbon")},
         START: "total", END: "total"}
 # The table's row labels, in the series glossary's words (report-series/GLOSSARY.md).
 LABELS = {
-    START: "Money paid: Report No. 2's eleven lines, gross",
+    START: "Money paid: Report No. 2's twelve lines, gross",
     "cfd_renewable": "Contracts for Difference: counted alike in both reports",
     "capacity_market": "Capacity Market, the part net zero caused: counted alike",
     "carbon": "Carbon in the price of power: counted alike",
@@ -77,8 +82,11 @@ LABELS = {
     "fit": "Feed-in Tariffs: No. 1 counts by calendar year, No. 2 by scheme year",
     "ccl": "Climate Change Levy: No. 1 counts only the levy above its 2001 rate, Great Britain only",
     "vat": "VAT: No. 1 charges it on households' share of the extra cost, No. 2 on the money paid",
+    "generators_share": ("Generators' grid and balancing charges: No. 1 counts all net zero added, No. 2 only what "
+                         "unsubsidised stations pay"),
     "energy_saving_schemes": "Suppliers' energy-saving schemes on electricity bills: in No. 1 only",
-    "power_before_carbon": "Power itself, before carbon: the actual cost less the gas-led alternative's",
+    "power_before_carbon": ("Power itself, before carbon and generators' grid charges: the actual cost less the gas-led "
+                            "alternative's"),
     END: "Extra cost: Report No. 1's figure, net",
 }
 TOLERANCE = 0.001   # £: a tenth of a penny
@@ -88,7 +96,9 @@ def _no1_lines(no1: dict, year: int) -> dict[str, float]:
     """Every line of No. 1's two bills that year, by id, £ cash."""
     bills = no1["bills"][str(year)]
     lines = [*bills["netzero"], *bills["gasonly"], bills["nz1c"]]
-    return {x["id"]: x["national_gbp_m_nominal"] * M for x in lines}
+    out = {x["id"]: x["national_gbp_m_nominal"] * M for x in lines}
+    out["GEN"] = no1["fleet"][str(year)]["gen_nz_charge"]["gbp_m"] * M
+    return out
 
 
 def _signed(formula: str, lines: dict[str, float]) -> float:

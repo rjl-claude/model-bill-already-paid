@@ -56,6 +56,18 @@ def _shift(frozen, figs, y, m):
     return figs[f"constraints.{y}.{m}"] - old
 
 
+# 1.6.0 (report-series ADR 0264): a new indirect line, the generators' share of grid and balancing charges not paid
+# out of subsidy, and 5% VAT on households' share of it. The line is tested in tests/test_generators_share.py; here
+# the 1.0.0 totals and the VAT line are expected to move by exactly that much and no more.
+def _added(figs, y, m):
+    """What 1.6.0 adds to the indirect layer in year y (£): the line and the VAT on it."""
+    return figs[f"generators_share.{y}.{m}"] * (1 + 0.05 * figs[f"vat.domestic_share.{y}"])
+
+
+def _vat_added(figs, y, m):
+    return 0.05 * figs[f"vat.domestic_share.{y}"] * figs[f"generators_share.{y}.{m}"]
+
+
 def test_the_figures_are_built_from_the_file_the_paper_pins():
     data = figures.frozen_bytes(ROOT)
     assert hashlib.sha256(data).hexdigest() == PINNED_SHA256
@@ -67,6 +79,10 @@ def test_every_line_every_year_is_its_1_0_0_value_in_2024_prices_and_cash(frozen
     for line, s in schemes.items():
         for r in s["annual"]["rows"]:
             if r["year"] > figures.LAST_CLOSED_YEAR or _moved(line, r["year"]):
+                continue
+            if line == "vat":
+                for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
+                    assert _close(figs[f"vat.{r['year']}.{m}"], r[col] + _vat_added(figs, r["year"], m))
                 continue
             assert figs[f"{line}.{r['year']}.real"] == r["cost_gbp_2024"], (line, r["year"])
             assert figs[f"{line}.{r['year']}.cash"] == r["cost_gbp"], (line, r["year"])
@@ -83,19 +99,23 @@ def test_direct_and_indirect_by_year_are_the_1_0_0_totals(frozen, figs):
     for y in range(2002, 2025):
         for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
             assert _close(figs[f"direct.{y}.{m}"], direct[y][col] + _shift(frozen, figs, y, m)), (y, m)
-            assert _close(figs[f"indirect.{y}.{m}"], indirect[y][col] - _shift(frozen, figs, y, m)), (y, m)
-            assert _close(figs[f"all.{y}.{m}"], direct[y][col] + indirect[y][col]), (y, m)
+            assert _close(figs[f"indirect.{y}.{m}"], indirect[y][col] - _shift(frozen, figs, y, m)
+                          + _added(figs, y, m)), (y, m)
+            assert _close(figs[f"all.{y}.{m}"], direct[y][col] + indirect[y][col] + _added(figs, y, m)), (y, m)
 
 
 def test_the_headlines_are_2002_to_2024_each_line_and_together(frozen, figs):
     for line, s in _schemes(frozen).items():
         for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
+            vat = (lambda y: _vat_added(figs, y, m)) if line == "vat" else (lambda y: 0.0)
             assert _close(figs[f"{line}.headline.{m}"],
-                          sum(figs[f"{line}.{y}.{m}"] if _moved(line, y) else r[col] for y, r in _table(s).items()))
+                          sum(figs[f"{line}.{y}.{m}"] if _moved(line, y) else r[col] + vat(y)
+                              for y, r in _table(s).items()))
     for m, col in (("real", "cost_gbp_2024"), ("cash", "cost_gbp")):
         shift = sum(_shift(frozen, figs, y, m) for y in MOVED_YEARS)
         direct = sum(r[col] for r in _table(frozen["model"]["perspectives"]["renewables"]).values()) + shift
-        indirect = sum(r[col] for r in _table(frozen["model"]["indirect"]).values()) - shift
+        indirect = (sum(r[col] for r in _table(frozen["model"]["indirect"]).values()) - shift
+                    + sum(_added(figs, y, m) for y in range(2002, 2025)))
         assert _close(figs[f"direct.headline.{m}"], direct)
         assert _close(figs[f"indirect.headline.{m}"], indirect)
         assert _close(figs[f"all.headline.{m}"], direct + indirect)
@@ -106,8 +126,9 @@ def test_the_2024_price_headline_is_the_worked_figure(figs):
     # 1.5.0: £46.7m moves from indirect to direct (National Grid's record 2010-2015), so direct, £125.81bn at
     # 1.4.0, is £125.86bn and prints £125.9bn; indirect, £126.60bn, is £126.55bn and still prints £126.6bn
     assert round(figs["direct.headline.real"] / 1e9, 1) == 125.9
-    assert round(figs["indirect.headline.real"] / 1e9, 1) == 126.6
-    assert round(figs["all.headline.real"] / 1e9, 1) == 252.4
+    # 1.6.0: the generators' share, £4.85bn, and its VAT, £0.09bn, join the indirect layer: £131.5bn and £257.3bn
+    assert round(figs["indirect.headline.real"] / 1e9, 1) == 131.5
+    assert round(figs["all.headline.real"] / 1e9, 1) == 257.3
 
 
 def _cpih(doc):
@@ -247,7 +268,8 @@ def test_the_context_keys(frozen, figs):
         assert figs[f"bill.{y}.real"] == bill[y]["total_bill_gbp_2024"]
         assert figs[f"bill.{y}.cash"] == bill[y]["total_bill_gbp"]
         assert _close(figs[f"share_of_bill.{y}"],
-                      (direct[y]["cost_gbp_2024"] + indirect[y]["cost_gbp_2024"]) / bill[y]["total_bill_gbp_2024"])
+                      (direct[y]["cost_gbp_2024"] + indirect[y]["cost_gbp_2024"] + _added(figs, y, "real"))
+                      / bill[y]["total_bill_gbp_2024"])
         assert figs[f"deflator.{y}.cpih"] == cpih[y]
         assert _close(figs[f"deflator.{y}.to_2024"], cpih[2024] / cpih[y])
     assert figs["bill.2024.cash"] == 66_193_000_000          # DUKES 1.3, as the 9 Nov file holds it

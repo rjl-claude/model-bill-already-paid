@@ -154,7 +154,8 @@ def test_vat_2025_adds_vat_on_the_filled_lines_to_1_0_0s_vat_on_the_rest(frozen,
     # figure for; the filled lines (CCL apart, which households do not pay) add their own 5% of that share
     share = 0.3654581713770123
     base = _row(frozen, "vat", 2025)["cost_gbp"]
-    added = 0.05 * share * sum(figs[f"{line}.2025.cash"] for line in FILLED)
+    # 1.6.0: and the generators' share of grid and balancing charges (ADR 0264), a new line with 2025 in it
+    added = 0.05 * share * sum(figs[f"{line}.2025.cash"] for line in (*FILLED, "generators_share"))
     assert math.isclose(figs["vat.2025.cash"], base + added, rel_tol=1e-12)
     assert math.isclose(figs["vat.2025.real"], _real_calendar(base + added), rel_tol=1e-12)
     assert figs["vat.domestic_share.2025"] == share
@@ -170,7 +171,8 @@ def test_the_vat_rule_gives_1_0_0s_vat_in_every_closed_year(frozen, figs):
 
 
 DIRECT = ("cfd_renewable", "constraints", "ro", "fit", "sizewell_c")
-INDIRECT = ("ccl", "capacity_market", "carbon", "tnuos", "bsuos", "constraint_turnup", "vat")
+INDIRECT = ("ccl", "capacity_market", "carbon", "tnuos", "bsuos", "constraint_turnup", "vat",
+            "generators_share")   # generators_share: 1.6.0
 
 
 def test_the_2025_total_and_its_measured_modelled_and_estimated_parts(frozen, figs):
@@ -186,10 +188,11 @@ def test_the_2025_total_and_its_measured_modelled_and_estimated_parts(frozen, fi
         # constraint turn-up, the one line 1.0.0 itself calls an estimate. No line is carried forward.
         assert math.isclose(parts["measured"], sum(figs[f"{line}.2025.{m}"] for line in (*DIRECT, "ccl")),
                             rel_tol=1e-12)
-        assert parts["estimated"] == _row(frozen, "constraint_turnup", 2025)[
-            "cost_gbp_2024" if m == "real" else "cost_gbp"]
-    # 2025 stays out of the headline (ADR 0035, 0226): the 2002-2024 sum is unchanged
-    assert round(figs["all.headline.real"] / 1e9, 1) == 252.4
+        # 1.6.0: and the generators' share, estimated (ADR 0264)
+        assert math.isclose(parts["estimated"], _row(frozen, "constraint_turnup", 2025)[
+            "cost_gbp_2024" if m == "real" else "cost_gbp"] + figs[f"generators_share.2025.{m}"], rel_tol=1e-12)
+    # 2025 stays out of the headline (ADR 0035, 0226): the 2002-2024 sum (1.6.0: £257.3bn with the generators' share)
+    assert round(figs["all.headline.real"] / 1e9, 1) == 257.3
 
 
 def test_each_2025_line_names_its_source(figs):

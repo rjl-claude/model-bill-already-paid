@@ -76,9 +76,11 @@ def test_the_headline_does_not_move_and_money_moves_from_indirect_to_direct(froz
     old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.1.0:results/figures.json"],
                                     capture_output=True, check=True).stdout)["figures"]
     for m in ("cash", "real"):
-        assert math.isclose(figs[f"all.headline.{m}"], old[f"all.headline.{m}"], rel_tol=1e-13)
+        # 1.6.0's new line apart (the generators' share and its VAT, indirect): tests/test_version_1_6_0.py
+        gs = figs[f"all.headline.{m}"] - figs[f"option.no_generators_share.headline.{m}"]
+        assert math.isclose(figs[f"all.headline.{m}"] - gs, old[f"all.headline.{m}"], rel_tol=1e-13)
         moved = figs[f"direct.headline.{m}"] - old[f"direct.headline.{m}"]
-        assert math.isclose(moved, old[f"indirect.headline.{m}"] - figs[f"indirect.headline.{m}"], rel_tol=1e-9)
+        assert math.isclose(moved, old[f"indirect.headline.{m}"] - figs[f"indirect.headline.{m}"] + gs, rel_tol=1e-9)
     # Elexon's years: £34.8m more than 1.1.0 held for 2016-2023
     assert abs(sum(figs[f"constraints.{y}.cash"] - old[f"constraints.{y}.cash"] for y in ELEXON_AUDIT) / 1e6
                - 34.8) < 0.05
@@ -92,7 +94,8 @@ def test_no_other_1_1_0_value_moves(figs):
     old = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "refs/tags/v1.1.0:results/figures.json"],
                                     capture_output=True, check=True).stdout)["figures"]
     from tests.v1_5_0 import kept
-    old = kept(old)    # less what 1.5.0 drops or moves (tests/test_national_grid_constraints.py)
+    headline = {m: old[f"all.headline.{m}"] for m in ("real", "cash")}
+    old = kept(old)    # less what 1.5.0 drops or moves (tests/test_national_grid_constraints.py), and 1.6.0
     assert set(old) <= set(figs)
     allowed = {f"{line}.{y}.{m}" for line in BALANCING for y in range(2016, 2024) for m in ("cash", "real")}
     allowed |= {f"{line}.headline.{m}" for line in BALANCING + ("direct", "indirect") for m in ("cash", "real")}
@@ -104,7 +107,9 @@ def test_no_other_1_1_0_value_moves(figs):
     moved = {k for k in old if old[k] != figs[k] and not (isinstance(old[k], float) and math.isclose(
         old[k], figs[k], rel_tol=1e-14, abs_tol=1e-3 if k.startswith("bridge.balancing.") else 0.0))}
     assert moved <= allowed, sorted(moved - allowed)
-    assert all(math.isclose(old[k], figs[k], rel_tol=1e-13) for k in ("all.headline.real", "all.headline.cash"))
+    # the headline without 1.6.0's new line is 1.1.0's
+    assert all(math.isclose(headline[m], figs[f"option.no_generators_share.headline.{m}"], rel_tol=1e-13)
+               for m in headline)
 
 
 def test_elexons_saved_answers_show_its_record_starts_on_6_november_2015():

@@ -62,7 +62,11 @@ def _line_move(line: str, low: str | None, high: str | None):
 
 RANGE_LINES = {"carbon": _line_move("carbon", "carbon.range.low", "carbon.range.high"),
                "capacity_market": _line_move("capacity_market", "capacity_market.range.low", None),
-               "carbon_pass_through": lambda out, i, m: out[f"carbon.pass_through.swing.{('low', 'high')[i]}.{m}"]}
+               "carbon_pass_through": lambda out, i, m: out[f"carbon.pass_through.swing.{('low', 'high')[i]}.{m}"],
+               # 1.6.0 (ADR 0264): the generators' share, at the low or high unsubsidised share (no VAT moved, as
+               # with the other lines' ranges)
+               "generators_share": _line_move("generators_share", "generators_share.range.low",
+                                              "generators_share.range.high")}
 
 # Ruling 13b (1.4.0): how fully the carbon charge passed into the price, by period (low, central, high), the
 # coordinator's settings of 17 Nov 2026 from report-series/price-of-the-climate-bill/handover/
@@ -241,7 +245,11 @@ def options(out: dict, root: Path, run: dict) -> None:
     _option(out, "grid_whole", lambda y, m: v(y, _g(out, f"tnuos.alternative.{y}.{m}")
                                               + _g(out, f"bsuos.alternative.{y}.{m}")))
     # ruling 12e (1.4.0): none of the grid and balancing cost above the gas-led alternative, nor its VAT
-    _option(out, "no_grid_balancing", lambda y, m: -v(y, _g(out, f"tnuos.{y}.{m}") + _g(out, f"bsuos.{y}.{m}")))
+    # 1.6.0: the generators' share (ADR 0264) is grid and balancing cost above the alternative too, so it goes with them
+    _option(out, "no_grid_balancing", lambda y, m: -v(y, _g(out, f"tnuos.{y}.{m}") + _g(out, f"bsuos.{y}.{m}")
+                                                      + _g(out, f"generators_share.{y}.{m}")))
+    # 1.6.0: the headline without the generators' share and its VAT: 1.5.0's basis, for the paper to print beside it
+    _option(out, "no_generators_share", lambda y, m: -v(y, _g(out, f"generators_share.{y}.{m}")))
     for m in ("real", "cash"):
         out[f"option.no_grid_balancing.less_than_headline.{m}"] = (
             out[f"all.headline.{m}"] - out[f"option.no_grid_balancing.headline.{m}"])

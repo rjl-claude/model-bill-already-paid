@@ -15,7 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
-from billpaid import bridge, checks, elexon_record, mbss, outline, outline_sources, provisional, ranges
+from billpaid import bridge, checks, elexon_record, generators_share, mbss, outline, outline_sources, provisional, ranges
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
@@ -55,6 +55,8 @@ BASIS = {
     "vat": "modelled",                # 5% on households' share, the share from the gas model
     "constraint_turnup": "estimated",  # 1.0.0: "Estimated cost of paying other stations..."
     "sizewell_c": "measured",         # 2025 only (part 3): suppliers' levy payments to LCCC, from 1 Dec 2025
+    # 1.6.0 (ADR 0264): the generators' share above the alternative times the share of output with no subsidy
+    "generators_share": "estimated",
 }
 NO_CONFIDENCE = "high"   # 1.0.0 gives no confidence for the direct lines: counted in full, as paid
 
@@ -68,7 +70,8 @@ PLACEHOLDERS = {
     "cc": "estimate|accepted_offers|accepted_offers_wind", "when": "from|to", "d": "cpih|to_2024",
     "step": "|".join([bridge.START, *(name for name, _, _ in bridge.STEPS), bridge.END]),
     "basis": "measured|modelled|estimated",
-    "ranged": "carbon|constraint_turnup",
+    "ranged": "carbon|constraint_turnup|generators_share",
+    "gen": "ro|cfd|fit|renewables|total",
     "check": r"hmrc\.ccl|ofgem\.ro|ofgem\.fit|obr\.levies|ofgem\.price_cap_policy_costs",
     "cs": "model|reference|gap|ratio",
     "area": "gb|uk",
@@ -76,7 +79,8 @@ PLACEHOLDERS = {
     "ptw": "method|sources|vat",
     "nc": "whd|crc",
     "gl": "ro|cfd",
-    "option": "carbon_tax_only|no_carbon|ccl_above_2001|no_ccl|grid_whole|cm_whole_levy|energy_saving_schemes|no_grid_balancing",
+    "option": ("carbon_tax_only|no_carbon|ccl_above_2001|no_ccl|grid_whole|cm_whole_levy|energy_saving_schemes"
+               "|no_grid_balancing|no_generators_share"),
 }
 MONEY = "real: £ in 2024 prices (CPIH); cash: £ as paid"
 KEYS = {
@@ -195,6 +199,14 @@ KEYS = {
                                         "Elexon's own record (1.5.0)"),
     "constraints.spread_years": ("the years among them holding part of an April-March total National Grid printed "
                                  "without months, spread across calendar years by rule (1.5.0)"),
+    "generators_share.<grid>.<year>.<m>": ("1.6.0 (ADR 0264): the generators' share of the grid (tnuos) or residual "
+                                           "balancing (bsuos) cost above the gas-led alternative, before the part "
+                                           "paid out of subsidy is taken off; signed"),
+    "generators_share.<grid>.headline.<m>": "the same, 2002-2024",
+    "generators_share.unsubsidised_share.<year>.<end>": ("the share of the year's output from stations with no "
+                                                         "subsidy (0 to 1): central, low and high"),
+    "generators_share.generation.<gen>.<year>": ("the output that share is read from, GWh: eligible for the RO, "
+                                                 "CfD, Feed-in Tariffs, all renewables, all sources"),
     "constraints.<year>.basis": ("the line's basis that year where it differs from the line's own: estimated in "
                                  "the spread years (their total is measured, its split between years is not)"),
 }
@@ -314,6 +326,7 @@ def build(doc: dict, no1: bridge.No1Release, root: Path | None = None) -> dict[s
     from billpaid.__main__ import ROOT
     root = root or ROOT
     doc, _, national_grid = elexon_record.apply(doc, root, LAST_CLOSED_YEAR)
+    doc, gs_table = generators_share.apply(doc, root)   # 1.6.0: the new line, and the VAT on it
     out: dict[str, float | str] = {}
     out["constraints.national_grid_years"] = ",".join(str(y) for y in national_grid)
     spread = [y for y in mbss.SPREAD_YEARS if y in national_grid]
@@ -341,6 +354,7 @@ def build(doc: dict, no1: bridge.No1Release, root: Path | None = None) -> dict[s
         out[f"{line}.layer"] = layer
         if line in PARTS:
             PARTS[line](out, doc, s)
+    generators_share.figures(out, doc, gs_table)
     _context(out, doc)
     bridge.build(out, doc, no1)
     provisional.build(out, doc, no1.run)

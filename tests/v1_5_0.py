@@ -22,5 +22,6 @@ def moved(key: str) -> bool:
 
 
 def kept(old: dict) -> dict:
-    """An older version's figures less the keys 1.5.0 drops or moves."""
-    return {k: v for k, v in old.items() if not gone(k) and not moved(k)}
+    """An older version's figures less the keys 1.5.0 drops or moves, and those 1.6.0 moves (tests/v1_6_0.py)."""
+    from tests import v1_6_0
+    return {k: v for k, v in old.items() if not gone(k) and not moved(k) and not v1_6_0.moved(k)}

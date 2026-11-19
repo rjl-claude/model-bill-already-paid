@@ -21,7 +21,7 @@ Version 1.1.0, parts 1 to 4 (aios-harness#222, #223, #224 and #225, Report No. 2
 
 A `<name>` stands for any of its values:
 
-- `<line>`: `cfd_renewable`, `constraints`, `ro`, `fit`, `sizewell_c` (direct; Sizewell C has 2025 keys only); `ccl`, `capacity_market`, `carbon`, `tnuos`, `bsuos`, `constraint_turnup`, `vat` (indirect)
+- `<line>`: `cfd_renewable`, `constraints`, `ro`, `fit`, `sizewell_c` (direct; Sizewell C has 2025 keys only); `ccl`, `capacity_market`, `carbon`, `tnuos`, `bsuos`, `constraint_turnup`, `vat`, `generators_share` (indirect; the last from 1.6.0)
 - `<total>`: `direct`, `indirect`, `all`
 - `<year>`: a calendar year (RO and FiT: the obligation year starting April of that year, as 1.0.0 keys them)
 - `<m>`: `real` (£ in 2024 prices, CPIH) or `cash` (£ as paid)
@@ -33,8 +33,9 @@ A `<name>` stands for any of its values:
 - `<cc>`: `estimate`, `accepted_offers`, `accepted_offers_wind`; `<when>`: `from`, `to`
 - `<d>`: `cpih`, `to_2024`
 - `<basis>`: `measured`, `modelled`, `estimated`
-- `<ranged>`: `carbon`, `constraint_turnup` (the lines labelled estimated, part 4)
-- `<step>`: the bridge's steps, in the walk's order (below): `no2_money_paid`, `cfd_renewable`, `capacity_market`, `carbon`, `tnuos`, `balancing`, `ro`, `fit`, `ccl`, `vat`, `energy_saving_schemes`, `power_before_carbon`, `no1_extra_cost`
+- `<ranged>`: `carbon`, `constraint_turnup` (the lines labelled estimated, part 4), `generators_share` (1.6.0)
+- `<gen>`: `ro`, `cfd`, `fit`, `renewables`, `total` (1.6.0: the output the unsubsidised share is read from)
+- `<step>`: the bridge's steps, in the walk's order (below): `no2_money_paid`, `cfd_renewable`, `capacity_market`, `carbon`, `tnuos`, `balancing`, `ro`, `fit`, `ccl`, `vat`, `generators_share` (1.6.0), `energy_saving_schemes`, `power_before_carbon`, `no1_extra_cost`
 
 Every key in the file matches exactly one of these templates (tested):
 
@@ -85,6 +86,7 @@ Every key in the file matches exactly one of these templates (tested):
 - `<ranged>.range.years`: the years the line has a range for, comma-separated.
 - `<ranged>.range.method`: how the range is made, in one line.
 - `carbon.allowance_price.<end>.<year>`: the allowance price carbon is priced at that year, central (the EEA's) and the low and high of the range, EUR/t.
+- From 1.6.0, the generators' share (below, "Version 1.6.0"): `generators_share.<grid>.<year>.<m>`, `generators_share.<grid>.headline.<m>`, `generators_share.unsubsidised_share.<year>.<end>`, `generators_share.generation.<gen>.<year>`, and `option.no_generators_share.headline.<m>`.
 
 ## Each line's basis
 
@@ -101,7 +103,7 @@ Part 4 (#225) gives a range to each estimated line that has none in 1.0.0 (below
 
 Part 2 (aios-harness#223; ADR 0222, 0036, 0037). The two reports answer different questions: No. 2 counts money paid (gross, scheme by scheme); No. 1 counts extra cost (net: Britain's whole electricity bill less the gas-led alternative's). The bridge walks from one figure to the other so the paper can print the table by key and never adds or subtracts the two reports itself. The figures must never be added, and neither confirms the other (0037).
 
-- **The two ends.** `bridge.no2_money_paid` is `all` (the eleven lines). `bridge.no1_extra_cost` is No. 1's yearly figure, read from its pinned release: the gas model's v4-s43 run file, `reference/engine/v4-s43-run.json` (`gap.<year>.national_gbp_m_nominal`), pinned in `reference/model_pin.yaml` and refused if its fingerprint differs. Its 2002-2024 total in 2024 prices is No. 1's published headline, £140.3bn (tested against No. 1's own figures file).
+- **The two ends.** `bridge.no2_money_paid` is `all` (the eleven lines; twelve from 1.6.0). `bridge.no1_extra_cost` is No. 1's yearly figure, read from its pinned release: the gas model's v4-s43 run file, `reference/engine/v4-s43-run.json` (`gap.<year>.national_gbp_m_nominal`), pinned in `reference/model_pin.yaml` and refused if its fingerprint differs. Its 2002-2024 total in 2024 prices is No. 1's published headline, £140.3bn (tested against No. 1's own figures file).
 - **Each step is a No. 1 line less the No. 2 lines it answers to**, both frozen; nothing is modelled here. No. 1's lines are its run file's own (`bills.<year>`): NZ lines are the actual bill, GO lines the gas-led alternative's.
 - **Prices.** `cash` is £ as paid. `real` is 2024 prices: No. 2's lines as 1.0.0 prices them, No. 1's cash priced by this model's CPIH, which is the index No. 1 uses (so its headline is reproduced exactly).
 - **It adds up.** `no2_money_paid` plus the eleven steps equals `no1_extra_cost`, to a tenth of a penny, every year and in the headline, in cash and in 2024 prices: tested, and the build refuses to write a walk that does not. It also refuses a walk that leaves a No. 2 line out or counts one twice. The sums run in the walk's fixed order over the frozen file, so a rerun gives the same digits (aios-harness#252, the last-digit difference between two `results` runs, does not reach it: the bridge never reruns the model).
@@ -119,8 +121,9 @@ The steps, in order:
 | `fit` | NZ3 | `fit` | No. 1 counts by calendar year, No. 2 by scheme year (the same levelisation cost). |
 | `ccl` | NZ8 | `ccl` | No. 2 counts electricity's whole levy (UK). No. 1 counts only what is above the levy at its 2001 rate, which the gas-led alternative would also have paid, Great Britain only. |
 | `vat` | NZ11 − GO7 | `vat` | No. 1 charges 5% on households' share of the extra cost (so on the saving in power too), No. 2 on households' share of the money paid. |
+| `generators_share` (1.6.0) | GEN: the run file's `fleet.<year>.gen_nz_charge.gbp_m` | `generators_share` | No. 1 counts the whole net-zero part of the generators' share, inside its price of power; No. 2 only the part stations with no subsidy pay, and not the share of switch-off and turn-up payments ("Version 1.6.0"). |
 | `energy_saving_schemes` | NZ10 | none | Suppliers' energy-saving schemes on electricity bills (EEC to GBIS): No. 1 counts them, No. 2 does not. |
-| `power_before_carbon` | NZ1 − NZ1c − GO1 − GO1k | none | The cost of power itself, before carbon: actual less the gas-led alternative's. The largest step and a saving in every year but 2008: what the policies took off the price of power, which a gross figure does not net off. |
+| `power_before_carbon` | NZ1 − NZ1c − GO1 − GO1k (− GEN from 1.6.0) | none | The cost of power itself, before carbon: actual less the gas-led alternative's. The largest step and a saving in every year but 2008: what the policies took off the price of power, which a gross figure does not net off. |
 
 The headline walk, 2002-2024, from the 9 Nov frozen file and v4-s43 (£bn; run `python -m billpaid figures` for the keys):
 
@@ -136,7 +139,7 @@ The headline walk, 2002-2024, from the 9 Nov frozen file and v4-s43 (£bn; run `
 | `power_before_carbon` | −79.4 | −92.2 |
 | `no1_extra_cost` | 110.5 | 140.3 |
 
-Where the generators' share that No. 1 counts sits: inside No. 1's power-price step (`power_before_carbon`). No. 1 removes the generators' share from its grid and balancing lines on both roads, and counts the part the policies added through each road's market price (No. 1 §10.3). That is why the grid and balancing steps are zero (added 1.2.0, as the outline's Table B.1 beat asks).
+Where the generators' share that No. 1 counts sits: inside No. 1's power-price step (`power_before_carbon`). No. 1 removes the generators' share from its grid and balancing lines on both roads, and counts the part the policies added through each road's market price (No. 1 §10.3). That is why the grid and balancing steps are zero (added 1.2.0, as the outline's Table B.1 beat asks). From 1.6.0 that part has its own step, `generators_share`, taken out of the power step, because No. 2 now counts part of it ("Version 1.6.0").
 
 Not in the bridge: 2025. No. 1's release has a provisional 2025 and No. 2 now has its 2025 lines (part 3), but the walk still stops at 2024 with the headline: widening it is not part 3's work (`bridge.YEARS` is the one place to widen it). Its RO step would carry the difference between No. 1's 2025-26 estimate (obligation x buy-out price, £8,007.8m) and Ofgem's outturn used here (£7,946.2m).
 
@@ -399,3 +402,98 @@ aios-harness#266; Richard's rulings of 19 Nov 2026. Code: `src/billpaid/mbss.py`
 
 - The check against a third party's published total (keys `check.ref.*`) and the key naming the years on its database are gone, with their saved page, the two reference files that fed the command line's printed cross-checks, and those cross-checks.
 - `reference/register/shared-cost-register-v4-s43.csv` is Report No. 1's pinned register, kept byte for byte; its CONSTRAINTS rows are no longer read (`register.REF_LINES`). `reference/clock_findings.yaml` records what the live Clock's old histories were and stays as written.
+
+## Version 1.6.0: the generators' share of grid and balancing charges, the part not paid out of subsidy
+
+Richard's ruling of 19 Nov 2026 (report-series ADR 0264, from the fact-check's row C-147, aios-harness#247). Code: `src/billpaid/generators_share.py`; the bridge step in `bridge.py`; the option in `outline.py`. Tests: `tests/test_generators_share.py`, `tests/test_version_1_6_0.py` (and `tests/v1_6_0.py`, the rule for which 1.5.0 keys move). Key by key against 1.5.0: `docs/1.6.0-against-1.5.0.md`.
+
+### Why
+
+Power stations pay part of the grid (TNUoS) and balancing (BSUoS) charges. Up to 1.5.0 the model left that share out on both sides, the actual system's and the gas-led alternative's (decision 0024), so as not to count money twice. That reason holds for half the share only:
+
+- Stations with a subsidy (the Renewables Obligation, Feed-in Tariffs or a Contract for Difference) pay their share out of subsidy income, which the model counts. That part stays out.
+- Stations with no subsidy (gas, coal, nuclear, large hydro, imports and the unsubsidised renewables) get their share back through the price of power, which the model does not count (it counts only the carbon in it). That part was missing. It is the new line, `generators_share`, in the indirect layer.
+
+### The method, step by step
+
+1. **The generators' share of the cost above the gas-led alternative, each year 2002-2025, signed.** It is the line counted with the generators' share in, less the line counted with it out (a year below the alternative stays negative, as the other lines do).
+   - Grid: (the whole TNUoS charge − the alternative's charge with the share in) − (the charge less the share − the alternative's charge less the share). The whole charge is the shared cost register's TNUOS series; the charge less the share is what the model already counts (the register's own row `rb.TNUOS.generators_share_out` taken off). The alternative with the share in is Report No. 1's Clock export (`v4-s43.json`, `grid`); without it, its run file (GO5). This equals Report No. 1's own figure for the net-zero part of the generators' TNUoS (`fleet.<year>.gen_nz_charge.tnuos_gbp_m`) to the pound, every year (tested).
+   - Balancing: the generators' share of the **residual** balancing line only. The model counts switch-off payments (`constraints`) and turn-up (`constraint_turnup`) whole, in their own lines (decision 0027), so their generators' share is not added again. The line is the share of the BSUoS charge generators paid (the register's row `rb.BSUOS.generators_share_out` over the BSUOS series: 50% to 2012, falling to 47% in 2021-22, nil from April 2023 under CMP308) times the whole charge less switch-off payments and turn-up as the model counts them, less the alternative's generators' share (Clock export `balancing` less run file GO4; the alternative has no switch-off payments or turn-up, being a system without wind). Added back, the generators' share of switch-off and turn-up gives Report No. 1's own figure (`gen_nz_charge.bsuos_gbp_m`) to the pound, every year (tested).
+2. **The part not paid out of subsidy.** Each year's figure times the share of that year's power from stations with no subsidy: 1 − (output eligible for the RO + CfD output + Feed-in Tariff output) ÷ all output.
+   - RO-eligible output and all output: DESNZ, DUKES 2026, Table 6.2, "Total generation from sources eligible for the Renewable Obligation" and "Total electricity generation", GWh, calendar years (saved as `reference/sources/desnz-dukes-2026-table-6.2.xlsx`, pinned in `reference/generators_share.yaml`). The RO-eligible row counts stations actually on the RO: it falls from 85.4 TWh in 2020 to 72.3 TWh in 2024 as the first stations reach the end of their 20 years.
+   - CfD output: LCCC's daily generation by contract, from the model's own store as the frozen results file was built (the same snapshot as `cfd_renewable.by_technology`).
+   - Feed-in Tariff output: Ofgem's FIT annual reports, the electricity FIT installations generated each FIT year (April to March), typed in `reference/generators_share.yaml` with the words of each report that hold the figure (each checked against its saved file). FIT years 2010-11 to 2014-15 and 2023-24 to 2024-25 are reports the model already held; 2015-16 to 2019-20 are saved here; 2020-21 to 2022-23 are the SY14 report's own account of earlier years, to 0.01 TWh. A FIT year goes to calendar years by the model's rule: a quarter to the year it ends in, three quarters to the year it starts in.
+3. **Prices, VAT and the rest**, as for every other line: 2024 prices by CPIH (calendar years); VAT at 5% on households' share (the engine's domestic share) added to the VAT line; the line counts in the headline's estimated part; per household over Great Britain's households (the charges are Great Britain's).
+
+### The range
+
+The share of output from stations with no subsidy, read two other ways; the generators' share above the alternative is held as it is:
+
+- low: every renewable station counted as subsidised (DUKES 6.2, all renewable output, large hydro included), the widest reading of "subsidised";
+- high: Feed-in Tariff output left out, as FIT stations are small, sit on local wires and pay neither generators' charge.
+
+`generators_share.range.<bound>.<year>.<m>`, `generators_share.range.<bound>.headline.<m>` (no VAT moved, as with the other lines' ranges). The line joins `range.lines`; it sets neither end of the headline's range (the carbon pass-through still sets both).
+
+A range on capacity rather than output (TNUoS is charged mostly on capacity) was looked at and not used: no published series gives the capacity of RO, CfD and FIT stations year by year (DUKES 6.2 gives renewable capacity, not RO-eligible capacity), and the transmission capacity by type (DUKES 5.12, Report No. 1's saved copy) starts only in 2011. On that table the subsidised share of transmission capacity in 2024 (wind, solar and bioenergy, 38.9%) is close to the central share of output (39.0%).
+
+### The figures
+
+| Year | Grid share above the alternative, £m cash | Balancing (residual) share, £m cash | Share of output with no subsidy: low / central / high | Line, £m cash | Line, £m 2024 prices: low / central / high |
+|---|---:|---:|---|---:|---|
+| 2002 | 4.2 | 37.6 | 0.971 / 0.985 / 0.985 | 41.2 | 71.3 / 72.3 / 72.3 |
+| 2003 | 1.0 | 2.6 | 0.973 / 0.982 / 0.982 | 3.6 | 6.1 / 6.2 / 6.2 |
+| 2004 | -2.5 | -5.3 | 0.964 / 0.975 / 0.975 | -7.6 | -13.0 / -13.0 / -12.8 |
+| 2005 | -3.0 | -29.2 | 0.957 / 0.967 / 0.967 | -31.1 | -52.1 / -52.1 / -51.6 |
+| 2006 | 44.4 | -43.5 | 0.954 / 0.963 / 0.963 | 0.8 | 1.3 / 1.3 / 1.3 |
+| 2007 | 49.0 | 37.8 | 0.950 / 0.960 / 0.960 | 83.3 | 131.6 / 132.9 / 132.9 |
+| 2008 | 60.4 | 40.8 | 0.944 / 0.954 / 0.954 | 96.5 | 147.1 / 148.7 / 148.7 |
+| 2009 | 68.8 | 121.8 | 0.933 / 0.944 / 0.944 | 180.0 | 268.9 / 272.1 / 272.1 |
+| 2010 | 73.9 | -0.7 | 0.931 / 0.940 / 0.940 | 68.8 | 100.5 / 101.5 / 101.5 |
+| 2011 | 91.0 | -16.0 | 0.904 / 0.915 / 0.916 | 68.6 | 96.3 / 97.4 / 97.5 |
+| 2012 | 128.3 | -42.0 | 0.887 / 0.895 / 0.898 | 77.2 | 106.0 / 106.9 / 107.4 |
+| 2013 | 167.1 | -56.2 | 0.851 / 0.861 / 0.867 | 95.4 | 127.8 / 129.2 / 130.2 |
+| 2014 | 229.3 | 37.3 | 0.809 / 0.819 / 0.830 | 218.5 | 287.9 / 291.5 / 295.2 |
+| 2015 | 239.1 | 55.0 | 0.754 / 0.784 / 0.799 | 230.6 | 294.7 / 306.4 / 312.4 |
+| 2016 | 187.0 | 199.5 | 0.755 / 0.785 / 0.806 | 303.4 | 384.1 / 399.2 / 409.7 |
+| 2017 | 137.2 | 123.5 | 0.708 / 0.743 / 0.767 | 193.8 | 236.7 / 248.6 / 256.7 |
+| 2018 | 128.6 | 80.6 | 0.670 / 0.708 / 0.733 | 148.0 | 175.7 / 185.6 / 192.2 |
+| 2019 | 127.0 | 237.4 | 0.634 / 0.679 / 0.706 | 247.3 | 284.8 / 304.8 / 317.2 |
+| 2020 | 112.6 | 412.9 | 0.569 / 0.624 / 0.654 | 328.2 | 365.2 / 400.5 / 419.4 |
+| 2021 | 257.4 | 376.2 | 0.602 / 0.654 / 0.680 | 414.2 | 454.4 / 493.2 / 513.4 |
+| 2022 | 329.2 | 411.3 | 0.584 / 0.658 / 0.685 | 487.2 | 476.7 / 537.4 / 559.2 |
+| 2023 | 423.9 | 185.0 | 0.533 / 0.636 / 0.664 | 387.0 | 335.4 / 400.0 / 418.1 |
+| 2024 | 456.4 | 0.0 | 0.495 / 0.610 / 0.639 | 278.6 | 225.9 / 278.6 / 291.4 |
+| 2025 (provisional) | 551.4 | 0.0 | 0.479 / 0.590 / 0.617 | 325.4 | 254.3 / 313.4 / 327.8 |
+
+**The total, 2002-2024:** £3.91bn cash, £4.85bn in 2024 prices (`generators_share.headline.<m>`); range £4.51bn to £4.99bn in 2024 prices (£3.62bn to £4.03bn cash). Before the subsidised part is taken off, the generators' share above the alternative is £6.68bn in 2024 prices (grid £4.05bn, balancing £2.63bn). With its VAT (£0.09bn), the headline rises from £252.4bn to £257.3bn in 2024 prices (£204.9bn to £208.9bn cash). Per household in Great Britain, year by year, from £9,358 to £9,543; on households' own bills from £3,335 to £3,407. 2025 (provisional): £325.4m cash.
+
+**Against Report No. 1.** No. 1 counts the whole net-zero part of the generators' share, £8.52bn in 2024 prices 2002-2024 (£7.02bn cash), before VAT, inside its price of power; decision 0167 expected about £8.5bn. The line is £3.67bn smaller (`bridge.generators_share.headline.real`):
+
+- £1.84bn is the generators' share of switch-off payments and turn-up inside BSUoS, which No. 1 counts and this line does not (switch-off payments and turn-up are counted whole in their own lines);
+- £1.83bn is the part paid by stations with a subsidy, which this line leaves out.
+
+### The bridge
+
+A new step, `generators_share`, kind `counted_differently`: No. 1's net-zero part of the generators' share (its run file's `fleet.<year>.gen_nz_charge.gbp_m`) less this line. The power step (`power_before_carbon`) now leaves that part of No. 1's price of power out (NZ1 − NZ1c − GO1 − GO1k − GEN), and its label says so. The walk still adds up to a tenth of a penny every year (tested). `bridge.no2_money_paid` and `bridge.vat` move with the new line and its VAT.
+
+### The keys
+
+- `generators_share.<year>.<m>`, `generators_share.headline.<m>`, `.basis` (estimated), `.confidence` (low), `.layer` (indirect), `generators_share.2025.source`.
+- `generators_share.<grid>.<year>.<m>`, `generators_share.<grid>.headline.<m>`: the generators' share above the alternative, grid (`tnuos`) and residual balancing (`bsuos`), before the subsidised part is taken off.
+- `generators_share.unsubsidised_share.<year>.<end>`: the share of output with no subsidy, central, low, high.
+- `generators_share.generation.<gen>.<year>`: the output it is read from, GWh: `ro`, `cfd`, `fit`, `renewables`, `total`.
+- `generators_share.range.*` (above), and `option.no_generators_share.headline.<m>`: the headline without the line and its VAT, which is 1.5.0's headline exactly (tested), for the paper to print the old basis beside the new.
+
+### What moves from 1.5.0
+
+No 1.5.0 key is dropped. 407 values move, all because they hold the new line or its VAT (`docs/1.6.0-against-1.5.0.md` lists every one; `tests/v1_6_0.py` is the rule, tested both ways): the VAT line, the indirect layer and all lines each year 2002-2025 and in the headline; the headline's modelled and estimated parts; the 2025 total's modelled and estimated parts; share of the bill; every per-household and own-bills figure (1.1.0's over 29 million included); the headline's range ends and `range.lines`; the carbon pass-through headlines; every counting option's headline; `option.no_grid_balancing.less_than_headline` (the case without grid and balancing takes the new line and its VAT out with them, so its headline does not move); the bridge's two ends' money-paid side, its VAT and power steps, `bridge.steps` and two labels. 500 keys are added. No other line moves.
+
+### What is assumed
+
+- Every unsubsidised station pays its share of the charges and gets it back through the price of power in full; the line does not count any part of it that the station bore itself.
+- The share is spread by output in proportion, so a subsidised and an unsubsidised station pay the same per unit of output. In fact TNUoS is charged mostly on capacity and differs by zone (Scottish wind pays more), so the range is a guide, not a bound.
+- DUKES counts the UK; the charges are Great Britain's. The share of output from Northern Ireland is small and the ratio is taken as Great Britain's.
+- A station on two schemes (an RO phase and a CfD extension, say) is metered separately, so no output is counted twice; stations that moved from the RO to FIT in 2010 are a few GWh.
+- 2025: FIT output for April to December carries 2024-25's (Ofgem's 2025-26 report is not yet published); DUKES 2026's 2025 figures and LCCC's 2025 settlement are used as they stand. 2025 is provisional and never in the headline.
+- `results/clock.json`, the Clock's file, is not changed: the paper's figures are built from the frozen results file, and the Clock's own build takes the line at the Clock's release (ADR 0228, ADR 0264).
+

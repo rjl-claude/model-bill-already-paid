@@ -35,7 +35,9 @@ def test_m1_the_headline_in_its_measured_modelled_and_estimated_parts(figs):
         assert _close(parts[0], figs[f"direct.headline.{m}"] + figs[f"ccl.headline.{m}"] - spread)
         # estimated: turn-up, and carbon in 2005-2012 (labelled estimated inside a modelled line)
         carbon_est = sum(figs[f"carbon.{y}.{m}"] for y in range(2005, 2013))
-        assert _close(parts[2], figs[f"constraint_turnup.headline.{m}"] + carbon_est + spread)
+        # 1.6.0: and the generators' share of grid and balancing charges not paid out of subsidy (ADR 0264)
+        assert _close(parts[2], figs[f"constraint_turnup.headline.{m}"] + carbon_est + spread
+                      + figs[f"generators_share.headline.{m}"])
     assert round(figs["all.headline.measured.real"] / 1e9, 1) == 144.5
 
 
@@ -49,7 +51,8 @@ def test_m2_the_headline_range_from_the_three_estimated_lines_each_changed_on_it
         lo = figs[f"all.headline.{m}"] + figs[f"carbon.range.low.headline.{m}"] - figs[f"carbon.headline.{m}"]
         hi = figs[f"all.headline.{m}"] + figs[f"carbon.range.high.headline.{m}"] - figs[f"carbon.headline.{m}"]
         if m == "real":
-            assert round(lo / 1e9, 1) == 247.7 and round(hi / 1e9, 1) == 257.8
+            # 1.6.0: the headline is £4.94bn higher (the generators' share and its VAT), so £252.6bn to £262.8bn
+            assert round(lo / 1e9, 1) == 252.6 and round(hi / 1e9, 1) == 262.8
         # the Capacity Market's low share, changed alone, moves the headline less than early carbon prices
         assert figs[f"capacity_market.range.low.headline.{m}"] - figs[f"capacity_market.headline.{m}"] > (
             lo - figs[f"all.headline.{m}"])
@@ -120,7 +123,7 @@ def test_m4_what_an_average_household_paid_on_its_own_bills(figs):
 
 
 LINES = ("cfd_renewable", "constraints", "ro", "fit", "capacity_market", "carbon", "ccl", "tnuos", "bsuos",
-         "constraint_turnup", "vat", "sizewell_c")
+         "constraint_turnup", "vat", "sizewell_c", "generators_share")   # generators_share: 1.6.0
 
 
 def test_m5_the_whole_2025_bill_and_the_share_of_it(figs):

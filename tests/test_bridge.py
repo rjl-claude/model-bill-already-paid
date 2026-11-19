@@ -30,7 +30,7 @@ def test_the_walk_starts_at_no2s_money_paid_and_ends_at_no1s_extra_cost(figs):
 # The walk, in order: the lines the two reports count alike, the lines they count differently, what only
 # No. 1 counts, and what the policies saved or cost in the price of power itself.
 STEPS = ["cfd_renewable", "capacity_market", "carbon", "tnuos", "balancing", "ro", "fit", "ccl", "vat",
-         "energy_saving_schemes", "power_before_carbon"]
+         "generators_share", "energy_saving_schemes", "power_before_carbon"]   # generators_share: 1.6.0
 YEARS = range(2002, 2025)
 A_TENTH_OF_A_PENNY = 0.001   # £; the figures are sums of up to £22bn held as floats
 
@@ -59,7 +59,8 @@ def test_the_headline_ends_are_the_two_reports_own_headlines(figs):
     # 140.31191674096607, £bn, 2002-24, 2024 prices): "£140.3bn"
     assert figs["bridge.no1_extra_cost.headline.real"] == pytest.approx(140.31191674096607e9, rel=1e-12)
     assert round(figs["bridge.no1_extra_cost.headline.real"] / 1e9, 1) == 140.3
-    assert round(figs["bridge.no2_money_paid.headline.real"] / 1e9, 1) == 252.4
+    # 1.6.0: £252.4bn at 1.5.0, plus the generators' share (£4.85bn) and the VAT on it
+    assert round(figs["bridge.no2_money_paid.headline.real"] / 1e9, 1) == 257.3
 
 
 def test_the_lines_both_reports_count_alike_are_steps_of_nothing(figs):
@@ -74,7 +75,12 @@ def test_the_lines_both_reports_count_alike_are_steps_of_nothing(figs):
 def test_the_steps_that_differ_are_no1s_line_less_no2s(figs):
     # No. 1's v4-s43 run file, 2024 (the price base, so cash and 2024 prices are the same), £m
     assert figs["bridge.energy_saving_schemes.2024.cash"] == pytest.approx(717.7765074265375e6, abs=0.001)
-    assert figs["bridge.power_before_carbon.2024.real"] == pytest.approx(-7854.72688392154e6, abs=0.001)
+    # 1.6.0: the power step less No. 1's net-zero part of the generators' share (fleet.2024.gen_nz_charge.gbp_m,
+    # £456.413475970754m), which the new generators_share step carries
+    assert figs["bridge.power_before_carbon.2024.real"] == pytest.approx(
+        -7854.72688392154e6 - 456.413475970754e6, abs=0.001)
+    assert figs["bridge.generators_share.2024.cash"] == pytest.approx(
+        456.413475970754e6 - figs["generators_share.2024.cash"], abs=0.001)
     assert figs["bridge.ro.2024.cash"] == pytest.approx(7257.957564933899e6 - figs["ro.2024.cash"], abs=0.001)
     assert figs["bridge.fit.2024.cash"] == pytest.approx(1733.0346759999998e6 - figs["fit.2024.cash"], abs=0.001)
     assert figs["bridge.ccl.2024.cash"] == pytest.approx(9.060479382590984e6 - figs["ccl.2024.cash"], abs=0.001)
@@ -97,7 +103,7 @@ def test_each_step_has_a_plain_label_and_says_which_report_it_comes_from(figs):
     assert figs["bridge.no1_extra_cost.label"].startswith("Extra cost")
     for step in ("cfd_renewable", "capacity_market", "carbon", "tnuos", "balancing"):
         assert figs[f"bridge.{step}.kind"] == "same"
-    for step in ("ro", "fit", "ccl", "vat"):
+    for step in ("ro", "fit", "ccl", "vat", "generators_share"):
         assert figs[f"bridge.{step}.kind"] == "counted_differently"
     for step in ("energy_saving_schemes", "power_before_carbon"):
         assert figs[f"bridge.{step}.kind"] == "no1_only"

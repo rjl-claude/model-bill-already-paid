@@ -118,7 +118,10 @@ def test_1_3_1_moves_no_number_from_1_3_0(figs):
     moved = [k for k in old if old[k] != figs[k] and not (isinstance(old[k], float) and math.isclose(
         old[k], figs[k], rel_tol=1e-12, abs_tol=1e-3))]
     # and the headline's range, which 1.4.0's rulings 13b and 14c move (tests/test_version_1_4_0.py)
-    ranged = [f"range.{b}.headline.{x}" for b in ("low", "high") for x in ("real", "line", "cash")]
+    # (1.6.0 moves the ends' values again, left out by kept(); the lines that set them are still 1.4.0's)
+    ranged = [f"range.{b}.headline.line" for b in ("low", "high")]
     assert sorted(moved) == sorted(["check.ofgem.price_cap_policy_costs.basis", *ranged]), moved
-    new_in_1_4_0 = ("option.no_grid_balancing.", "bsuos.turnup_range.", "carbon.pass_through.", "range.lines")
+    new_in_1_4_0 = ("option.no_grid_balancing.", "bsuos.turnup_range.", "carbon.pass_through.", "range.lines",
+                    # and in 1.6.0 (tests/test_version_1_6_0.py)
+                    "generators_share.", "bridge.generators_share.", "option.no_generators_share.")
     assert all(isinstance(figs[k], str) for k in set(figs) - all_old if not k.startswith(new_in_1_4_0))

@@ -87,11 +87,18 @@ def test_the_three_balancing_lines_still_add_to_the_same_total_each_year(frozen,
             assert math.isclose(before, after, rel_tol=1e-12, abs_tol=1e-3), (y, m)
 
 
+def _gs(figs, m):
+    """What 1.6.0's new line adds to the headline and the indirect layer: the generators' share and its VAT."""
+    return figs[f"all.headline.{m}"] - figs[f"option.no_generators_share.headline.{m}"]
+
+
 def test_the_headline_does_not_move(figs, old):
+    """(1.6.0's new line apart, which adds to the indirect layer: tests/test_version_1_6_0.py)"""
     for m in ("cash", "real"):
-        assert math.isclose(figs[f"all.headline.{m}"], old[f"all.headline.{m}"], rel_tol=1e-13)
+        assert math.isclose(figs[f"all.headline.{m}"] - _gs(figs, m), old[f"all.headline.{m}"], rel_tol=1e-13)
         moved = figs[f"direct.headline.{m}"] - old[f"direct.headline.{m}"]
-        assert math.isclose(moved, old[f"indirect.headline.{m}"] - figs[f"indirect.headline.{m}"], rel_tol=1e-9)
+        assert math.isclose(moved, old[f"indirect.headline.{m}"] - figs[f"indirect.headline.{m}"] + _gs(figs, m),
+                            rel_tol=1e-9)
     # £229.5m in place of the £195.63m 1.4.0 held for the six years
     assert abs((figs["direct.headline.cash"] - old["direct.headline.cash"]) / 1e6 - (229.5 - 195.631658)) < 1e-6
 
@@ -118,6 +125,8 @@ def test_no_other_1_4_0_value_moves_and_only_the_old_keys_go(figs, old):
     # and balancing
     allowed |= {k for k in old if k.startswith("bsuos.turnup_range.") and ".headline." in k}
     allowed |= {k for k in old if k.startswith("option.no_grid_balancing.")}
+    from tests import v1_6_0
+    allowed |= {k for k in old if v1_6_0.moved(k)}   # what 1.6.0's new line moves (tests/test_version_1_6_0.py)
     moved = {k for k in old if k in figs and old[k] != figs[k] and not (isinstance(old[k], float) and math.isclose(
         old[k], figs[k], rel_tol=1e-12, abs_tol=1e-3))}   # a thousandth of a pound: float dust around zero
     assert moved <= allowed, sorted(moved - allowed)

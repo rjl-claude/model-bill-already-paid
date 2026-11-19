@@ -2,6 +2,14 @@
 
 Each version is a git tag. The Subsidy Clock reads `results/clock.json`; Report No. 2 reads `results/figures.json` as committed at its tag, pinned by sha256 in `report-series/model-register.yaml`. A version never changes an older one. The site's own changelog (`web-subsidy-clock`, `changelog.jsonl`) gets its entry when the Clock moves to a version.
 
+## 1.6.0 (19 Nov 2026), the generators' share of grid and balancing charges, the part not paid out of subsidy
+
+For Report No. 2, Richard's ruling of 19 Nov 2026 (report-series ADR 0264, aios-harness#247, fact-check row C-147). Tag `v1.6.0` on branch `release-1.6.0`, built on `v1.5.0`, Gitea only (ADR 0228). `results/figures.json`: 3,119 keys, sha256 `6cfe4c53...`. Key by key against 1.5.0: `docs/1.6.0-against-1.5.0.md`. Method: `docs/figures.md`, "Version 1.6.0".
+
+**Added: a new indirect line, `generators_share`, labelled estimated.** Power stations pay part of the grid and balancing charges; stations with no subsidy get it back through the price of power, which the model does not count. The line is the generators' share of the TNUoS and residual BSUoS cost above the gas-led alternative (equal to Report No. 1's own figure for TNUoS; for BSUoS, No. 1's less the share of switch-off and turn-up payments, which are counted whole in their own lines), times the share of each year's output from stations with no RO, CfD or FIT (DUKES 2026 Table 6.2, LCCC, Ofgem's FIT reports, saved and pinned in `reference/generators_share.yaml`). 2002-2024: £4.85bn in 2024 prices (£3.91bn cash), range £4.51bn to £4.99bn. 2025 (provisional): £325m cash.
+
+**Moved (407 values), all because they hold the new line or its VAT.** Headline £257.3bn in 2024 prices (was £252.4bn), £208.9bn cash (was £204.9bn); VAT £4.40bn (was £4.30bn); per household in Great Britain, year by year, £9,543 (was £9,358); on households' own bills £3,407 (was £3,335). The headline's range, its parts, share of the bill, every counting option, and the bridge with Report No. 1 (a new step reconciles No. 1's generators' share, taken out of its power step) follow. `option.no_generators_share.headline` is 1.5.0's headline exactly. **Added (500 keys). Dropped: none.** `results/clock.json` is not changed: the Clock takes the line at its release.
+
 ## 1.5.0 (19 Nov 2026), National Grid's record for wind constraint payments 2010-2015; primary sources only
 
 For Report No. 2 (aios-harness#266), Richard's rulings of 19 Nov 2026. Tag `v1.5.0` on branch `release-1.5.0`, built on `v1.4.0`, Gitea only (ADR 0228). `results/figures.json`: 2,619 keys, sha256 `c64c01d8...`. Key by key against 1.4.0: `docs/1.5.0-against-1.4.0.md`. Method: `docs/figures.md`, "Version 1.5.0".

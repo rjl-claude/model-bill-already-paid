@@ -24,7 +24,8 @@ ROOT = Path(__file__).resolve().parents[2]
 YEAR = 2025
 MEASURES = {"real": "cost_gbp_2024", "cash": "cost_gbp"}
 # 1.0.0 holds the whole of 2025 for these lines: their data run into 2026
-FROM_1_0_0 = ("cfd_renewable", "constraints", "capacity_market", "constraint_turnup", "bsuos")
+FROM_1_0_0 = ("cfd_renewable", "constraints", "capacity_market", "constraint_turnup", "bsuos",
+              "generators_share")   # 1.6.0: its 2025 row is billpaid.generators_share's, from the same sources
 # where each line's 2025 figure comes from: `<line>.2025.source`, for the paper's annexes
 SOURCES = {
     "cfd_renewable": "1.0.0 (LCCC settlement), the whole year",
@@ -43,6 +44,10 @@ SOURCES = {
     "tnuos": ("NESO final TNUoS reports 2024-25 and 2025-26 (shared cost register v4-s43), above the gas-led "
               "alternative of Report No. 1's release v4-s43"),
     "vat": "1.0.0's rule on every line above, the Climate Change Levy apart",
+    "generators_share": ("1.6.0: the shared cost register's TNUoS and BSUoS 2025 and Report No. 1's release v4-s43 "
+                         "(the gas-led alternative), times the share of 2025's output with no subsidy (DUKES 2026 "
+                         "Table 6.2, LCCC; Feed-in Tariff output for April to December 2025 carried from Ofgem's "
+                         "2024-25 report, the 2025-26 one not yet published)"),
     "sizewell_c": "LCCC, actual nuclear RAB supplier payments, December 2025; provisional: settlement runs continue",
 }
 # lines read from the shared cost register, as 1.0.0 reads their closed years (billpaid.register.REF_LINES)

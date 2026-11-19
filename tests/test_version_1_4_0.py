@@ -30,14 +30,17 @@ def test_12e_the_headline_without_grid_and_balancing_and_their_vat(figs):
     By hand from 1.3.1's keys: £16.52bn of lines and £0.31bn of VAT, so £235.6bn in 2024 prices, £16.8bn less;
     in cash £13.68bn and £0.25bn, so £190.9bn, £13.9bn less."""
     assert round(figs["option.no_grid_balancing.headline.real"] / 1e9, 1) == 235.6
-    assert round(figs["option.no_grid_balancing.less_than_headline.real"] / 1e9, 1) == 16.8
+    # 1.6.0: the generators' share of grid and balancing charges (£4.85bn) and its VAT go too, so £21.7bn less; the
+    # case itself does not move
+    assert round(figs["option.no_grid_balancing.less_than_headline.real"] / 1e9, 1) == 21.7
     # cash: £190.94bn at 1.4.0; 1.5.0 moves £28m from balancing to constraint payments, so £190.97bn, printing £191.0bn
     assert round(figs["option.no_grid_balancing.headline.cash"] / 1e9, 1) == 191.0
-    assert round(figs["option.no_grid_balancing.less_than_headline.cash"] / 1e9, 1) == 13.9
+    assert round(figs["option.no_grid_balancing.less_than_headline.cash"] / 1e9, 1) == 17.9   # 1.6.0: was 13.9
     for m in ("real", "cash"):
         assert _close(figs[f"option.no_grid_balancing.headline.{m}"]
                       + figs[f"option.no_grid_balancing.less_than_headline.{m}"], figs[f"all.headline.{m}"])
-        taken = sum((figs.get(f"tnuos.{y}.{m}", 0.0) + figs.get(f"bsuos.{y}.{m}", 0.0))
+        taken = sum((figs.get(f"tnuos.{y}.{m}", 0.0) + figs.get(f"bsuos.{y}.{m}", 0.0)
+                     + figs[f"generators_share.{y}.{m}"])   # 1.6.0
                     * (1 + 0.05 * figs[f"vat.domestic_share.{y}"]) for y in YEARS)
         assert _close(figs[f"option.no_grid_balancing.less_than_headline.{m}"], taken)
 
@@ -134,18 +137,20 @@ def test_13b_the_headline_at_the_bracket_carries_vat_with_carbon(figs):
         for m in ("real", "cash"):
             assert _close(figs[f"carbon.pass_through.headline.{bound}.{m}"],
                           figs[f"all.headline.{m}"] + figs[f"carbon.pass_through.swing.{bound}.{m}"])
-    assert round(figs["carbon.pass_through.headline.low.real"] / 1e9, 2) == 228.19
-    assert round(figs["carbon.pass_through.headline.high.real"] / 1e9, 2) == 267.21
+    # 1.6.0: the headline is £4.94bn higher (the generators' share and its VAT): £233.13bn to £272.15bn
+    assert round(figs["carbon.pass_through.headline.low.real"] / 1e9, 2) == 233.13
+    assert round(figs["carbon.pass_through.headline.high.real"] / 1e9, 2) == 272.15
 
 
 def test_13b_pass_through_joins_the_headline_range_and_sets_both_ends(figs):
-    assert figs["range.lines"] == "carbon,capacity_market,carbon_pass_through"
+    # 1.6.0: the generators' share joins the lines whose ranges set the headline's (it sets neither end)
+    assert figs["range.lines"] == "carbon,capacity_market,carbon_pass_through,generators_share"
     assert figs["range.low.headline.line"] == figs["range.high.headline.line"] == "carbon_pass_through"
     for bound in ("low", "high"):
         for m in ("real", "cash"):
             assert _close(figs[f"range.{bound}.headline.{m}"], figs[f"carbon.pass_through.headline.{bound}.{m}"])
-    assert round(figs["range.low.headline.real"] / 1e9, 1) == 228.2
-    assert round(figs["range.high.headline.real"] / 1e9, 1) == 267.2
+    assert round(figs["range.low.headline.real"] / 1e9, 1) == 233.1    # 1.6.0: was 228.2
+    assert round(figs["range.high.headline.real"] / 1e9, 1) == 272.2   # 1.6.0: was 267.2
 
 
 def test_13b_words_name_the_sources_and_the_judgement(figs):
@@ -162,7 +167,8 @@ def test_13b_words_name_the_sources_and_the_judgement(figs):
 
 # 1.3.1's figures file as frozen at its tag (the paper's pin before 1.4.0)
 V131_SHA256 = "98ce486f49b7264f89250da99b82ff3d813afb12c726642ee271ceb128b55253"
-MOVED = {f"range.{b}.headline.{x}": None for b in ("low", "high") for x in ("real", "cash", "line")}
+# (the ends' values move again at 1.6.0 and are left out by tests.v1_5_0.kept; the lines that set them do not)
+MOVED = {f"range.{b}.headline.line": None for b in ("low", "high")}
 
 
 def _v131() -> dict:
@@ -184,14 +190,15 @@ def test_no_1_3_1_key_moves_but_the_headline_range_and_none_is_dropped(figs):
         old[k], figs[k], rel_tol=1e-12, abs_tol=1e-3)))
     assert moved == sorted(MOVED), moved
     assert (old["range.low.headline.line"], old["range.high.headline.line"]) == ("carbon", "carbon")
-    assert round(old["range.low.headline.real"] / 1e9, 1) == 247.7
-    assert round(old["range.high.headline.real"] / 1e9, 1) == 257.8
+    whole = _v131()
+    assert round(whole["range.low.headline.real"] / 1e9, 1) == 247.7
+    assert round(whole["range.high.headline.real"] / 1e9, 1) == 257.8
 
 
-def test_the_model_is_version_1_5_0_and_its_figures_file_says_so():
-    assert results.model_version() == "1.5.0"
+def test_the_model_is_version_1_6_0_and_its_figures_file_says_so():
+    assert results.model_version() == "1.6.0"
     doc = figures.document(figures.frozen_results(ROOT), bridge.no1_release(ROOT))
-    assert doc["meta"]["version"] == "1.5.0"
+    assert doc["meta"]["version"] == "1.6.0"
     assert doc["meta"]["built_from"]["version"] == "1.0.0"
 
 
@@ -203,4 +210,4 @@ def test_the_committed_figures_file_is_the_one_the_model_builds(tmp_path):
     committed = ROOT / "results" / "figures.json"
     assert committed.read_bytes() == out.read_bytes()
     assert (ROOT / "results" / "figures.json.sha256").read_text() == f"{fp}  figures.json\n"
-    assert json.loads(committed.read_text())["meta"]["version"] == "1.5.0"
+    assert json.loads(committed.read_text())["meta"]["version"] == "1.6.0"
