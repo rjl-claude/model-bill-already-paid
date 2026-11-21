@@ -113,3 +113,4 @@
 {"detected_at": "2026-11-18T06:33:04.534543+00:00", "partition": "full", "previous_version": "20261117T062954.340304", "new_version": "20261118T063304.534543", "cause": "source revision", "origin": "publisher"}
 {"detected_at": "2026-11-19T06:27:36.467154+00:00", "partition": "full", "previous_version": "20261118T063304.534543", "new_version": "20261119T062736.467154", "cause": "source revision", "origin": "publisher"}
 {"detected_at": "2026-11-20T06:30:44.202975+00:00", "partition": "full", "previous_version": "20261119T062736.467154", "new_version": "20261120T063044.202975", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-21T06:26:18.737390+00:00", "partition": "full", "previous_version": "20261120T063044.202975", "new_version": "20261121T062618.737390", "cause": "source revision", "origin": "publisher"}
