@@ -24,8 +24,9 @@ def v161():
 
 
 def test_every_number_is_1_6_1s_exactly_and_only_the_named_words_change(doc, v161):
+    from tests.test_version_1_6_3 import NEW   # 1.6.3 adds the who-paid keys and changes no other
     new, old = doc["figures"], v161["figures"]
-    assert set(new) == set(old)
+    assert {k for k in new if not NEW.fullmatch(k)} == set(old)
     for k, v in old.items():
         if isinstance(v, str):
             assert (new[k] != v) == (k in CHANGED_TEXT), k

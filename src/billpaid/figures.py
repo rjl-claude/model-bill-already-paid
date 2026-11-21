@@ -165,6 +165,15 @@ KEYS = {
     "own_bills.per_household.<year>.real": ("on a household's own bills that year: households' share of every line "
                                             "but the CCL, plus VAT, each over its own area's households, 2024 prices"),
     "own_bills.per_household.headline.real": "the same, 2002-2024 added up",
+    "who_paid.households.<year>.real": ("1.6.3: the money paid that year on households' own bills, a national "
+                                        "total, 2024 prices: households' share of every line but the CCL, plus "
+                                        "the VAT line (the money behind own_bills.per_household.<year>.real)"),
+    "who_paid.businesses.<year>.real": ("1.6.3: the rest of that year's bill, paid by businesses and the public "
+                                        "sector, the whole of the CCL included; households and businesses add up "
+                                        "to all.<year>.real"),
+    "who_paid.households.headline.real": "the households' total, 2002-2024 added up",
+    "who_paid.businesses.headline.real": "the businesses' total, 2002-2024 added up",
+    "who_paid.households.headline.share": "households' part of all.headline.real (0 to 1)",
     "option.<option>.headline.<m>": ("the headline under another counting option (outline §6, §8): its lines "
                                      "changed, with the VAT on them; never the paper's figure"),
     "option.no_grid_balancing.less_than_headline.<m>": ("ruling 12e (1.4.0): the headline less the case with none "

@@ -159,7 +159,8 @@ def per_household(out: dict, root: Path) -> None:
     """M3 (ADR 0025, 0027, 0232, 0242): each year's money paid per household, each line over the households of
     its own area (Great Britain or, for the RO and the CCL, the UK), its VAT with it, then added up: what a
     household in Great Britain paid. 2002-2025; the headline is the sum of the years 2002-2024.
-    M4 (ADR 0025): the same for what a household paid on its own bills (households' share, the CCL left out)."""
+    M4 (ADR 0025): the same for what a household paid on its own bills (households' share, the CCL left out).
+    1.6.3: `who_paid.*`, M4's money before it is divided by households, and the rest of the bill, on businesses."""
     hh = {"uk": outline_sources.households(root), "gb": outline_sources.households_gb(root)}
     for y in range(2002, LAST_CLOSED_YEAR + 2):
         out[f"households.gb.{y}"], out[f"households.uk.{y}"] = hh["gb"][y], hh["uk"][y]
@@ -167,6 +168,14 @@ def per_household(out: dict, root: Path) -> None:
         parts = _areas(out, y)
         out[f"per_household.{y}.real"] = sum(parts[a][0] / hh[a][y] for a in parts)
         out[f"own_bills.per_household.{y}.real"] = sum(parts[a][1] / hh[a][y] for a in parts)
+        # 1.6.3: the same money as national totals. Households: what was on their own bills; businesses (and the
+        # public sector): the rest of the year's bill, the whole of the CCL included.
+        whole, own = sum(parts[a][0] for a in parts), sum(parts[a][1] for a in parts)
+        out[f"who_paid.households.{y}.real"], out[f"who_paid.businesses.{y}.real"] = own, whole - own
+    for who in ("households", "businesses"):
+        out[f"who_paid.{who}.headline.real"] = sum(out[f"who_paid.{who}.{y}.real"] for y in YEARS)
+    out["who_paid.households.headline.share"] = out["who_paid.households.headline.real"] / (
+        out["who_paid.households.headline.real"] + out["who_paid.businesses.headline.real"])
     out["per_household.year_by_year.headline.real"] = sum(out[f"per_household.{y}.real"] for y in YEARS)
     out["own_bills.per_household.headline.real"] = sum(out[f"own_bills.per_household.{y}.real"] for y in YEARS)
 

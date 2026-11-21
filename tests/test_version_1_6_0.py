@@ -30,8 +30,9 @@ def test_no_1_5_0_key_is_dropped_and_only_the_named_values_move(figs, old):
     assert set(old) <= set(figs)
     moved = {k for k in old if not _same(old[k], figs[k])}
     assert moved == {k for k in old if v1_6_0.moved(k)}, sorted(moved ^ {k for k in old if v1_6_0.moved(k)})
-    assert all(v1_6_0.NEW.fullmatch(k) for k in set(figs) - set(old)), sorted(
-        k for k in set(figs) - set(old) if not v1_6_0.NEW.fullmatch(k))
+    from tests.test_version_1_6_3 import NEW as NEW_1_6_3   # 1.6.3 adds the who-paid keys and changes no other
+    added = {k for k in set(figs) - set(old) if not NEW_1_6_3.fullmatch(k)}
+    assert all(v1_6_0.NEW.fullmatch(k) for k in added), sorted(k for k in added if not v1_6_0.NEW.fullmatch(k))
 
 
 def test_every_moved_total_moves_by_the_line_and_its_vat(figs, old):
@@ -44,6 +45,6 @@ def test_every_moved_total_moves_by_the_line_and_its_vat(figs, old):
             assert figs[f"bridge.no2_money_paid.{y}.{m}"] == figs[f"all.{y}.{m}"] if y < 2025 else True
 
 
-def test_the_version_is_1_6_2():
+def test_the_version_is_1_6_3():
     import tomllib
-    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.2"
+    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.3"

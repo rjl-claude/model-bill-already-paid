@@ -36,7 +36,8 @@ def _same(a, b) -> bool:
 
 
 def test_against_1_6_0_only_the_balancing_part_and_what_holds_it_move(figs, v160):
-    assert set(figs) == set(v160)
+    from tests.test_version_1_6_3 import NEW as NEW_1_6_3   # 1.6.3 adds the who-paid keys and changes no other
+    assert {k for k in figs if not NEW_1_6_3.fullmatch(k)} == set(v160)
     moved = {k for k in v160 if not _same(v160[k], figs[k])}
     from tests.test_version_1_6_2 import CHANGED_TEXT   # 1.6.2 rewrites these words, no number
     allowed = {k for k in v160 if MOVED.fullmatch(k) or v1_6_0.moved(k)} | CHANGED_TEXT

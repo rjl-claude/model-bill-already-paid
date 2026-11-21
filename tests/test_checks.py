@@ -123,5 +123,7 @@ def test_1_3_1_moves_no_number_from_1_3_0(figs):
     assert sorted(moved) == sorted(["check.ofgem.price_cap_policy_costs.basis", *ranged]), moved
     new_in_1_4_0 = ("option.no_grid_balancing.", "bsuos.turnup_range.", "carbon.pass_through.", "range.lines",
                     # and in 1.6.0 (tests/test_version_1_6_0.py)
-                    "generators_share.", "bridge.generators_share.", "option.no_generators_share.")
+                    "generators_share.", "bridge.generators_share.", "option.no_generators_share.",
+                    # and in 1.6.3 (tests/test_version_1_6_3.py)
+                    "who_paid.")
     assert all(isinstance(figs[k], str) for k in set(figs) - all_old if not k.startswith(new_in_1_4_0))

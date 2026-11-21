@@ -498,6 +498,19 @@ No 1.5.0 key is dropped. 407 values move, all because they hold the new line or 
 - 2025: FIT output for April to December carries 2024-25's (Ofgem's 2025-26 report is not yet published); DUKES 2026's 2025 figures and LCCC's 2025 settlement are used as they stand. 2025 is provisional and never in the headline.
 - `results/clock.json`, the Clock's file, is not changed: the paper's figures are built from the frozen results file, and the Clock's own build takes the line at the Clock's release (ADR 0228, ADR 0264).
 
+## Version 1.6.3: who paid, households and businesses
+
+Richard, 21 Nov 2026, reading the short report: the bill still to come is split between businesses, households and taxpayers; "Was it not possible to do that for the bill paid to date?" It was: the model already worked out what was on households' own bills, and printed it only per household (`own_bills.per_household.*`, M4, ADR 0025). 1.6.3 prints the same money as national totals. No other key changes (`tests/test_version_1_6_3.py`).
+
+- `who_paid.households.<year>.real`: the money paid that year on households' own bills, £ in 2024 prices, 2002-2025: households' share of every line but the CCL (`vat.domestic_share.<year>`, read from Report No. 1's release), plus the whole VAT line. It is the money behind `own_bills.per_household.<year>.real`, before each area's part is divided by that area's households.
+- `who_paid.businesses.<year>.real`: the rest of that year's bill, `all.<year>.real` less the households' total: paid by businesses and the public sector, the whole of the CCL included.
+- `who_paid.households.headline.real`, `who_paid.businesses.headline.real`: 2002-2024 added up. They add up to `all.headline.real`.
+- `who_paid.households.headline.share`: households' part of `all.headline.real`, 0 to 1.
+
+No taxpayer part: in 2002-2024 every line was paid through bills. The households' total is before the government's help with bills in 2022 and 2023, as `own_bills.*` is.
+
+> **For the writer.** "Businesses" here means every bill-payer that is not a household, the public sector included. The split follows households' share of electricity by year, as Report No. 1's model holds it; it is modelled, not a record of who paid.
+
 ## History of the line: 1.6.0 and 1.6.1
 
 Kept so the tags can be read; the method and figures above are the current ones.
