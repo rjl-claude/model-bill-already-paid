@@ -1,0 +1,10 @@
+{
+  "scheme": "capacity_market",
+  "table": "payments",
+  "partition": "full",
+  "source_url": "https://dp.lowcarboncontracts.uk/dataset/capacity-obligation-by-auction",
+  "source_date": null,
+  "retrieved_at": "2026-11-12T06:30:59.328070+00:00",
+  "row_count": 818,
+  "sha256": "1ff66f03b085197fa93a0daabbeab933341a87ac484feb84713f774c186cabbd"
+}

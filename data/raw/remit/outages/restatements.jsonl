@@ -105,3 +105,10 @@
 {"detected_at": "2026-11-09T06:38:59.836914+00:00", "partition": "full", "previous_version": "20261108T062722.397278", "new_version": "20261109T063859.836914", "cause": "source revision", "origin": "publisher"}
 {"detected_at": "2026-11-10T06:21:39.150509+00:00", "partition": "full", "previous_version": "20261109T063859.836914", "new_version": "20261110T062139.150509", "cause": "source revision", "origin": "publisher"}
 {"detected_at": "2026-11-11T06:33:55.742259+00:00", "partition": "full", "previous_version": "20261110T063330.425084", "new_version": "20261111T063355.742259", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-12T06:37:44.014064+00:00", "partition": "full", "previous_version": "20261111T063355.742259", "new_version": "20261112T063744.014064", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-13T06:37:06.401477+00:00", "partition": "full", "previous_version": "20261112T063744.014064", "new_version": "20261113T063706.401477", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-17T06:42:53.867080+00:00", "partition": "full", "previous_version": "20261113T063706.401477", "new_version": "20261117T064253.867080", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-18T06:38:34.453005+00:00", "partition": "full", "previous_version": "20261117T064253.867080", "new_version": "20261118T063834.453005", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-19T06:34:35.094953+00:00", "partition": "full", "previous_version": "20261118T063834.453005", "new_version": "20261119T063435.094953", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-20T06:36:56.085789+00:00", "partition": "full", "previous_version": "20261119T063435.094953", "new_version": "20261120T063656.085789", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-22T06:28:55.643871+00:00", "partition": "full", "previous_version": "20261121T063220.499238", "new_version": "20261122T062855.643871", "cause": "source revision", "origin": "publisher"}
