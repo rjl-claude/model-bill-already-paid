@@ -15,7 +15,7 @@ from pathlib import Path
 
 import polars as pl
 
-from billpaid import bridge, checks, elexon_record, generators_share, mbss, outline, outline_sources, provisional, ranges
+from billpaid import account, bridge, checks, elexon_record, generators_share, mbss, outline, outline_sources, provisional, ranges
 from billpaid.money import REAL_BASE_YEAR, add_real
 from billpaid.results import MODEL, model_version
 
@@ -335,8 +335,7 @@ def build(doc: dict, no1: bridge.No1Release, root: Path | None = None) -> dict[s
     (1.5.0): billpaid.elexon_record."""
     from billpaid.__main__ import ROOT
     root = root or ROOT
-    doc, _, national_grid = elexon_record.apply(doc, root, LAST_CLOSED_YEAR)
-    doc, gs_table = generators_share.apply(doc, root)   # 1.6.0: the new line, and the VAT on it
+    doc, national_grid, gs_table = account.counted(doc, root)   # 1.7.0: the one account, the Clock's too
     out: dict[str, float | str] = {}
     out["constraints.national_grid_years"] = ",".join(str(y) for y in national_grid)
     spread = [y for y in mbss.SPREAD_YEARS if y in national_grid]

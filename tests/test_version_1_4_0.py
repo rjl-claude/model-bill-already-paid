@@ -195,10 +195,10 @@ def test_no_1_3_1_key_moves_but_the_headline_range_and_none_is_dropped(figs):
     assert round(whole["range.high.headline.real"] / 1e9, 1) == 257.8
 
 
-def test_the_model_is_version_1_6_3_and_its_figures_file_says_so():
-    assert results.model_version() == "1.6.3"
+def test_the_model_is_version_1_7_0_and_its_figures_file_says_so():
+    assert results.model_version() == "1.7.0"
     doc = figures.document(figures.frozen_results(ROOT), bridge.no1_release(ROOT))
-    assert doc["meta"]["version"] == "1.6.3"
+    assert doc["meta"]["version"] == "1.7.0"
     assert doc["meta"]["built_from"]["version"] == "1.0.0"
 
 
@@ -210,4 +210,15 @@ def test_the_committed_figures_file_is_the_one_the_model_builds(tmp_path):
     committed = ROOT / "results" / "figures.json"
     assert committed.read_bytes() == out.read_bytes()
     assert (ROOT / "results" / "figures.json.sha256").read_text() == f"{fp}  figures.json\n"
-    assert json.loads(committed.read_text())["meta"]["version"] == "1.6.3"
+    assert json.loads(committed.read_text())["meta"]["version"] == "1.7.0"
+
+
+def test_1_7_0_moves_no_figure_of_the_paper_s():
+    """1.7.0 puts the Clock's file through the paper's own account (billpaid.account): every key of the figures file
+    the paper pins (1.6.3) has the same value."""
+    import json
+    import subprocess
+    pinned = json.loads(subprocess.run(["git", "-C", str(ROOT), "show", "v1.6.3:results/figures.json"],
+                                       capture_output=True, check=True).stdout)["figures"]
+    now = figures.document(figures.frozen_results(ROOT), bridge.no1_release(ROOT))["figures"]
+    assert now == pinned

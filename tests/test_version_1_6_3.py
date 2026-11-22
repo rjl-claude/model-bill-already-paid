@@ -26,8 +26,8 @@ def v162():
                                      capture_output=True, check=True).stdout)
 
 
-def test_the_version_is_1_6_3():
-    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.6.3"
+def test_the_version_is_1_7_0():
+    assert tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"] == "1.7.0"
 
 
 def test_every_key_of_1_6_2_is_exactly_as_it_was_and_only_who_paid_keys_are_new(doc, v162):

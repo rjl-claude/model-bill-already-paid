@@ -113,7 +113,7 @@ wheels = [
 
 [[package]]
 name = "model-bill-already-paid"
-version = "1.6.2"
+version = "1.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastexcel" },

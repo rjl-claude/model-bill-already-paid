@@ -132,6 +132,8 @@ def assemble(root: Path, *, generated_at: str) -> tuple[dict, dict]:
         "scotland": scot,
         "reconciliation": recon,
     }
+    from billpaid import account     # 1.7.0: counted as Report No. 2 counts the bill already paid
+    doc = account.apply(doc, root)
     return doc, {"model": model, "overlay": overlay, "scotland": scot, "reconciliation": recon}
 
 

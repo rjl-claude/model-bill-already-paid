@@ -77,7 +77,9 @@ def test_a_new_run_differs_from_the_frozen_results_file_only_in_the_balancing_sp
     """1.1.0 to 1.4.0 changed nothing in results/clock.json. 1.5.0 (aios-harness#266) makes the constraints
     history National Grid's record (2010-2015) and Elexon's yearly sums (2016-2023), so a new run on the repository's data differs from the
     committed (frozen) file in the three balancing lines 2010-2023 and nowhere else among the lines; each year's
-    three still add to the same total; and the new run's three lines are the ones the figures file holds."""
+    three still add to the same total; and the new run's three lines are the ones the figures file holds.
+    1.7.0 (billpaid.account) adds the generators' share of grid and balancing charges as a line of its own, after
+    the others, and the VAT on it to the VAT line, by that line's own rule; no other line moves."""
     from billpaid import elexon_record
     committed = json.loads((ROOT / "results" / results.FILE).read_text())
     doc, _ = results.assemble(ROOT, generated_at=committed["meta"]["generated_at"])
@@ -86,14 +88,18 @@ def test_a_new_run_differs_from_the_frozen_results_file_only_in_the_balancing_sp
     assert doc["meta"]["format"] == committed["meta"]["format"]
     assert doc["model"]["elexon_first_year"] == committed["model"]["elexon_first_year"] == 2024
     lines = [s["scheme_id"] for s in committed["model"]["schemes"]]
-    assert [s["scheme_id"] for s in doc["model"]["schemes"]] == lines
+    assert [s["scheme_id"] for s in doc["model"]["schemes"]] == [*lines, "generators_share"]
+    gs = _rows(doc, "generators_share")
+    vat = next(s for s in doc["model"]["schemes"] if s["scheme_id"] == "vat")
+    share = {r["year"]: r["share"] for r in vat["extras"]["domestic_share"]}
     for line in lines:
         new, old = _rows(doc, line), _rows(committed, line)
         assert sorted(new) == sorted(old), line
         for y in old:
             if line in BALANCING and 2010 <= y <= 2023:
                 continue
-            assert math.isclose(new[y], old[y], rel_tol=1e-9, abs_tol=1e-6), (line, y)
+            want = old[y] + (0.05 * share[y] * gs[y] if line == "vat" and y in gs else 0.0)
+            assert math.isclose(new[y], want, rel_tol=1e-9, abs_tol=1e-6), (line, y)
     figures_doc, _, _ = elexon_record.apply(committed, ROOT, 2024)
     for y in range(2010, 2024):
         assert math.isclose(sum(_rows(doc, line).get(y, 0.0) for line in BALANCING),
@@ -101,3 +107,15 @@ def test_a_new_run_differs_from_the_frozen_results_file_only_in_the_balancing_sp
         for line in BALANCING:
             assert math.isclose(_rows(doc, line).get(y, 0.0), _rows(figures_doc, line).get(y, 0.0),
                                 rel_tol=1e-9, abs_tol=1e-3), (line, y)
+
+
+def test_the_results_file_is_counted_as_the_paper_counts_the_bill(tmp_path):
+    """1.7.0 (Richard, 22 Nov 2026: "ensure the clock is consistent"): the Clock's file goes through the paper's
+    account (billpaid.account), so it carries the generators' share of grid and balancing charges, and its indirect
+    block is made from its lines."""
+    out = tmp_path / "clock.json"
+    assert main(["results", "--out", str(out)]) == 0
+    m = json.loads(out.read_bytes())["model"]
+    indirect = [s for s in m["schemes"] if s["layer"] == "indirect"]
+    assert "generators_share" in {s["scheme_id"] for s in indirect}
+    assert math.isclose(m["indirect"]["cumulative_gbp"], math.fsum(s["cumulative_gbp"] for s in indirect))

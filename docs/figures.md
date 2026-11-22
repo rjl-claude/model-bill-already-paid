@@ -498,6 +498,10 @@ No 1.5.0 key is dropped. 407 values move, all because they hold the new line or 
 - 2025: FIT output for April to December carries 2024-25's (Ofgem's 2025-26 report is not yet published); DUKES 2026's 2025 figures and LCCC's 2025 settlement are used as they stand. 2025 is provisional and never in the headline.
 - `results/clock.json`, the Clock's file, is not changed: the paper's figures are built from the frozen results file, and the Clock's own build takes the line at the Clock's release (ADR 0228, ADR 0264).
 
+## Version 1.7.0: the Clock counts the bill as the paper does
+
+Richard, 22 Nov 2026: "publish the report and ensure the clock is consistent". One account, `billpaid.account`, now counts both the paper's figures file and the Clock's results file: wind constraint payments from a primary record in every closed year (`billpaid.elexon_record`), and the generators' share of grid and balancing charges not paid out of subsidy with the VAT on it (`billpaid.generators_share`); each changed line's total and run rate, and the Clock's totals blocks, are made again from the lines. No key of the figures file moves (`tests/test_version_1_4_0.py`, "1_7_0 moves no figure"). On the data of 22 Nov 2026 the results file gives every line, 2002 to 2024 in 2024 prices, exactly as the paper's figures file does: £258.62bn in all. The generators' share runs at its 2025 figure from 2026.
+
 ## Version 1.6.3: who paid, households and businesses
 
 Richard, 21 Nov 2026, reading the short report: the bill still to come is split between businesses, households and taxpayers; "Was it not possible to do that for the bill paid to date?" It was: the model already worked out what was on households' own bills, and printed it only per household (`own_bills.per_household.*`, M4, ADR 0025). 1.6.3 prints the same money as national totals. No other key changes (`tests/test_version_1_6_3.py`).
