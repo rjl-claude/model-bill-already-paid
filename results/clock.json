@@ -3,8 +3,8 @@
   "model": "model-bill-already-paid",
   "version": "1.7.0",
   "format": 1,
-  "commit": "a73b2097be96b4ce315d20c52204aacdf9e62493",
-  "generated_at": "2026-11-22T21:24:59.680698+00:00"
+  "commit": "b5218cf14d344d7b0f20a7c2385f5cf5a16e1a8d",
+  "generated_at": "2026-11-23T06:43:03.594320+00:00"
  },
  "model": {
   "elexon_first_year": 2024,
@@ -842,8 +842,8 @@
         },
         {
          "q": "2025-Q1",
-         "payment_gbp": 126804802.57999998,
-         "generation_mwh": 1311251.4010000005
+         "payment_gbp": 126804802.57999997,
+         "generation_mwh": 1311251.401
         },
         {
          "q": "2025-Q2",
@@ -14093,14 +14093,14 @@
       },
       {
        "year": 2026,
-       "cost_gbp": 286230241.14981145,
-       "cost_gbp_2024": 268202108.452244
+       "cost_gbp": 286096291.9996625,
+       "cost_gbp_2024": 268076596.05232772
       }
      ]
     },
-    "cumulative_gbp": 2737199962.5385485,
-    "runrate_gbp_per_year": 334836304.5097771,
-    "data_to": "2026-11-21",
+    "cumulative_gbp": 2737066013.388399,
+    "runrate_gbp_per_year": 334690415.16381294,
+    "data_to": "2026-11-22",
     "layer": "direct",
     "attribution_pct": 1.0,
     "attribution_note": "",
@@ -14109,8 +14109,8 @@
      "by_recipient": [
       {
        "lead_party": "SP Renewables (UK) Limited",
-       "cost": 401055773.5418963,
-       "volume_mwh": -6154276.755274074
+       "cost": 401098516.3191742,
+       "volume_mwh": -6155192.856692685
       },
       {
        "lead_party": "Moray Offshore Windfarn East L",
@@ -14119,8 +14119,8 @@
       },
       {
        "lead_party": "Seagreen Wind Energy Limited",
-       "cost": 163553287.41796285,
-       "volume_mwh": -9764390.729670834
+       "cost": 163584089.2716557,
+       "volume_mwh": -9766481.1213375
       },
       {
        "lead_party": "Clyde Windfarm (Scotland) Ltd",
@@ -14129,8 +14129,8 @@
       },
       {
        "lead_party": "SSE Generation Ltd",
-       "cost": 106996929.95240395,
-       "volume_mwh": -1768306.8717422222
+       "cost": 106997927.837849,
+       "volume_mwh": -1768364.7217422223
       },
       {
        "lead_party": "Statkraft Markets Gmbh",
@@ -14139,8 +14139,8 @@
       },
       {
        "lead_party": "Moray Offshore Windfarm East L",
-       "cost": 100120025.3307009,
-       "volume_mwh": -1954383.2168023612
+       "cost": 99856313.68620656,
+       "volume_mwh": -1959350.4001356945
       },
       {
        "lead_party": "Eneco Energy Trade",
@@ -14174,8 +14174,8 @@
       },
       {
        "lead_party": "Dorenell Windfarm Limited",
-       "cost": 57553326.01480497,
-       "volume_mwh": -1715818.7871388888
+       "cost": 57526415.50781068,
+       "volume_mwh": -1716592.8071388889
       },
       {
        "lead_party": "Dunmaglass Wind Farm Limited",
@@ -14199,8 +14199,8 @@
       },
       {
        "lead_party": "Viking Energy Wind Farm LLP",
-       "cost": 32207202.07645673,
-       "volume_mwh": -2607276.124828611
+       "cost": 32211889.280795082,
+       "volume_mwh": -2607519.2581619443
       },
       {
        "lead_party": "Corriegarth Wind Energy LTD",
@@ -14219,8 +14219,8 @@
       },
       {
        "lead_party": "Neart Na Gaoithe Offshore Wind",
-       "cost": 22519730.10469092,
-       "volume_mwh": -403143.1377114815
+       "cost": 22531114.73805434,
+       "volume_mwh": -404568.5566003704
       },
       {
        "lead_party": "AIK2A Sustainable Energy Ltd",
@@ -14233,10 +14233,10 @@
        "volume_mwh": -236028.2910575225
       }
      ],
-     "curtailed_mwh": 51137526.0014471,
+     "curtailed_mwh": 51152525.571414456,
      "history_source_url": "https://www.neso.energy/document/60941/download",
      "held_from": "2015-11-06",
-     "held_to": "2026-11-21"
+     "held_to": "2026-11-22"
     },
     "carry_with": null
    },
@@ -16030,7 +16030,7 @@
      ]
     },
     "cumulative_gbp": 3679509115.3131804,
-    "runrate_gbp_per_year": 1331977221.708389,
+    "runrate_gbp_per_year": 1332123111.054353,
     "data_to": "2026-11-12",
     "layer": "indirect",
     "attribution_pct": 0.13572956135617362,
@@ -16409,14 +16409,14 @@
       },
       {
        "year": 2026,
-       "cost_gbp": 93846498.82402802,
-       "cost_gbp_2024": 87935603.01090474
+       "cost_gbp": 93844051.18345447,
+       "cost_gbp_2024": 87933309.53429681
       }
      ]
     },
-    "cumulative_gbp": 3793172940.7962785,
+    "cumulative_gbp": 3793170493.155705,
     "runrate_gbp_per_year": 416982196.9567144,
-    "data_to": "2026-11-21",
+    "data_to": "2026-11-22",
     "layer": "indirect",
     "attribution_pct": 1.0,
     "attribution_note": "5% VAT on households' share of the costs counted above (the Climate Change Levy apart, which households do not pay), as Reliable Britain counts it. Households' share is the engine's domestic share of electricity each year.",
@@ -16728,9 +16728,9 @@
   ],
   "perspectives": {
    "renewables": {
-    "cumulative_gbp": 108637610760.60054,
-    "runrate_gbp_per_year": 12027623031.37562,
-    "rate_gbp_per_sec": 381.1323748122677,
+    "cumulative_gbp": 108637476811.4504,
+    "runrate_gbp_per_year": 12027477142.029655,
+    "rate_gbp_per_sec": 381.12775185786165,
     "annual": {
      "schema": {
       "year": "Int64",
@@ -16860,20 +16860,20 @@
       },
       {
        "year": 2026,
-       "cost_gbp": 2043763476.8598115,
-       "cost_gbp_2024": 1915037598.6463144
+       "cost_gbp": 2043629527.7096624,
+       "cost_gbp_2024": 1914912086.246398
       }
      ]
     },
     "since_year": 2002,
-    "cumulative_gbp_2024": 130682446793.03394,
-    "runrate_gbp_per_year_2024": 11100493756.040417,
-    "rate_gbp_per_sec_2024": 351.75342092048874
+    "cumulative_gbp_2024": 130682321280.63402,
+    "runrate_gbp_per_year_2024": 11100359112.331537,
+    "rate_gbp_per_sec_2024": 351.74915431881817
    },
    "low_carbon": {
-    "cumulative_gbp": 108637610760.60054,
-    "runrate_gbp_per_year": 12027623031.37562,
-    "rate_gbp_per_sec": 381.1323748122677,
+    "cumulative_gbp": 108637476811.4504,
+    "runrate_gbp_per_year": 12027477142.029655,
+    "rate_gbp_per_sec": 381.12775185786165,
     "annual": {
      "schema": {
       "year": "Int64",
@@ -17003,21 +17003,21 @@
       },
       {
        "year": 2026,
-       "cost_gbp": 2043763476.8598115,
-       "cost_gbp_2024": 1915037598.6463144
+       "cost_gbp": 2043629527.7096624,
+       "cost_gbp_2024": 1914912086.246398
       }
      ]
     },
     "since_year": 2002,
-    "cumulative_gbp_2024": 130682446793.03394,
-    "runrate_gbp_per_year_2024": 11100493756.040417,
-    "rate_gbp_per_sec_2024": 351.75342092048874
+    "cumulative_gbp_2024": 130682321280.63402,
+    "runrate_gbp_per_year_2024": 11100359112.331537,
+    "rate_gbp_per_sec_2024": 351.74915431881817
    }
   },
   "indirect": {
-   "cumulative_gbp": 112030556508.36116,
-   "runrate_gbp_per_year": 12015828912.064978,
-   "rate_gbp_per_sec": 380.758641723863,
+   "cumulative_gbp": 112030554060.72058,
+   "runrate_gbp_per_year": 12015974801.410942,
+   "rate_gbp_per_sec": 380.763264678269,
    "annual": {
     "schema": {
      "year": "Int64",
@@ -17147,15 +17147,15 @@
      },
      {
       "year": 2026,
-      "cost_gbp": 3185910111.035623,
-      "cost_gbp_2024": 2985246442.4674573
+      "cost_gbp": 3185907663.3950496,
+      "cost_gbp_2024": 2985244148.9908495
      }
     ]
    },
    "since_year": 2002,
-   "cumulative_gbp_2024": 138143098293.36755,
-   "runrate_gbp_per_year_2024": 11089608766.75997,
-   "rate_gbp_per_sec_2024": 351.4084964243152
+   "cumulative_gbp_2024": 138143095999.89096,
+   "runrate_gbp_per_year_2024": 11089743410.46885,
+   "rate_gbp_per_sec_2024": 351.4127630259858
   }
  },
  "context": {
@@ -17466,34 +17466,34 @@
  },
  "freshness": {
   "cfd": {
-   "retrieved_at": "2026-11-22T21:19:52.451683+00:00",
+   "retrieved_at": "2026-11-23T06:39:00.783258+00:00",
    "source_date": null,
    "source_url": "https://dp.lowcarboncontracts.uk/dataset/actual-cfd-generation-and-avoided-ghg-emissions",
    "row_count": 121732
   },
   "constraints": {
-   "retrieved_at": "2026-11-22T21:20:24.048522+00:00",
-   "source_date": "2026-11-21",
+   "retrieved_at": "2026-11-23T06:39:17.950136+00:00",
+   "source_date": "2026-11-22",
    "source_url": "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/bid",
-   "row_count": 20
+   "row_count": 35
   },
   "capacity_market": {
-   "retrieved_at": "2026-11-22T21:20:31.310921+00:00",
+   "retrieved_at": "2026-11-23T06:39:22.681450+00:00",
    "source_date": null,
    "source_url": "https://dp.lowcarboncontracts.uk/dataset/capacity-obligation-by-auction",
    "row_count": 818
   },
   "bsuos": {
-   "retrieved_at": "2026-11-22T21:20:55.540644+00:00",
+   "retrieved_at": "2026-11-23T06:39:49.062559+00:00",
    "source_date": "2026-2027",
    "source_url": "https://www.neso.energy/data-portal/current-balancing-services-use-of-system-bsuos-data",
    "row_count": 226
   },
   "constraint_turnup": {
-   "retrieved_at": "2026-11-22T21:20:30.422719+00:00",
-   "source_date": "2026-11-21",
+   "retrieved_at": "2026-11-23T06:39:21.986541+00:00",
+   "source_date": "2026-11-22",
    "source_url": "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/stack/all/offer",
-   "row_count": 6
+   "row_count": 4
   }
  },
  "restatements": [
@@ -30690,29 +30690,39 @@
    "origin": "publisher",
    "scheme": "remit",
    "table": "outages"
+  },
+  {
+   "detected_at": "2026-11-23T06:43:03.057094+00:00",
+   "partition": "full",
+   "previous_version": "20261122T212459.226943",
+   "new_version": "20261123T064303.057094",
+   "cause": "source revision",
+   "origin": "publisher",
+   "scheme": "remit",
+   "table": "outages"
   }
  ],
  "scotland": {
-  "generated_at": "2026-11-22T21:24:59.680698+00:00",
+  "generated_at": "2026-11-23T06:43:03.594320+00:00",
   "window": {
    "from": "2015-11-06",
-   "to": "2026-11-21"
+   "to": "2026-11-22"
   },
-  "gb_cost": 2545748456.16,
-  "scotland_cost": 2379435326.9,
+  "gb_cost": 2545614507.01,
+  "scotland_cost": 2379301377.75,
   "scotland_share": 0.9347,
-  "scotland_mwh": 49547977,
-  "gb_mwh": 51137526,
-  "scotland_last12_cost": 328597742.51,
-  "gb_last12_cost": 334607121.55,
-  "scotland_per_mwh": 48.02,
+  "scotland_mwh": 49562977,
+  "gb_mwh": 51152526,
+  "scotland_last12_cost": 328451953.02,
+  "gb_last12_cost": 334461332.06,
+  "scotland_per_mwh": 48.01,
   "unplaced_cost": 0.0,
   "n_farms_paid": 111,
   "farms": [
    {
     "farm": "Moray East",
-    "cost": 304575857.3,
-    "mwh": 7021500,
+    "cost": 304312145.66,
+    "mwh": 7026468,
     "units": [
      "T_MOWEO-1",
      "T_MOWEO-2",
@@ -30721,8 +30731,8 @@
    },
    {
     "farm": "Seagreen",
-    "cost": 163553287.42,
-    "mwh": 9764391,
+    "cost": 163584089.27,
+    "mwh": 9766481,
     "units": [
      "T_SGRWO-1",
      "T_SGRWO-2",
@@ -30743,8 +30753,8 @@
    },
    {
     "farm": "Moray West",
-    "cost": 96205970.32,
-    "mwh": 3012069,
+    "cost": 96217312.08,
+    "mwh": 3013170,
     "units": [
      "T_MOWWO-1",
      "T_MOWWO-2",
@@ -30808,8 +30818,8 @@
    },
    {
     "farm": "Dorenell",
-    "cost": 57553326.01,
-    "mwh": 1715819,
+    "cost": 57526415.51,
+    "mwh": 1716593,
     "units": [
      "T_DOREW-1",
      "T_DOREW-2"
@@ -30848,7 +30858,7 @@
     ]
    }
   ],
-  "top_farms_share": 0.592,
+  "top_farms_share": 0.5919,
   "monthly": [
    {
     "month": "2015-11",
@@ -31512,7 +31522,7 @@
    },
    {
     "month": "2026-11",
-    "scotland": -2555137,
+    "scotland": -2689086,
     "rest": 495230
    }
   ],
@@ -31520,14 +31530,14 @@
    "scotland_consumption_twh": 21.6573,
    "gb_consumption_twh": 249.2477,
    "scotland_consumption_share": 0.0869,
-   "paid_in_scotland": 206750733.13,
-   "paid_elsewhere": 2172684593.77,
+   "paid_in_scotland": 206739094.2,
+   "paid_elsewhere": 2172562283.55,
    "source": "DESNZ, Subnational electricity consumption statistics, Electricity consumption by Region, 2005 to 2024",
    "source_url": "https://www.gov.uk/government/statistics/regional-and-local-authority-electricity-consumption-statistics"
   },
   "turnup_same_window": {
-   "cost": 5894440405.18,
-   "to": "2026-11-21",
+   "cost": 5897649404.7,
+   "to": "2026-11-22",
    "basis": "replacement_estimate (GB-wide)"
   },
   "zone_source": "reference/bmu_zone.csv (Elexon BM unit register: grid zone per unit)"
