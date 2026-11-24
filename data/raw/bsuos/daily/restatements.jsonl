@@ -94,3 +94,5 @@
 {"detected_at": "2026-11-20T06:31:56.327548+00:00", "partition": "2026-2027", "previous_version": "20261119T062839.451838", "new_version": "20261120T063156.327548", "cause": "source revision", "origin": "publisher"}
 {"detected_at": "2026-11-21T06:27:29.641786+00:00", "partition": "2025-2026", "previous_version": "20261120T063156.322743", "new_version": "20261121T062729.641786", "cause": "source revision", "origin": "publisher"}
 {"detected_at": "2026-11-21T06:27:29.646675+00:00", "partition": "2026-2027", "previous_version": "20261120T063156.327548", "new_version": "20261121T062729.646675", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-24T06:25:45.474608+00:00", "partition": "2025-2026", "previous_version": "20261123T063949.054186", "new_version": "20261124T062545.474608", "cause": "source revision", "origin": "publisher"}
+{"detected_at": "2026-11-24T06:25:45.480977+00:00", "partition": "2026-2027", "previous_version": "20261123T063949.062559", "new_version": "20261124T062545.480977", "cause": "source revision", "origin": "publisher"}
