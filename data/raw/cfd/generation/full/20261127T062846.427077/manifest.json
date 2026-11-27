@@ -1,0 +1,10 @@
+{
+  "scheme": "cfd",
+  "table": "generation",
+  "partition": "full",
+  "source_url": "https://dp.lowcarboncontracts.uk/dataset/actual-cfd-generation-and-avoided-ghg-emissions",
+  "source_date": null,
+  "retrieved_at": "2026-11-27T06:28:46.427077+00:00",
+  "row_count": 122277,
+  "sha256": "e27c1e2e5269907f469edb876b56735a8bfaaa6c79a2d09fa62c8fda023f5220"
+}
