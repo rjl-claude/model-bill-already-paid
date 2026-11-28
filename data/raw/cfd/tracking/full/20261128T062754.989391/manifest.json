@@ -1,0 +1,10 @@
+{
+  "scheme": "cfd",
+  "table": "tracking",
+  "partition": "full",
+  "source_url": "https://dp.lowcarboncontracts.uk/dataset/in-period-tracking",
+  "source_date": null,
+  "retrieved_at": "2026-11-28T06:27:54.989391+00:00",
+  "row_count": 649,
+  "sha256": "637ce0fa9e95ad2978741377130b29bf1faa50f47329b5b9daff8a2c02ad5867"
+}
